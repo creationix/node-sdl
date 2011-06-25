@@ -7,14 +7,53 @@ using namespace node;
 
 namespace node_sdl {
 
+  static SDL_Surface* screen;
+
   static Handle<Value> Init(const Arguments& args) {
     HandleScope scope;
-
     SDL_Init( SDL_INIT_VIDEO );
+    int w = (args[0]->Int32Value());
+    int h = (args[1]->Int32Value());
+    screen = SDL_SetVideoMode( w, h, 0, SDL_SWSURFACE );
+    SDL_FillRect (screen, NULL, 0x000000);
+    return Undefined();
+  }
+
+  static Handle<Value> Quit(const Arguments& args) {
+    HandleScope scope;
+    SDL_Quit();
+    return Undefined();
+  }
+  
+  static Handle<Value> Clear(const Arguments& args) {
+    HandleScope scope;
+
+    SDL_FillRect (screen, NULL, 0); 
 
     return Undefined();
   }
 
+  static Handle<Value> FillRect(const Arguments& args) {
+    HandleScope scope;
+
+    SDL_Rect rect;
+    rect.x = (args[0]->Int32Value());
+    rect.y = (args[1]->Int32Value());
+    rect.w = (args[2]->Int32Value());
+    rect.h = (args[3]->Int32Value());
+
+    int color = (args[4]->Int32Value());
+
+    SDL_FillRect (screen, &rect, color); 
+
+    return Undefined();
+  }
+
+  static Handle<Value> Flip(const Arguments& args) {
+    HandleScope scope;
+    SDL_Flip (screen);
+    return Undefined();
+  }
 }
 
 extern "C" void
@@ -24,69 +63,11 @@ init(Handle<Object> target)
 
   target->Set(String::New("hello"), String::New("World"));
   NODE_SET_METHOD(target, "init", node_sdl::Init);
+  NODE_SET_METHOD(target, "quit", node_sdl::Quit);
+  NODE_SET_METHOD(target, "fillRect", node_sdl::FillRect);
+  NODE_SET_METHOD(target, "clear", node_sdl::Clear);
+  NODE_SET_METHOD(target, "flip", node_sdl::Flip);
 
 }
 
 
-
-/*
-    SDL_Init( SDL_INIT_VIDEO );
-    SDL_Surface* screen = SDL_SetVideoMode( 0, 0, 0, SDL_SWSURFACE );
-
-    SDL_FillRect (screen, NULL, 0x0088ff);
-
-    SDL_Flip (screen);
-
-    SDL_Event event;
-    bool gameRunning = true;
-
-    while (gameRunning)
-    {
-      if (SDL_WaitEvent(&event))
-      {
-        if (event.type == SDL_QUIT)
-        {
-          gameRunning = false;
-        }
-      }
-    }
-    printf("End Loop");
-
-    SDL_Quit();
-*/
-
-
-/*
-
-int main(int argc, char **argv)
-{
-  SDL_Init( SDL_INIT_VIDEO );
-
-  SDL_Surface* screen = SDL_SetVideoMode( 0, 0, 0, SDL_SWSURFACE );
-
-  SDL_FillRect (screen, NULL, 0x0088ff);
-
-  SDL_Flip (screen);
-
-  SDL_Event event;
-  bool gameRunning = true;
-
-  while (gameRunning)
-  {
-    if (SDL_WaitEvent(&event))
-    {
-      if (event.type == SDL_QUIT)
-      {
-        gameRunning = false;
-      }
-    } 
-  }
-  printf("End Loop");
-
-  SDL_Quit();
-
-  return 0;
-
-}
-
-*/
