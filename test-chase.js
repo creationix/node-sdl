@@ -5,6 +5,7 @@ SDL.init(SDL.INIT_VIDEO | SDL.INIT_JOYSTICK);
 process.on('exit', SDL.quit);
 
 SDL.setVideoMode(1024, 768, 32, 0);
+//SDL.setVideoMode(0,0,0, SDL.FULLSCREEN);
 var width = SDL.getScreenWidth();
 var height = SDL.getScreenHeight();
 
@@ -40,8 +41,8 @@ var Player = Pattern.extend({
     this.name = SDL.joystickName(this.joy);
     var colorName = this.colorName = colorNames.pop();
     var angle = 2 * Math.PI / numPlayers * joystickIndex;
-    this.x = Math.floor(Math.sin(angle) * 50 * numPlayers) + 512;
-    this.y = Math.floor(Math.cos(angle) * 50 * numPlayers) + 384;
+    this.x = Math.floor(Math.sin(angle) * 50 * numPlayers) + width / 2;
+    this.y = Math.floor(Math.cos(angle) * 50 * numPlayers) + height / 2;
     this.speed = 0.3;
     console.log("New %s player using %s", colorName[0].toUpperCase() + colorName.substr(1), this.name);
   },
@@ -64,7 +65,33 @@ var Player = Pattern.extend({
   }
 });
 
+var rotate = 0;
+var Spark = Pattern.extend({
+  initialize: function (player) {
+    rotate = (rotate + 7) % 360;
+    this.colorName = player.colorName;
+    this.x = player.x;
+    this.y = player.y;
+    this.r = rotate / 180 * Math.PI;
+    this.d = 10;
+    sparks.push(this);
+  },
+  tick: function (delta) {
+    this.d += delta * 0.1 + this.d / 10;
+    for (var a = 0; a < Math.PI * 2; a += Math.PI / 3) {
+      var px = Math.floor(this.x + this.d * Math.sin(a + this.r));
+      var py = Math.floor(this.y + this.d * Math.cos(a + this.r));
+      SDL.fillRect(px - 3, py - 3, 6, 6, colors[this.colorName][2]);
+    }
+  },
+  expire: function () {
+    if (this.d > 400) {
+      sparks.splice(sparks.indexOf(this), 1);
+    }
+  }
+});
 
+var sparks = [];
 var players = new Array(numPlayers);
 for (var i = 0; i < numPlayers; i++) {
   players[i] = Player.new(i);
@@ -72,16 +99,41 @@ for (var i = 0; i < numPlayers; i++) {
 console.dir(players);
 
 var before = Date.now();
-while(true) {
+setInterval(function () {
   SDL.joystickUpdate();
   var after = Date.now();
   var delta = after - before;
   before = after;
-  SDL.fill(0);
+  // Check for collisions
+  var collision = false;
+  for (var i = 0; i < numPlayers - 1; i++) {
+    for (var j = i + 1; j < numPlayers; j++) {
+      var dx = players[i].x - players[j].x;
+      var dy = players[i].y - players[j].y;
+      if (dx < 20 && dx > -20 && dy < 20 && dy > -20) {
+//        collision = true;
+        Spark.new(players[i]);
+        Spark.new(players[j]);
+      }
+    }
+  }
+  if (collision) {
+    SDL.fillRect(0,0,width,height,0xffffff);
+  } else {
+    SDL.fill();
+  }
+  // Run physics and controls
   for (var i = 0; i < numPlayers; i++) {
     players[i].tick(delta);
   }
+  // Run physics and controls
+  for (var i = 0, l = sparks.length; i < l; i++) {
+    sparks[i].tick(delta);
+  }
+  sparks.forEach(function (spark) { spark.expire(); });  
+  
+  
   SDL.flip();
-}
+}, 10);
 
 
