@@ -1,7 +1,7 @@
 var SDL = require('./build/default/node-sdl');
 
 SDL.init(SDL.INIT_VIDEO | SDL.INIT_JOYSTICK);
-//SDL.setVideoMode(0, 0, 0, 0);
+SDL.setVideoMode(0, 0, 0, 0);
 
 process.on('exit', SDL.quit);
 
@@ -19,9 +19,10 @@ for (var i = 0, l = SDL.numJoysticks(); i < l; i++) {
 
 setInterval(function () {
   SDL.joystickUpdate();
-  for (var i = 0, l = SDL.numJoysticks(); i < l; i++) {
+  var sticks = new Array(SDL.numJoysticks());
+  for (var i = 0, l = sticks.length; i < l; i++) {
     SDL.joystickOpen(i);
-    var data = {
+    var data = sticks[i] = {
       id: i,
       name: SDL.joystickName(i),
       axes: new Array(SDL.joystickNumAxes()),
@@ -37,8 +38,7 @@ setInterval(function () {
     for (var a = 0; a < data.hats.length; a++) {
       data.hats[a] = SDL.joystickGetHat(a);
     }
-    console.dir(data);
   }
-}, 250);
-
+  console.dir(sticks);
+}, 0)
 

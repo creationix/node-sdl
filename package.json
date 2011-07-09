@@ -1,0 +1,16 @@
+{
+  "author": "Tim Caswell <tim@creationix.com> (http://creationix.com/)",
+  "name": "sdl",
+  "description": "SDL bindings for node",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/creationix/node-sdl.git"
+  },
+  "main": "sdl.node",
+  "engines": {
+    "node": "0.4"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
