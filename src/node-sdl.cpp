@@ -361,6 +361,7 @@ init(Handle<Object> target)
   target->Set(String::New("HWSURFACE"), Number::New(SDL_HWSURFACE));
   target->Set(String::New("ANYFORMAT"), Number::New(SDL_ANYFORMAT));
   target->Set(String::New("FULLSCREEN"), Number::New(SDL_FULLSCREEN));
+  target->Set(String::New("DOUBLEBUF"), Number::New(SDL_DOUBLEBUF));
   NODE_SET_METHOD(target, "setVideoMode", node_sdl::SetVideoMode);
   NODE_SET_METHOD(target, "videoModeOK", node_sdl::VideoModeOK);
   NODE_SET_METHOD(target, "getScreenWidth", node_sdl::GetScreenWidth);
