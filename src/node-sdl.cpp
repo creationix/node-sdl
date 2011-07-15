@@ -517,7 +517,7 @@ namespace node_sdl {
 
     static Handle<Value> OpenFont(const Arguments& args) {
       HandleScope scope;
-      
+
       String::Utf8Value file(args[0]);
       int ptsize = (args[1]->Int32Value());
 
@@ -537,11 +537,11 @@ namespace node_sdl {
       int x = args[1]->Int32Value();
       int y = args[2]->Int32Value();
       int colorCode = args[3]->Int32Value();
-      
-      
+
+
       Uint8 r, g, b;
       SDL_GetRGB(colorCode, screen->format, &r, &g, &b);
-      
+
       SDL_Color color;
       color.r = r;
       color.g = g;
@@ -559,7 +559,7 @@ namespace node_sdl {
       SDL_Rect destRect;
       destRect.x = x;
       destRect.y = y;
-      
+
       int result = SDL_BlitSurface(resulting_text, NULL, screen, &destRect);
       if (result < 0) {
         return ThrowException(Exception::Error(String::Concat(
@@ -567,6 +567,9 @@ namespace node_sdl {
           String::New(SDL_GetError())
         )));
       }
+
+      SDL_FreeSurface(resulting_text);
+
       return Undefined();
     }
 
@@ -646,7 +649,7 @@ init(Handle<Object> target)
   NODE_SET_METHOD(target, "pollEvent", node_sdl::PollEvent);
   NODE_SET_METHOD(target, "getAppState", node_sdl::GetAppState);
   NODE_SET_METHOD(target, "getMouseState", node_sdl::GetMouseState);
-  
+
   Handle<Object> TTF = Object::New();
   target->Set(String::New("TTF"), TTF);
   NODE_SET_METHOD(TTF, "init", node_sdl::TTF::Init);
