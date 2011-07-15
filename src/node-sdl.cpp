@@ -436,6 +436,25 @@ init(Handle<Object> target)
   NODE_SET_METHOD(target, "joystickUpdate", node_sdl::JoystickUpdate);
 
   // EVENTS
+  target->Set(String::New("ACTIVEEVENT"), Number::New(SDL_ACTIVEEVENT));
+  target->Set(String::New("KEYDOWN"), Number::New(SDL_KEYDOWN));
+  target->Set(String::New("KEYUP"), Number::New(SDL_KEYUP));
+  target->Set(String::New("MOUSEMOTION"), Number::New(SDL_MOUSEMOTION));
+  target->Set(String::New("MOUSEBUTTONDOWN"), Number::New(SDL_MOUSEBUTTONDOWN));
+  target->Set(String::New("MOUSEBUTTONUP"), Number::New(SDL_MOUSEBUTTONUP));
+  target->Set(String::New("JOYAXISMOTION"), Number::New(SDL_JOYAXISMOTION));
+  target->Set(String::New("JOYBALLMOTION"), Number::New(SDL_JOYBALLMOTION));
+  target->Set(String::New("SDL_JOYHATMOTION"), Number::New(SDL_JOYHATMOTION));
+  target->Set(String::New("JOYBUTTONDOWN"), Number::New(SDL_JOYBUTTONDOWN));
+  target->Set(String::New("JOYBUTTONUP"), Number::New(SDL_JOYBUTTONUP));
+  target->Set(String::New("VIDEORESIZE"), Number::New(SDL_VIDEORESIZE));
+  target->Set(String::New("VIDEOEXPOSE"), Number::New(SDL_VIDEOEXPOSE));
+  target->Set(String::New("QUIT"), Number::New(SDL_QUIT));
+  target->Set(String::New("USEREVENT"), Number::New(SDL_USEREVENT));
+  target->Set(String::New("NUMEVENTS"), Number::New(SDL_NUMEVENTS));
+  target->Set(String::New("SYSWMEVENT"), Number::New(SDL_SYSWMEVENT));
+  target->Set(String::New("PRESSED"), Number::New(SDL_PRESSED));
+  target->Set(String::New("RELEASED"), Number::New(SDL_RELEASED));
   NODE_SET_METHOD(target, "waitEvent", node_sdl::WaitEvent);
 
 }
