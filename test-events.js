@@ -6,9 +6,8 @@ process.on('exit', SDL.quit);
 SDL.setVideoMode(320, 200, 0, 0);
 
 SDL.joystickOpen(0);
-SDL.joystickEventState(SDL.ENABLE);
-
-console.log("joystickEventState", SDL.joystickEventState(SDL.QUERY));
+console.log("joystickEventState", SDL.joystickEventState());
+//SDL.joystickEventState(true);
 
 function getEvent(data) {
   console.dir(data);

@@ -341,8 +341,13 @@ namespace node_sdl {
   static Handle<Value> JoystickEventState(const Arguments& args) {
     HandleScope scope;
 
-    int state = (args[0]->Int32Value());
-    return Number::New(SDL_JoystickEventState(state));
+    int state;
+    if (args.Length() == 0) {
+      state = SDL_QUERY;
+    } else {
+      state = args[0]->BooleanValue() ? SDL_ENABLE : SDL_IGNORE;
+    }
+    return Boolean::New(SDL_JoystickEventState(state));
   }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -401,14 +406,9 @@ namespace node_sdl {
     switch (event.type) {
       case SDL_ACTIVEEVENT:
         data->Set(String::New("type"), String::New("ACTIVEEVENT"));
-        if (event.active.state & SDL_APPMOUSEFOCUS)
-          data->Set(String::New("MOUSEFOCUS"), Boolean::New(event.active.gain));
-        if (event.active.state & SDL_APPINPUTFOCUS)
-          data->Set(String::New("INPUTFOCUS"), Boolean::New(event.active.gain));
-        if (event.active.state & SDL_APPACTIVE)
-          data->Set(String::New("ACTIVE"), Boolean::New(event.active.gain));
+        data->Set(String::New("gain"), Boolean::New(event.active.gain));
+        data->Set(String::New("state"), Number::New(event.active.state));
         break;
-
       case SDL_KEYDOWN:
       case SDL_KEYUP:
         data->Set(String::New("type"), String::New(event.type == SDL_KEYDOWN ? "KEYDOWN" : "KEYUP"));
@@ -552,10 +552,10 @@ init(Handle<Object> target)
   target->Set(String::New("BUTTON_LEFT"), Number::New(SDL_BUTTON_LEFT));
   target->Set(String::New("BUTTON_MIDDLE"), Number::New(SDL_BUTTON_MIDDLE));
   target->Set(String::New("BUTTON_RIGHT"), Number::New(SDL_BUTTON_RIGHT));
+  target->Set(String::New("APPMOUSEFOCUS"), Number::New(SDL_APPMOUSEFOCUS));
+  target->Set(String::New("APPINPUTFOCUS"), Number::New(SDL_APPINPUTFOCUS));
+  target->Set(String::New("APPACTIVE"), Number::New(SDL_APPACTIVE));
 
-  target->Set(String::New("QUERY"), Number::New(SDL_QUERY));
-  target->Set(String::New("ENABLE"), Number::New(SDL_ENABLE));
-  target->Set(String::New("IGNORE"), Number::New(SDL_IGNORE));
   NODE_SET_METHOD(target, "waitEvent", node_sdl::WaitEvent);
   NODE_SET_METHOD(target, "getAppState", node_sdl::GetAppState);
   NODE_SET_METHOD(target, "getMouseState", node_sdl::GetMouseState);
