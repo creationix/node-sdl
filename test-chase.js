@@ -4,8 +4,8 @@ var Pattern = require('pattern');
 SDL.init(SDL.INIT_VIDEO | SDL.INIT_JOYSTICK);
 process.on('exit', SDL.quit);
 
-SDL.setVideoMode(1024, 768, 32, 0);
-//SDL.setVideoMode(0,0,0, SDL.FULLSCREEN);
+//SDL.setVideoMode(1024, 768, 32, 0);
+SDL.setVideoMode(1024, 600,0,SDL.DOUBLEBUFFER);
 var width = SDL.getScreenWidth();
 var height = SDL.getScreenHeight();
 
@@ -70,6 +70,7 @@ var Spark = Pattern.extend({
   initialize: function (player) {
     rotate = (rotate + 7) % 360;
     this.colorName = player.colorName;
+    this.color = colors[player.colorName][Math.floor(Math.random()*3)];
     this.x = player.x;
     this.y = player.y;
     this.r = rotate / 180 * Math.PI;
@@ -77,11 +78,11 @@ var Spark = Pattern.extend({
     sparks.push(this);
   },
   tick: function (delta) {
-    this.d += delta * 0.1 + this.d / 10;
-    for (var a = 0; a < Math.PI * 2; a += Math.PI / 3) {
+    this.d += delta * 0.08 + this.d / 20;
+    for (var a = 0; a < Math.PI * 2; a += Math.PI / 7) {
       var px = Math.floor(this.x + this.d * Math.sin(a + this.r));
       var py = Math.floor(this.y + this.d * Math.cos(a + this.r));
-      SDL.fillRect(px - 3, py - 3, 6, 6, colors[this.colorName][2]);
+      SDL.fillRect(px - 3, py - 3, 6, 6, this.color);
     }
   },
   expire: function () {
