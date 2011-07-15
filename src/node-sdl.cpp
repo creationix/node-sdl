@@ -282,6 +282,12 @@ namespace node_sdl {
     return Undefined();
   }
 
+  static Handle<Value> JoystickOpened(const Arguments& args) {
+    HandleScope scope;
+    int i = (args[0]->Int32Value());
+    return Number::New(SDL_JoystickOpened(i));
+  }
+
   static Handle<Value> JoystickName(const Arguments& args) {
     HandleScope scope;
     int i = (args[0]->Int32Value());
@@ -330,6 +336,13 @@ namespace node_sdl {
     HandleScope scope;
     SDL_JoystickUpdate();
     return Undefined();
+  }
+
+  static Handle<Value> JoystickEventState(const Arguments& args) {
+    HandleScope scope;
+
+    int state = (args[0]->Int32Value());
+    return Number::New(SDL_JoystickEventState(state));
   }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -425,6 +438,7 @@ init(Handle<Object> target)
   target->Set(String::New("IGNORE"), Number::New(SDL_IGNORE));
   NODE_SET_METHOD(target, "numJoysticks", node_sdl::NumJoysticks);
   NODE_SET_METHOD(target, "joystickOpen", node_sdl::JoystickOpen);
+  NODE_SET_METHOD(target, "joystickOpened", node_sdl::JoystickOpened);
   NODE_SET_METHOD(target, "joystickName", node_sdl::JoystickName);
   NODE_SET_METHOD(target, "joystickNumAxes", node_sdl::JoystickNumAxes);
   NODE_SET_METHOD(target, "joystickNumButtons", node_sdl::JoystickNumButtons);
@@ -434,6 +448,7 @@ init(Handle<Object> target)
   NODE_SET_METHOD(target, "joystickGetButton", node_sdl::JoystickGetButton);
   NODE_SET_METHOD(target, "joystickGetHat", node_sdl::JoystickGetHat);
   NODE_SET_METHOD(target, "joystickUpdate", node_sdl::JoystickUpdate);
+  NODE_SET_METHOD(target, "joystickEventState", node_sdl::JoystickEventState);
 
   // EVENTS
   target->Set(String::New("ACTIVEEVENT"), Number::New(SDL_ACTIVEEVENT));
@@ -453,8 +468,13 @@ init(Handle<Object> target)
   target->Set(String::New("USEREVENT"), Number::New(SDL_USEREVENT));
   target->Set(String::New("NUMEVENTS"), Number::New(SDL_NUMEVENTS));
   target->Set(String::New("SYSWMEVENT"), Number::New(SDL_SYSWMEVENT));
+
   target->Set(String::New("PRESSED"), Number::New(SDL_PRESSED));
   target->Set(String::New("RELEASED"), Number::New(SDL_RELEASED));
+
+  target->Set(String::New("QUERY"), Number::New(SDL_QUERY));
+  target->Set(String::New("ENABLE"), Number::New(SDL_ENABLE));
+  target->Set(String::New("IGNORE"), Number::New(SDL_IGNORE));
   NODE_SET_METHOD(target, "waitEvent", node_sdl::WaitEvent);
 
 }
