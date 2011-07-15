@@ -398,10 +398,9 @@ namespace node_sdl {
 
     Local<Object> data = Object::New();
 
-
     switch (event.type) {
       case SDL_ACTIVEEVENT:
-        data->Set(String::New("type"), String::New("ACTIVE"));
+        data->Set(String::New("type"), String::New("ACTIVEEVENT"));
         if (event.active.state & SDL_APPMOUSEFOCUS)
           data->Set(String::New("MOUSEFOCUS"), Boolean::New(event.active.gain));
         if (event.active.state & SDL_APPINPUTFOCUS)
@@ -417,7 +416,51 @@ namespace node_sdl {
         data->Set(String::New("sym"), Number::New(event.key.keysym.sym));
         data->Set(String::New("mod"), Number::New(event.key.keysym.mod));
         break;
+      case SDL_MOUSEMOTION:
+        data->Set(String::New("type"), String::New("MOUSEMOTION"));
+        data->Set(String::New("state"), Number::New(event.motion.state));
+        data->Set(String::New("x"), Number::New(event.motion.x));
+        data->Set(String::New("y"), Number::New(event.motion.y));
+        data->Set(String::New("xrel"), Number::New(event.motion.xrel));
+        data->Set(String::New("yrel"), Number::New(event.motion.yrel));
+        break;
+      case SDL_MOUSEBUTTONDOWN:
+      case SDL_MOUSEBUTTONUP:
+        data->Set(String::New("type"), String::New(event.type == SDL_MOUSEBUTTONDOWN ? "MOUSEBUTTONDOWN" : "MOUSEBUTTONUP"));
+        data->Set(String::New("button"), Number::New(event.button.button));
+        data->Set(String::New("x"), Number::New(event.button.x));
+        data->Set(String::New("y"), Number::New(event.button.y));
+        break;
+      case SDL_JOYAXISMOTION:
+        data->Set(String::New("type"), String::New("JOYAXISMOTION"));
+        data->Set(String::New("which"), Number::New(event.jaxis.which));
+        data->Set(String::New("axis"), Number::New(event.jaxis.axis));
+        data->Set(String::New("value"), Number::New(event.jaxis.value));
+        break;
+      case SDL_JOYBALLMOTION:
+        data->Set(String::New("type"), String::New("JOYBALLMOTION"));
+        data->Set(String::New("which"), Number::New(event.jball.which));
+        data->Set(String::New("ball"), Number::New(event.jball.ball));
+        data->Set(String::New("xrel"), Number::New(event.jball.xrel));
+        data->Set(String::New("yrel"), Number::New(event.jball.yrel));
+        break;
+      case SDL_JOYHATMOTION:
+        data->Set(String::New("type"), String::New("JOYHATMOTION"));
+        data->Set(String::New("which"), Number::New(event.jhat.which));
+        data->Set(String::New("hat"), Number::New(event.jhat.hat));
+        data->Set(String::New("value"), Number::New(event.jhat.value));
+        break;
+      case SDL_JOYBUTTONDOWN:
+      case SDL_JOYBUTTONUP:
+        data->Set(String::New("type"), String::New(event.type == SDL_JOYBUTTONDOWN ? "JOYBUTTONDOWN" : "JOYBUTTONUP"));
+        data->Set(String::New("which"), Number::New(event.jbutton.which));
+        data->Set(String::New("button"), Number::New(event.jbutton.button));
+        break;
+      case SDL_QUIT:
+        data->Set(String::New("type"), String::New("QUIT"));
+        break;
       default:
+        data->Set(String::New("type"), String::New("UNKNOWN"));
         data->Set(String::New("typeCode"), Number::New(event.type));
         break;
     }
@@ -506,26 +549,9 @@ init(Handle<Object> target)
   NODE_SET_METHOD(target, "joystickEventState", node_sdl::JoystickEventState);
 
   // EVENTS
-  target->Set(String::New("ACTIVEEVENT"), Number::New(SDL_ACTIVEEVENT));
-  target->Set(String::New("KEYDOWN"), Number::New(SDL_KEYDOWN));
-  target->Set(String::New("KEYUP"), Number::New(SDL_KEYUP));
-  target->Set(String::New("MOUSEMOTION"), Number::New(SDL_MOUSEMOTION));
-  target->Set(String::New("MOUSEBUTTONDOWN"), Number::New(SDL_MOUSEBUTTONDOWN));
-  target->Set(String::New("MOUSEBUTTONUP"), Number::New(SDL_MOUSEBUTTONUP));
-  target->Set(String::New("JOYAXISMOTION"), Number::New(SDL_JOYAXISMOTION));
-  target->Set(String::New("JOYBALLMOTION"), Number::New(SDL_JOYBALLMOTION));
-  target->Set(String::New("SDL_JOYHATMOTION"), Number::New(SDL_JOYHATMOTION));
-  target->Set(String::New("JOYBUTTONDOWN"), Number::New(SDL_JOYBUTTONDOWN));
-  target->Set(String::New("JOYBUTTONUP"), Number::New(SDL_JOYBUTTONUP));
-  target->Set(String::New("VIDEORESIZE"), Number::New(SDL_VIDEORESIZE));
-  target->Set(String::New("VIDEOEXPOSE"), Number::New(SDL_VIDEOEXPOSE));
-  target->Set(String::New("QUIT"), Number::New(SDL_QUIT));
-  target->Set(String::New("USEREVENT"), Number::New(SDL_USEREVENT));
-  target->Set(String::New("NUMEVENTS"), Number::New(SDL_NUMEVENTS));
-  target->Set(String::New("SYSWMEVENT"), Number::New(SDL_SYSWMEVENT));
-
-  target->Set(String::New("PRESSED"), Number::New(SDL_PRESSED));
-  target->Set(String::New("RELEASED"), Number::New(SDL_RELEASED));
+  target->Set(String::New("BUTTON_LEFT"), Number::New(SDL_BUTTON_LEFT));
+  target->Set(String::New("BUTTON_MIDDLE"), Number::New(SDL_BUTTON_MIDDLE));
+  target->Set(String::New("BUTTON_RIGHT"), Number::New(SDL_BUTTON_RIGHT));
 
   target->Set(String::New("QUERY"), Number::New(SDL_QUERY));
   target->Set(String::New("ENABLE"), Number::New(SDL_ENABLE));
