@@ -123,14 +123,26 @@ setInterval(function () {
   SDL.flip();
 }, 10);
 
-function getEvent(evt) {
-  switch (evt.type) {
-    case "QUIT": process.exit(0);
-    case "JOYAXISMOTION":
-      var player = players[evt.which];
-      if (evt.axis === 0) player.jx = evt.value / 32768;
-      if (evt.axis === 1) player.jy = evt.value / 32768;
-      break;
+function getEvent() {
+  var evt;
+  while (evt = SDL.pollEvent()) {
+    console.dir(evt);
+    switch (evt.type) {
+      case "QUIT": process.exit(0);
+      case "MOUSEMOTION":
+        if (evt.state) {
+          var player = players[0];
+          player.x = evt.x;
+          player.y = evt.y;
+          new Spark(player)
+        }
+        break;
+      case "JOYAXISMOTION":
+        var player = players[evt.which];
+        if (evt.axis === 0) player.jx = evt.value / 32768;
+        if (evt.axis === 1) player.jy = evt.value / 32768;
+        break;
+    }
   }
   SDL.waitEvent(getEvent);
 }

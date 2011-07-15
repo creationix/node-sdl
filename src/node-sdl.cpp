@@ -393,13 +393,35 @@ namespace node_sdl {
   static int EIO_OnEvent(eio_req *req) {
     HandleScope scope;
 
+    Handle<Value> argv[0];
+
     callback_t *callback = (callback_t *) req->data;
     ev_unref(EV_DEFAULT_UC);
 
-    SDL_Event event;
-    SDL_PollEvent(&event);
+    callback->fn->Call(Context::GetCurrent()->Global(), 0, argv);
 
-    Handle<Value> argv[1];
+    callback->fn.Dispose();
+    free(callback);
+    return 0;
+  }
+
+  static Handle<Value> WaitEvent(const Arguments& args) {
+    HandleScope scope;
+
+    callback_t *callback = (callback_t*) malloc(sizeof(callback_t));
+    callback->fn = Persistent<Function>::New(Handle<Function>::Cast(args[0]));
+    eio_custom(EIO_WaitEvent, EIO_PRI_DEFAULT, EIO_OnEvent, callback);
+    ev_ref(EV_DEFAULT_UC);
+    return Undefined();
+  }
+
+  static Handle<Value> PollEvent(const Arguments& args) {
+    HandleScope scope;
+
+    SDL_Event event;
+    if (!SDL_PollEvent(&event)) {
+      return Undefined();
+    }
 
     Local<Object> data = Object::New();
 
@@ -465,24 +487,11 @@ namespace node_sdl {
         break;
     }
 
-    argv[0] = scope.Close(data);
-
-    callback->fn->Call(Context::GetCurrent()->Global(), 1, argv);
-
-    callback->fn.Dispose();
-    free(callback);
-    return 0;
+    return scope.Close(data);
   }
 
-  static Handle<Value> WaitEvent(const Arguments& args) {
-    HandleScope scope;
 
-    callback_t *callback = (callback_t*) malloc(sizeof(callback_t));
-    callback->fn = Persistent<Function>::New(Handle<Function>::Cast(args[0]));
-    eio_custom(EIO_WaitEvent, EIO_PRI_DEFAULT, EIO_OnEvent, callback);
-    ev_ref(EV_DEFAULT_UC);
-    return Undefined();
-  }
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -557,6 +566,7 @@ init(Handle<Object> target)
   target->Set(String::New("APPACTIVE"), Number::New(SDL_APPACTIVE));
 
   NODE_SET_METHOD(target, "waitEvent", node_sdl::WaitEvent);
+  NODE_SET_METHOD(target, "pollEvent", node_sdl::PollEvent);
   NODE_SET_METHOD(target, "getAppState", node_sdl::GetAppState);
   NODE_SET_METHOD(target, "getMouseState", node_sdl::GetMouseState);
 

@@ -9,9 +9,12 @@ SDL.joystickOpen(0);
 console.log("joystickEventState", SDL.joystickEventState());
 //SDL.joystickEventState(true);
 
-function getEvent(data) {
-  console.dir(data);
-  if (data.type === "QUIT") process.exit(0);
+function getEvent() {
+  var data;
+  while (data = SDL.pollEvent()) {
+    console.dir(data);
+    if (data.type === "QUIT") process.exit(0);
+  }
   SDL.waitEvent(getEvent);
 }
 SDL.waitEvent(getEvent);
