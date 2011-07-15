@@ -23,7 +23,7 @@ namespace node_sdl {
     }
     return Undefined();
   }
-  
+
   static Handle<Value> Quit(const Arguments& args) {
     HandleScope scope;
     SDL_Quit();
@@ -132,7 +132,7 @@ namespace node_sdl {
    */
   static Handle<Value> PutPixel(const Arguments& args) {
     HandleScope scope;
-    
+
     int x = (args[0]->Int32Value());
     int y = (args[1]->Int32Value());
     ::Uint32 pixel = (args[2]->Int32Value());
@@ -178,7 +178,7 @@ namespace node_sdl {
     HandleScope scope;
     int x = (args[0]->Int32Value());
     int y = (args[1]->Int32Value());
-    
+
       int bpp = screen->format->BytesPerPixel;
       /* Here p is the address to the pixel we want to retrieve */
       Uint8 *p = (Uint8 *)screen->pixels + y * screen->pitch + x * bpp;
@@ -219,7 +219,7 @@ namespace node_sdl {
     SDL_Flip (screen);
     return Undefined();
   }
-  
+
   static Handle<Value> FillRect(const Arguments& args) {
     HandleScope scope;
     SDL_Rect rect;
@@ -248,11 +248,11 @@ namespace node_sdl {
     }
     return Undefined();
   }
-  
+
 
 //  static Handle<Value> Clear(const Arguments& args) {
 //    HandleScope scope;
-//    SDL_FillRect (screen, NULL, 0); 
+//    SDL_FillRect (screen, NULL, 0);
 //    return Undefined();
 //  }
 
@@ -263,7 +263,7 @@ namespace node_sdl {
 ////////////////////////////////////////////////////////////////////////////////
 
   static SDL_Joystick *joy;
-  
+
   static Handle<Value> NumJoysticks(const Arguments& args) {
     HandleScope scope;
     return Number::New(SDL_NumJoysticks());
@@ -281,13 +281,13 @@ namespace node_sdl {
     }
     return Undefined();
   }
-  
+
   static Handle<Value> JoystickName(const Arguments& args) {
     HandleScope scope;
     int i = (args[0]->Int32Value());
     return String::New(SDL_JoystickName(i));
   }
-  
+
   static Handle<Value> JoystickNumAxes(const Arguments& args) {
     HandleScope scope;
     return Number::New(SDL_JoystickNumAxes(joy));
@@ -297,7 +297,7 @@ namespace node_sdl {
     HandleScope scope;
     return Number::New(SDL_JoystickNumButtons(joy));
   }
-  
+
   static Handle<Value> JoystickNumBalls(const Arguments& args) {
     HandleScope scope;
     return Number::New(SDL_JoystickNumBalls(joy));
@@ -333,7 +333,48 @@ namespace node_sdl {
   }
 
 ////////////////////////////////////////////////////////////////////////////////
- 
+//                                 EVENTS                                     //
+////////////////////////////////////////////////////////////////////////////////
+
+  static int EIO_WaitEvent(eio_req *req) {
+    SDL_WaitEvent(NULL);
+    return 0;
+  }
+
+  typedef struct { Persistent<Function> fn; } callback_t;
+
+  static int EIO_OnEvent(eio_req *req) {
+    HandleScope scope;
+
+    callback_t *callback = (callback_t *) req->data;
+    ev_unref(EV_DEFAULT_UC);
+
+    SDL_Event event;
+
+    SDL_PollEvent(&event);
+
+    Handle<Value> argv[1];
+    argv[0] = Number::New(event.type);
+
+    callback->fn->Call(Context::GetCurrent()->Global(), 1, argv);
+
+    callback->fn.Dispose();
+    free(callback);
+    return 0;
+  }
+
+  static Handle<Value> WaitEvent(const Arguments& args) {
+    HandleScope scope;
+
+    callback_t *callback = (callback_t*) malloc(sizeof(callback_t));
+    callback->fn = Persistent<Function>::New(Handle<Function>::Cast(args[0]));
+    eio_custom(EIO_WaitEvent, EIO_PRI_DEFAULT, EIO_OnEvent, callback);
+    ev_ref(EV_DEFAULT_UC);
+    return Undefined();
+  }
+
+////////////////////////////////////////////////////////////////////////////////
+
 }
 
 extern "C" void
@@ -377,7 +418,7 @@ init(Handle<Object> target)
   NODE_SET_METHOD(target, "flip", node_sdl::Flip);
   NODE_SET_METHOD(target, "fillRect", node_sdl::FillRect);
   NODE_SET_METHOD(target, "fill", node_sdl::Fill);
-  
+
   // JOYSTICK
   target->Set(String::New("QUERY"), Number::New(SDL_QUERY));
   target->Set(String::New("ENABLE"), Number::New(SDL_ENABLE));
@@ -393,7 +434,10 @@ init(Handle<Object> target)
   NODE_SET_METHOD(target, "joystickGetButton", node_sdl::JoystickGetButton);
   NODE_SET_METHOD(target, "joystickGetHat", node_sdl::JoystickGetHat);
   NODE_SET_METHOD(target, "joystickUpdate", node_sdl::JoystickUpdate);
-  
+
+  // EVENTS
+  NODE_SET_METHOD(target, "waitEvent", node_sdl::WaitEvent);
+
 }
 
 
