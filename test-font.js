@@ -4,12 +4,11 @@
   var TTF = SDL.TTF;
 
   SDL.init(SDL.INIT_VIDEO);
-  SDL.setVideoMode(1024,768,0,0);
+  SDL.setVideoMode(1024,768,0,SDL.FULLSCREEN);
   TTF.init()
   process.on('exit', SDL.quit);
 
   TTF.openFont("Jura-DemiBold.ttf", 20);
-
 
   var y = 10;
   var x = 10;
