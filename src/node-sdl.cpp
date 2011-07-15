@@ -346,6 +346,35 @@ namespace node_sdl {
   }
 
 ////////////////////////////////////////////////////////////////////////////////
+//                                APP STATE                                   //
+////////////////////////////////////////////////////////////////////////////////
+
+  static Handle<Value> GetAppState(const Arguments& args) {
+    HandleScope scope;
+    int appState = SDL_GetAppState();
+    Local<Object> result = Object::New();
+    result->Set(String::New("mouseFocus"), Boolean::New(appState & SDL_APPMOUSEFOCUS));
+    result->Set(String::New("inputFocus"), Boolean::New(appState & SDL_APPINPUTFOCUS));
+    result->Set(String::New("active"), Boolean::New(appState & SDL_APPACTIVE));
+    return scope.Close(result);
+  }
+
+// MOUSE
+
+  static Handle<Value> GetMouseState(const Arguments& args) {
+    HandleScope scope;
+    int x;
+    int y;
+    Uint8 buttonState = SDL_GetMouseState(&x, &y);
+    Local<Object> result = Object::New();
+    result->Set(String::New("x"), Number::New(x));
+    result->Set(String::New("y"), Number::New(y));
+    result->Set(String::New("buttonState"), Number::New(buttonState));
+    return scope.Close(result);
+  }
+
+
+////////////////////////////////////////////////////////////////////////////////
 //                                 EVENTS                                     //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -363,11 +392,37 @@ namespace node_sdl {
     ev_unref(EV_DEFAULT_UC);
 
     SDL_Event event;
-
     SDL_PollEvent(&event);
 
     Handle<Value> argv[1];
-    argv[0] = Number::New(event.type);
+
+    Local<Object> data = Object::New();
+
+
+    switch (event.type) {
+      case SDL_ACTIVEEVENT:
+        data->Set(String::New("type"), String::New("ACTIVE"));
+        if (event.active.state & SDL_APPMOUSEFOCUS)
+          data->Set(String::New("MOUSEFOCUS"), Boolean::New(event.active.gain));
+        if (event.active.state & SDL_APPINPUTFOCUS)
+          data->Set(String::New("INPUTFOCUS"), Boolean::New(event.active.gain));
+        if (event.active.state & SDL_APPACTIVE)
+          data->Set(String::New("ACTIVE"), Boolean::New(event.active.gain));
+        break;
+
+      case SDL_KEYDOWN:
+      case SDL_KEYUP:
+        data->Set(String::New("type"), String::New(event.type == SDL_KEYDOWN ? "KEYDOWN" : "KEYUP"));
+        data->Set(String::New("scancode"), Number::New(event.key.keysym.scancode));
+        data->Set(String::New("sym"), Number::New(event.key.keysym.sym));
+        data->Set(String::New("mod"), Number::New(event.key.keysym.mod));
+        break;
+      default:
+        data->Set(String::New("typeCode"), Number::New(event.type));
+        break;
+    }
+
+    argv[0] = scope.Close(data);
 
     callback->fn->Call(Context::GetCurrent()->Global(), 1, argv);
 
@@ -476,6 +531,8 @@ init(Handle<Object> target)
   target->Set(String::New("ENABLE"), Number::New(SDL_ENABLE));
   target->Set(String::New("IGNORE"), Number::New(SDL_IGNORE));
   NODE_SET_METHOD(target, "waitEvent", node_sdl::WaitEvent);
+  NODE_SET_METHOD(target, "getAppState", node_sdl::GetAppState);
+  NODE_SET_METHOD(target, "getMouseState", node_sdl::GetMouseState);
 
 }
 
