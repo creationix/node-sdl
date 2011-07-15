@@ -441,6 +441,7 @@ namespace node_sdl {
       case SDL_MOUSEMOTION:
         data->Set(String::New("type"), String::New("MOUSEMOTION"));
         data->Set(String::New("state"), Number::New(event.motion.state));
+        data->Set(String::New("which"), Number::New(event.motion.which));
         data->Set(String::New("x"), Number::New(event.motion.x));
         data->Set(String::New("y"), Number::New(event.motion.y));
         data->Set(String::New("xrel"), Number::New(event.motion.xrel));
@@ -450,6 +451,7 @@ namespace node_sdl {
       case SDL_MOUSEBUTTONUP:
         data->Set(String::New("type"), String::New(event.type == SDL_MOUSEBUTTONDOWN ? "MOUSEBUTTONDOWN" : "MOUSEBUTTONUP"));
         data->Set(String::New("button"), Number::New(event.button.button));
+        data->Set(String::New("which"), Number::New(event.button.which));
         data->Set(String::New("x"), Number::New(event.button.x));
         data->Set(String::New("y"), Number::New(event.button.y));
         break;

@@ -3,7 +3,7 @@ var SDL = require('./build/default/node-sdl');
 SDL.init(SDL.INIT_VIDEO | SDL.INIT_JOYSTICK);
 process.on('exit', SDL.quit);
 
-SDL.setVideoMode(1024, 600, 0, SDL.DOUBLEBUFFER);
+SDL.setVideoMode(0, 0, 0, SDL.DOUBLEBUFFER);
 var width = SDL.getScreenWidth();
 var height = SDL.getScreenHeight();
 
@@ -37,7 +37,7 @@ function Player(joystickIndex) {
   SDL.joystickOpen(joystickIndex);
   players[joystickIndex] = this;
   this.name = SDL.joystickName(this.joy);
-  var colorName = this.colorName = colorNames.pop();
+  var colorName = this.colorName = colorNames[joystickIndex % colorNames.length];
   var angle = 2 * Math.PI / numPlayers * joystickIndex;
   this.x = Math.floor(Math.sin(angle) * 50 * (numPlayers - 1)) + width / 2;
   this.y = Math.floor(Math.cos(angle) * 50 * (numPlayers - 1)) + height / 2;
@@ -72,15 +72,15 @@ function Spark(player) {
   sparks.push(this);
 }
 Spark.prototype.tick =  function (delta) {
-  this.d += delta * 0.08 + this.d / 20;
-  for (var a = 0; a < Math.PI * 2; a += Math.PI / 7) {
+  this.d += delta * 0.1 + this.d / 10;
+  for (var a = 0; a < Math.PI * 2; a += Math.PI / 3) {
     var px = Math.floor(this.x + this.d * Math.sin(a + this.r));
     var py = Math.floor(this.y + this.d * Math.cos(a + this.r));
-    SDL.fillRect(px - 3, py - 3, 6, 6, this.color);
+    SDL.fillRect(px - 5, py - 5, 10, 10, this.color);
   }
 };
 Spark.prototype.expire = function () {
-  if (this.d > 400) {
+  if (this.d > 200) {
     sparks.splice(sparks.indexOf(this), 1);
   }
 };
@@ -126,21 +126,21 @@ setInterval(function () {
 function getEvent() {
   var evt;
   while (evt = SDL.pollEvent()) {
-    console.dir(evt);
     switch (evt.type) {
       case "QUIT": process.exit(0);
       case "MOUSEMOTION":
         if (evt.state) {
-          var player = players[0];
-          player.x = evt.x;
-          player.y = evt.y;
-          new Spark(player)
+          new Spark({
+            x: evt.x,
+            y: evt.y,
+            colorName: colorNames[(evt.which + numPlayers) % colorNames.length]
+          });
         }
         break;
       case "JOYAXISMOTION":
         var player = players[evt.which];
-        if (evt.axis === 0) player.jx = evt.value / 32768;
-        if (evt.axis === 1) player.jy = evt.value / 32768;
+        if (evt.axis === 1) player.jx = evt.value / 32768;
+        if (evt.axis === 0) player.jy = -evt.value / 32768;
         break;
     }
   }
