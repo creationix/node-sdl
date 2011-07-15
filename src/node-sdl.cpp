@@ -1,6 +1,8 @@
 #include <v8.h>
 #include <node.h>
 #include <SDL.h>
+#include <SDL_ttf.h>
+
 
 using namespace v8;
 using namespace node;
@@ -497,6 +499,79 @@ namespace node_sdl {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+  namespace TTF {
+
+    static TTF_Font* font;
+
+    static Handle<Value> Init(const Arguments& args) {
+      HandleScope scope;
+      printf("TTF::Init()\n");
+      if (TTF_Init() < 0) {
+        return ThrowException(Exception::Error(String::Concat(
+          String::New("TTF::Init: "),
+          String::New(TTF_GetError())
+        )));
+      }
+      return Undefined();
+    }
+
+    static Handle<Value> OpenFont(const Arguments& args) {
+      HandleScope scope;
+      
+      String::Utf8Value file(args[0]);
+      int ptsize = (args[1]->Int32Value());
+
+      font = TTF_OpenFont(*file, ptsize);
+      if (font == NULL) {
+        return ThrowException(Exception::Error(String::Concat(
+          String::New("TTF::OpenFont: "),
+          String::New(TTF_GetError())
+        )));
+      }
+      return Undefined();
+    }
+
+    static Handle<Value> RenderTextBlended(const Arguments& args) {
+      HandleScope scope;
+      String::Utf8Value text(args[0]);
+      int x = args[1]->Int32Value();
+      int y = args[2]->Int32Value();
+      int colorCode = args[3]->Int32Value();
+      
+      
+      Uint8 r, g, b;
+      SDL_GetRGB(colorCode, screen->format, &r, &g, &b);
+      
+      SDL_Color color;
+      color.r = r;
+      color.g = g;
+      color.b = b;
+
+      SDL_Surface *resulting_text;
+      resulting_text = TTF_RenderText_Blended(font, *text, color);
+      if (!resulting_text) {
+        return ThrowException(Exception::Error(String::Concat(
+          String::New("TTF::RenderTextBlended: "),
+          String::New(TTF_GetError())
+        )));
+      }
+
+      SDL_Rect destRect;
+      destRect.x = x;
+      destRect.y = y;
+      
+      int result = SDL_BlitSurface(resulting_text, NULL, screen, &destRect);
+      if (result < 0) {
+        return ThrowException(Exception::Error(String::Concat(
+          String::New("TTF::RenderTextBlended: "),
+          String::New(SDL_GetError())
+        )));
+      }
+      return Undefined();
+    }
+
+  }
+
 }
 
 extern "C" void
@@ -571,6 +646,12 @@ init(Handle<Object> target)
   NODE_SET_METHOD(target, "pollEvent", node_sdl::PollEvent);
   NODE_SET_METHOD(target, "getAppState", node_sdl::GetAppState);
   NODE_SET_METHOD(target, "getMouseState", node_sdl::GetMouseState);
+  
+  Handle<Object> TTF = Object::New();
+  target->Set(String::New("TTF"), TTF);
+  NODE_SET_METHOD(TTF, "init", node_sdl::TTF::Init);
+  NODE_SET_METHOD(TTF, "openFont", node_sdl::TTF::OpenFont);
+  NODE_SET_METHOD(TTF, "renderTextBlended", node_sdl::TTF::RenderTextBlended);
 
 }
 

@@ -33,5 +33,6 @@ def build(bld):
   obj = bld.new_task_gen('cxx', 'shlib', 'node_addon')
   obj.target = "node-sdl"
   obj.cxxflags = ["-pthread", "-Wall"]
+  obj.linkflags = ["-lSDL_ttf"]
   obj.source = "src/node-sdl.cpp"
   obj.uselib = "SDL"
