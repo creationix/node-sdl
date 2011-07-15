@@ -3,7 +3,7 @@ var SDL = require('./build/default/node-sdl');
 SDL.init(SDL.INIT_VIDEO | SDL.INIT_JOYSTICK);
 process.on('exit', SDL.quit);
 
-SDL.setVideoMode(0, 0, 0, SDL.DOUBLEBUFFER);
+SDL.setVideoMode(0, 0, 0, SDL.DOUBLEBUFFER|SDL.FULLSCREEN);
 var width = SDL.getScreenWidth();
 var height = SDL.getScreenHeight();
 
@@ -36,7 +36,7 @@ shuffle(colorNames);
 function Player(joystickIndex) {
   SDL.joystickOpen(joystickIndex);
   players[joystickIndex] = this;
-  this.name = SDL.joystickName(this.joy);
+  this.name = SDL.joystickName(joystickIndex);
   var colorName = this.colorName = colorNames[joystickIndex % colorNames.length];
   var angle = 2 * Math.PI / numPlayers * joystickIndex;
   this.x = Math.floor(Math.sin(angle) * 50 * (numPlayers - 1)) + width / 2;
@@ -128,6 +128,11 @@ function getEvent() {
   while (evt = SDL.pollEvent()) {
     switch (evt.type) {
       case "QUIT": process.exit(0);
+      case "KEYDOWN":
+        if (evt.sym === 27) { //ESC
+	  process.exit(0);
+	}
+	break;
       case "MOUSEMOTION":
         if (evt.state) {
           new Spark({
@@ -139,9 +144,10 @@ function getEvent() {
         break;
       case "JOYAXISMOTION":
         var player = players[evt.which];
-        if (evt.axis === 1) player.jx = evt.value / 32768;
-        if (evt.axis === 0) player.jy = -evt.value / 32768;
+        if (evt.axis === 0) player.jx = evt.value / 32768;
+        if (evt.axis === 1) player.jy = evt.value / 32768;
         break;
+
     }
   }
   SDL.waitEvent(getEvent);
