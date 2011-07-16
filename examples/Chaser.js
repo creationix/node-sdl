@@ -1,4 +1,4 @@
-var SDL = require('./build/default/node-sdl');
+var SDL = require('../sdl');
 
 SDL.init(SDL.INIT.VIDEO | SDL.INIT.JOYSTICK);
 process.on('exit', function () { SDL.quit(); });
@@ -121,37 +121,24 @@ setInterval(function () {
   SDL.flip(screen);
 }, 10);
 
-function getEvent() {
-  var evt;
-  while (evt = SDL.pollEvent()) {
-    switch (evt.type) {
-      case "KEYDOWN":
-        if (evt.sym === 99 && evt.mod === 64) process.exit(0); // Control+C
-        if (evt.sym === 27 && evt.mod === 0) process.exit(0);  // ESC
-        break;
-      case "QUIT":
-        process.exit(0);
-        break;
-      case "MOUSEMOTION":
-        if (evt.state) {
-          new Spark({
-            x: evt.x,
-            y: evt.y,
-            colorName: colorNames[(evt.which + numPlayers) % colorNames.length]
-          });
-        }
-        break;
-      case "JOYAXISMOTION":
-        var player = players[evt.which];
-        if (evt.axis === 0) player.jx = evt.value / 32768;
-        if (evt.axis === 1) player.jy = evt.value / 32768;
-        break;
-
-    }
+SDL.events.on("QUIT", function (evt) { process.exit(0); }); // Window close
+SDL.events.on("KEYDOWN", function (evt) {
+  if (evt.sym === 99 && evt.mod === 64) process.exit(0); // Control+C
+  if (evt.sym === 27 && evt.mod === 0) process.exit(0);  // ESC
+});
+SDL.events.on("MOUSEMOTION", function (evt) {
+  if (evt.state) {
+    new Spark({
+      x: evt.x,
+      y: evt.y,
+      colorName: colorNames[(evt.which + numPlayers) % colorNames.length]
+    });
   }
-  SDL.waitEvent(getEvent);
-}
-SDL.waitEvent(getEvent);
-
+});
+SDL.events.on("JOYAXISMOTION", function (evt) {
+  var player = players[evt.which];
+  if (evt.axis === 0) player.jx = evt.value / 32768;
+  if (evt.axis === 1) player.jy = evt.value / 32768;
+});
 
 

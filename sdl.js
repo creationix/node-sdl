@@ -1,0 +1,23 @@
+var SDL = module.exports = require('./build/default/node-sdl.node');
+
+// Easy event emitter based event loop.  Started automatically when the first
+// listener is added.
+var events;
+Object.defineProperty(SDL, 'events', {
+  get: function () {
+    if (events) return events;
+    events = new (require('events').EventEmitter);
+    function getEvent(err) {
+      if (err) events.emit('error', err);
+      var data;
+      while (data = SDL.pollEvent()) {
+        events.emit(data.type, data);
+        events.emit("event", data);
+      }
+      SDL.waitEvent(getEvent);
+    }
+    SDL.waitEvent(getEvent);
+    return events;
+  }
+});
+

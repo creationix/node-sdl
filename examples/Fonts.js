@@ -10,7 +10,7 @@ var colors = [
 ];
 
 
-var SDL = require('./sdl');
+var SDL = require('../sdl');
 var TTF = SDL.TTF;
 
 SDL.init(SDL.INIT.VIDEO);
@@ -34,20 +34,9 @@ setInterval(function () {
   SDL.flip(screen);  
 }, 15);
 
-var events = new (require('events').EventEmitter);
-function getEvent(err) {
-  if (err) events.emit('error', err);
-  var data;
-  while (data = SDL.pollEvent()) {
-    events.emit(data.type, data);
-    events.emit("event", data);
-  }
-  SDL.waitEvent(getEvent);
-}
-SDL.waitEvent(getEvent);
-
-events.on("QUIT", function (evt) { process.exit(0); }); // Window close
-events.on("KEYDOWN", function (evt) {
+SDL.events.on("QUIT", function (evt) { process.exit(0); }); // Window close
+SDL.events.on("KEYDOWN", function (evt) {
   if (evt.sym === 99 && evt.mod === 64) process.exit(0); // Control+C
   if (evt.sym === 27 && evt.mod === 0) process.exit(0);  // ESC
 });
+
