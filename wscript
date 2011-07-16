@@ -35,5 +35,5 @@ def build(bld):
   obj.cxxflags = ["-pthread", "-Wall"]
   obj.linkflags = ["-lSDL_ttf"]
   obj.includes = ["/home/tim/include", "/home/tim/include/SDL"]
-  obj.source = "src/node-sdl.cpp"
+  obj.source = ["src/sdl.cc", "src/helpers.cc"]
   obj.uselib = "SDL"

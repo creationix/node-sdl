@@ -1,11 +1,9 @@
 var SDL = require('./build/default/node-sdl');
 
-SDL.init(SDL.INIT_VIDEO | SDL.INIT_JOYSTICK);
-process.on('exit', SDL.quit);
+SDL.init(SDL.INIT.VIDEO | SDL.INIT.JOYSTICK);
+process.on('exit', function () { SDL.quit(); });
 
-SDL.setVideoMode(0, 0, 0, SDL.DOUBLEBUFFER|SDL.FULLSCREEN);
-var width = SDL.getScreenWidth();
-var height = SDL.getScreenHeight();
+var screen = SDL.setVideoMode(0, 0, 0, SDL.SURFACE.FULLSCREEN);
 
 var numPlayers = SDL.numJoysticks();
 
@@ -39,8 +37,8 @@ function Player(joystickIndex) {
   this.name = SDL.joystickName(joystickIndex);
   var colorName = this.colorName = colorNames[joystickIndex % colorNames.length];
   var angle = 2 * Math.PI / numPlayers * joystickIndex;
-  this.x = Math.floor(Math.sin(angle) * 50 * (numPlayers - 1)) + width / 2;
-  this.y = Math.floor(Math.cos(angle) * 50 * (numPlayers - 1)) + height / 2;
+  this.x = Math.floor(Math.sin(angle) * 50 * (numPlayers - 1)) + screen.w / 2;
+  this.y = Math.floor(Math.cos(angle) * 50 * (numPlayers - 1)) + screen.h / 2;
   this.jx = 0; this.jy = 0;
   this.speed = 0.3;
   console.log("New %s player using %s", colorName[0].toUpperCase() + colorName.substr(1), this.name);
@@ -50,14 +48,14 @@ Player.prototype.tick = function (delta) {
   this.y += this.jy * delta * this.speed;
   if (this.x < 10) this.x = 10;
   if (this.y < 10) this.y = 10;
-  if (this.x > width - 10) this.x = width - 10;
-  if (this.y > height - 10) this.y = height - 10;
+  if (this.x > screen.w - 10) this.x = screen.w - 10;
+  if (this.y > screen.h - 10) this.y = screen.h - 10;
   
   var px = Math.floor(this.x);
   var py = Math.floor(this.y);
-  SDL.fillRect(px - 10, py - 10, 20, 20, colors[this.colorName][0]);
-  SDL.fillRect(px - 8, py - 8, 16, 16, colors[this.colorName][2]);
-  SDL.fillRect(px - 4, py - 4, 8, 8, colors[this.colorName][1]);
+  SDL.fillRect(screen, px - 10, py - 10, 20, 20, colors[this.colorName][0]);
+  SDL.fillRect(screen, px - 8, py - 8, 16, 16, colors[this.colorName][2]);
+  SDL.fillRect(screen, px - 4, py - 4, 8, 8, colors[this.colorName][1]);
 };
 
 var rotate = 0;
@@ -76,7 +74,7 @@ Spark.prototype.tick =  function (delta) {
   for (var a = 0; a < Math.PI * 2; a += Math.PI / 3) {
     var px = Math.floor(this.x + this.d * Math.sin(a + this.r));
     var py = Math.floor(this.y + this.d * Math.cos(a + this.r));
-    SDL.fillRect(px - 5, py - 5, 10, 10, this.color);
+    SDL.fillRect(screen, px - 5, py - 5, 10, 10, this.color);
   }
 };
 Spark.prototype.expire = function () {
@@ -108,7 +106,7 @@ setInterval(function () {
       }
     }
   }
-  SDL.fill();
+  SDL.fillRect(screen, null, 0);
   // Run physics and controls
   for (var i = 0; i < numPlayers; i++) {
     players[i].tick(delta);
@@ -120,7 +118,7 @@ setInterval(function () {
   sparks.forEach(function (spark) { spark.expire(); });  
   
   
-  SDL.flip();
+  SDL.flip(screen);
 }, 10);
 
 function getEvent() {
@@ -128,7 +126,9 @@ function getEvent() {
   while (evt = SDL.pollEvent()) {
     switch (evt.type) {
       case "KEYDOWN":
-        if (evt.sym !== 27) break;
+        if (evt.sym === 99 && evt.mod === 64) process.exit(0); // Control+C
+        if (evt.sym === 27 && evt.mod === 0) process.exit(0);  // ESC
+        break;
       case "QUIT":
         process.exit(0);
         break;
