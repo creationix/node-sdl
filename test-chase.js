@@ -127,12 +127,11 @@ function getEvent() {
   var evt;
   while (evt = SDL.pollEvent()) {
     switch (evt.type) {
-      case "QUIT": process.exit(0);
       case "KEYDOWN":
-        if (evt.sym === 27) { //ESC
-	  process.exit(0);
-	}
-	break;
+        if (evt.sym !== 27) break;
+      case "QUIT":
+        process.exit(0);
+        break;
       case "MOUSEMOTION":
         if (evt.state) {
           new Spark({
