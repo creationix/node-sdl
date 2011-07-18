@@ -491,20 +491,54 @@ static Handle<Value> sdl::BlitSurface(const Arguments& args) {
 
   if (!(args.Length() == 4
         && args[0]->IsObject()
-        && args[1]->IsObject()
+        && (args[1]->IsObject() || args[1]->IsNull())
         && args[2]->IsObject()
-        && args[3]->IsObject()
+        && (args[3]->IsObject() || args[3]->IsNull())
   )) {
     return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected BlitSurface(Surface, Rect, Surface, Rect)")));
   }
 
   SDL_Surface* src = UnwrapSurface(args[0]->ToObject());
-  SDL_Rect* srcrect = UnwrapRect(args[1]->ToObject());
   SDL_Surface* dst = UnwrapSurface(args[2]->ToObject());
-  SDL_Rect* dstrect = UnwrapRect(args[3]->ToObject());
+
+  SDL_Rect* srcrect;
+  if (args[1]->IsNull()) {
+    srcrect = NULL;
+  } else if (args[1]->IsArray()) {
+    SDL_Rect rect;
+    Handle<Object> arr = args[1]->ToObject();
+    rect.x = arr->Get(String::New("0"))->Int32Value();
+    rect.y = arr->Get(String::New("1"))->Int32Value();
+    rect.w = arr->Get(String::New("2"))->Int32Value();
+    rect.h = arr->Get(String::New("3"))->Int32Value();
+    srcrect = &rect;
+  } else {
+    srcrect = UnwrapRect(args[1]->ToObject());
+  }
+
+  SDL_Rect* dstrect;
+  if (args[3]->IsNull()) {
+    dstrect = NULL;
+  } else if (args[3]->IsArray()) {
+    SDL_Rect rect;
+    Handle<Object> arr = args[3]->ToObject();
+    rect.x = arr->Get(String::New("0"))->Int32Value();
+    rect.y = arr->Get(String::New("1"))->Int32Value();
+    rect.w = arr->Get(String::New("2"))->Int32Value();
+    rect.h = arr->Get(String::New("3"))->Int32Value();
+    dstrect = &rect;
+  } else {
+    dstrect = UnwrapRect(args[3]->ToObject());
+  }
+
+  if (srcrect) printf("srcrect = {x: %d, y: %d, w: %d, h: %d}\n", srcrect->x, srcrect->y, srcrect->w, srcrect->h);
+  else printf("srcrect = null\n");
+  if (dstrect) printf("dstrect = {x: %d, y: %d, w: %d, h: %d}\n", dstrect->x, dstrect->y, dstrect->w, dstrect->h);
+  else printf("dstrect = null\n");
+
 
   if (SDL_BlitSurface(src, srcrect, dst, dstrect) < 0) return ThrowSDLException(__func__);
-  return scope.Close(WrapRect(dstrect));
+  return Undefined();
 }
 
 static Handle<Value> sdl::FreeSurface(const Arguments& args) {
