@@ -455,15 +455,29 @@ static Handle<Value> sdl::Flip(const Arguments& args) {
 static Handle<Value> sdl::FillRect(const Arguments& args) {
   HandleScope scope;
 
-  if (!
-    ((args.Length() == 3 && args[0]->IsObject() && (args[1]->IsObject() || args[1]->IsNull()) && args[2]->IsNumber()) ||
-    (args.Length() == 6 && args[0]->IsObject() && args[1]->IsNumber() && args[2]->IsNumber() && args[3]->IsNumber() && args[4]->IsNumber() && args[5]->IsNumber()))
-  ) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected FillRect(Surface, Rect, Number) or (Surface, Number, Number, Number, Number, Number)")));
+  if (!(args.Length() == 3
+      && args[0]->IsObject()
+      && (args[1]->IsObject() || args[1]->IsNull())
+      && args[2]->IsNumber()
+  )) {
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected FillRect(Surface, Rect, Number)")));
   }
 
   SDL_Surface* surface = UnwrapSurface(args[0]->ToObject());
-  SDL_Rect* rect = UnwrapRect(args[1]->ToObject());
+  SDL_Rect* rect;
+  if (args[1]->IsNull()) {
+    rect = NULL;
+  } else if (args[1]->IsArray()) {
+    SDL_Rect r;
+    Handle<Object> arr = args[1]->ToObject();
+    r.x = arr->Get(String::New("0"))->Int32Value();
+    r.y = arr->Get(String::New("1"))->Int32Value();
+    r.w = arr->Get(String::New("2"))->Int32Value();
+    r.h = arr->Get(String::New("3"))->Int32Value();
+    rect = &r;
+  } else {
+    rect = UnwrapRect(args[1]->ToObject());
+  }
   int color = args[2]->Int32Value();
 
   if (SDL_FillRect (surface, rect, color) < 0) return ThrowSDLException(__func__);
@@ -474,12 +488,28 @@ static Handle<Value> sdl::FillRect(const Arguments& args) {
 static Handle<Value> sdl::UpdateRect(const Arguments& args) {
   HandleScope scope;
 
-  if (!(args.Length() == 2 && args[0]->IsObject() && args[1]->IsObject())) {
+  if (!(args.Length() == 2
+      && args[0]->IsObject()
+      && (args[1]->IsObject() || args[1]->IsNull())
+  )) {
     return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected UpdateRect(Surface, Rect)")));
   }
 
   SDL_Surface* surface = UnwrapSurface(args[0]->ToObject());
-  SDL_Rect* rect = UnwrapRect(args[1]->ToObject());
+  SDL_Rect* rect;
+  if (args[1]->IsNull()) {
+    rect = NULL;
+  } else if (args[1]->IsArray()) {
+    SDL_Rect r;
+    Handle<Object> arr = args[1]->ToObject();
+    r.x = arr->Get(String::New("0"))->Int32Value();
+    r.y = arr->Get(String::New("1"))->Int32Value();
+    r.w = arr->Get(String::New("2"))->Int32Value();
+    r.h = arr->Get(String::New("3"))->Int32Value();
+    rect = &r;
+  } else {
+    rect = UnwrapRect(args[1]->ToObject());
+  }
 
   SDL_UpdateRect(surface, rect->x, rect->y, rect->w, rect->h);
 

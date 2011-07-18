@@ -30,7 +30,9 @@ setInterval(function () {
   now = after;
   SDL.fillRect(screen, null, 0);
   var message = (Math.floor(100000 / delta) / 100) + "fps";
-  TTF.renderTextBlended(screen, font, message, 10, 10, 0xffffff);
+  var s = TTF.renderTextBlended(screen, font, message, 0xffffff);
+  SDL.blitSurface(s, null, screen, [10, 10]);
+  SDL.freeSurface(s);
   SDL.flip(screen);  
 }, 15);
 

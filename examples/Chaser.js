@@ -53,9 +53,9 @@ Player.prototype.tick = function (delta) {
   
   var px = Math.floor(this.x);
   var py = Math.floor(this.y);
-  SDL.fillRect(screen, px - 10, py - 10, 20, 20, colors[this.colorName][0]);
-  SDL.fillRect(screen, px - 8, py - 8, 16, 16, colors[this.colorName][2]);
-  SDL.fillRect(screen, px - 4, py - 4, 8, 8, colors[this.colorName][1]);
+  SDL.fillRect(screen, [px - 10, py - 10, 20, 20], colors[this.colorName][0]);
+  SDL.fillRect(screen, [px - 8, py - 8, 16, 16], colors[this.colorName][2]);
+  SDL.fillRect(screen, [px - 4, py - 4, 8, 8], colors[this.colorName][1]);
 };
 
 var rotate = 0;
@@ -74,7 +74,7 @@ Spark.prototype.tick =  function (delta) {
   for (var a = 0; a < Math.PI * 2; a += Math.PI / 3) {
     var px = Math.floor(this.x + this.d * Math.sin(a + this.r));
     var py = Math.floor(this.y + this.d * Math.cos(a + this.r));
-    SDL.fillRect(screen, px - 5, py - 5, 10, 10, this.color);
+    SDL.fillRect(screen, [px - 5, py - 5, 10, 10], this.color);
   }
 };
 Spark.prototype.expire = function () {
