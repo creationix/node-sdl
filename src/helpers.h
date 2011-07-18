@@ -13,16 +13,20 @@ namespace sdl {
   // Error reporting helpers
   Handle<Value> ThrowSDLException(const char* name);
   Local<Value> MakeSDLException(const char* name);
-  
+
   // Wrapper and Unwrappers
   Handle<Object> WrapSurface(SDL_Surface* surface);
   SDL_Surface* UnwrapSurface(Handle<Object> obj);
+
   Handle<Object> WrapRect(SDL_Rect* rect);
   SDL_Rect* UnwrapRect(Handle<Object> obj);
+
   Handle<Object> WrapPixelFormat(SDL_PixelFormat* pixelformat);
   SDL_PixelFormat* UnwrapPixelFormat(Handle<Object> obj);
+
   Handle<Object> WrapJoystick(SDL_Joystick* joystick);
   SDL_Joystick* UnwrapJoystick(Handle<Object> obj);
+
   Handle<Object> WrapFont(TTF_Font* font);
   TTF_Font* UnwrapFont(Handle<Object> obj);
 

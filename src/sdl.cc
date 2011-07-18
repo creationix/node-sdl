@@ -32,6 +32,8 @@ init(Handle<Object> target)
   NODE_SET_METHOD(target, "flip", sdl::Flip);
   NODE_SET_METHOD(target, "fillRect", sdl::FillRect);
   NODE_SET_METHOD(target, "updateRect", sdl::UpdateRect);
+  NODE_SET_METHOD(target, "blitSurface", sdl::BlitSurface);
+  NODE_SET_METHOD(target, "freeSurface", sdl::FreeSurface);
 
   Local<Object> INIT = Object::New();
   target->Set(String::New("INIT"), INIT);
@@ -41,7 +43,7 @@ init(Handle<Object> target)
   INIT->Set(String::New("JOYSTICK"), Number::New(SDL_INIT_JOYSTICK));
   INIT->Set(String::New("EVERYTHING"), Number::New(SDL_INIT_EVERYTHING));
   INIT->Set(String::New("NOPARACHUTE"), Number::New(SDL_INIT_NOPARACHUTE));
-  
+
   Local<Object> SURFACE = Object::New();
   target->Set(String::New("SURFACE"), SURFACE);
   SURFACE->Set(String::New("ANYFORMAT"), Number::New(SDL_ANYFORMAT));
@@ -58,12 +60,12 @@ init(Handle<Object> target)
   SURFACE->Set(String::New("SRCCOLORKEY"), Number::New(SDL_SRCCOLORKEY));
   SURFACE->Set(String::New("SWSURFACE"), Number::New(SDL_SWSURFACE));
   SURFACE->Set(String::New("PREALLOC"), Number::New(SDL_PREALLOC));
-  
+
   Local<Object> TTF = Object::New();
   target->Set(String::New("TTF"), TTF);
   NODE_SET_METHOD(TTF, "init", sdl::TTF::Init);
   NODE_SET_METHOD(TTF, "openFont", sdl::TTF::OpenFont);
-  NODE_SET_METHOD(TTF, "renderTextBlended", sdl::TTF::RenderTextBlended);    
+  NODE_SET_METHOD(TTF, "renderTextBlended", sdl::TTF::RenderTextBlended);
 
 }
 
@@ -121,8 +123,8 @@ Handle<Value> sdl::WasInit(const Arguments& args) {
   if (!(args.Length() == 1 && args[0]->IsNumber())) {
     return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected WasInit(Number)")));
   }
-  
-  return Number::New(SDL_WasInit(args[0]->Int32Value()));  
+
+  return Number::New(SDL_WasInit(args[0]->Int32Value()));
 }
 
 Handle<Value> sdl::ClearError(const Arguments& args) {
@@ -153,9 +155,9 @@ Handle<Value> sdl::SetError(const Arguments& args) {
   if (!(args.Length() == 1 && args[0]->IsString())) {
     return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected SetError(String)")));
   }
-  
+
   String::Utf8Value message(args[1]);
-  
+
   SDL_SetError(*message);
 
   return Undefined();
@@ -179,7 +181,7 @@ static int sdl::EIO_OnEvent(eio_req *req) {
   } else {
     argv[0] = Undefined();
   }
-  
+
   closure->fn->Call(Context::GetCurrent()->Global(), 1, argv);
 
   closure->fn.Dispose();
@@ -355,7 +357,7 @@ static Handle<Value> sdl::JoystickName(const Arguments& args) {
   if (!(args.Length() == 1 && args[0]->IsNumber())) {
     return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected JoystickName(Number)")));
   }
-  
+
   return String::New(SDL_JoystickName(args[0]->Int32Value()));
 }
 
@@ -365,7 +367,7 @@ static Handle<Value> sdl::JoystickNumAxes(const Arguments& args) {
   if (!(args.Length() == 1 && args[0]->IsObject())) {
     return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected JoystickNumAxes(Joystick)")));
   }
-  
+
   return Number::New(SDL_JoystickNumAxes(UnwrapJoystick(args[0]->ToObject())));
 }
 
@@ -375,7 +377,7 @@ static Handle<Value> sdl::JoystickNumButtons(const Arguments& args) {
   if (!(args.Length() == 1 && args[0]->IsObject())) {
     return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected JoystickNumButtons(Joystick)")));
   }
-  
+
   return Number::New(SDL_JoystickNumButtons(UnwrapJoystick(args[0]->ToObject())));
 }
 
@@ -385,7 +387,7 @@ static Handle<Value> sdl::JoystickNumBalls(const Arguments& args) {
   if (!(args.Length() == 1 && args[0]->IsObject())) {
     return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected JoystickNumBalls(Joystick)")));
   }
-  
+
   return Number::New(SDL_JoystickNumBalls(UnwrapJoystick(args[0]->ToObject())));
 }
 
@@ -395,7 +397,7 @@ static Handle<Value> sdl::JoystickNumHats(const Arguments& args) {
   if (!(args.Length() == 1 && args[0]->IsObject())) {
     return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected JoystickNumHats(Joystick)")));
   }
-  
+
   return Number::New(SDL_JoystickNumHats(UnwrapJoystick(args[0]->ToObject())));
 }
 
@@ -405,7 +407,7 @@ static Handle<Value> sdl::JoystickClose(const Arguments& args) {
   if (!(args.Length() == 1 && args[0]->IsObject())) {
     return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected JoystickClose(Joystick)")));
   }
-  
+
   SDL_JoystickClose(UnwrapJoystick(args[0]->ToObject()));
 
   return Undefined();
@@ -446,7 +448,7 @@ static Handle<Value> sdl::Flip(const Arguments& args) {
   }
 
   SDL_Flip(UnwrapSurface(args[0]->ToObject()));
-  
+
   return Undefined();
 }
 
@@ -459,22 +461,10 @@ static Handle<Value> sdl::FillRect(const Arguments& args) {
   ) {
     return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected FillRect(Surface, Rect, Number) or (Surface, Number, Number, Number, Number, Number)")));
   }
-  
+
   SDL_Surface* surface = UnwrapSurface(args[0]->ToObject());
-  SDL_Rect* rect;
-  int color;
-  if (args.Length() == 6) {
-    SDL_Rect r;
-    r.x = args[1]->Int32Value();
-    r.y = args[2]->Int32Value();
-    r.w = args[3]->Int32Value();
-    r.h = args[4]->Int32Value();
-    rect = &r;
-    color = args[5]->Int32Value();
-  } else {
-    rect = args[1]->IsNull() ? NULL : UnwrapRect(args[1]->ToObject());
-    color = args[2]->Int32Value();
-  }
+  SDL_Rect* rect = UnwrapRect(args[1]->ToObject());
+  int color = args[2]->Int32Value();
 
   if (SDL_FillRect (surface, rect, color) < 0) return ThrowSDLException(__func__);
 
@@ -489,13 +479,47 @@ static Handle<Value> sdl::UpdateRect(const Arguments& args) {
   }
 
   SDL_Surface* surface = UnwrapSurface(args[0]->ToObject());
-  SDL_Rect* rect = UnwrapRect(args[0]->ToObject());
+  SDL_Rect* rect = UnwrapRect(args[1]->ToObject());
 
   SDL_UpdateRect(surface, rect->x, rect->y, rect->w, rect->h);
-  
+
   return Undefined();
 }
 
+static Handle<Value> sdl::BlitSurface(const Arguments& args) {
+  HandleScope scope;
+
+  if (!(args.Length() == 4
+        && args[0]->IsObject()
+        && args[1]->IsObject()
+        && args[2]->IsObject()
+        && args[3]->IsObject()
+  )) {
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected BlitSurface(Surface, Rect, Surface, Rect)")));
+  }
+
+  SDL_Surface* src = UnwrapSurface(args[0]->ToObject());
+  SDL_Rect* srcrect = UnwrapRect(args[1]->ToObject());
+  SDL_Surface* dst = UnwrapSurface(args[2]->ToObject());
+  SDL_Rect* dstrect = UnwrapRect(args[3]->ToObject());
+
+  if (SDL_BlitSurface(src, srcrect, dst, dstrect) < 0) return ThrowSDLException(__func__);
+  return scope.Close(WrapRect(dstrect));
+}
+
+static Handle<Value> sdl::FreeSurface(const Arguments& args) {
+  HandleScope scope;
+
+  if (!(args.Length() == 1 && args[0]->IsObject())) {
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected FreeSurface(Surface)")));
+  }
+
+  // TODO: find a way to do this automatically by using GC hooks.  This is dangerous in JS land
+  SDL_FreeSurface(UnwrapSurface(args[0]->ToObject()));
+  args[0]->ToObject()->Set(String::New("DEAD"), Boolean::New(true));
+
+  return Undefined();
+}
 
 static Handle<Value> sdl::TTF::Init(const Arguments& args) {
   HandleScope scope;
@@ -510,7 +534,7 @@ static Handle<Value> sdl::TTF::Init(const Arguments& args) {
       String::New(TTF_GetError())
     )));
   }
-  
+
   return Undefined();
 }
 
@@ -537,16 +561,14 @@ static Handle<Value> sdl::TTF::OpenFont(const Arguments& args) {
 static Handle<Value> sdl::TTF::RenderTextBlended(const Arguments& args) {
   HandleScope scope;
 
-  if (!(args.Length() == 6 && args[0]->IsObject() && args[1]->IsObject() && args[2]->IsString() && args[3]->IsNumber() && args[4]->IsNumber() && args[5]->IsNumber())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected TTF::RenderTextBlended(Surface, Font, String, Number, Number, Number)")));
+  if (!(args.Length() == 4 && args[0]->IsObject() && args[1]->IsObject() && args[2]->IsString() && args[3]->IsNumber())) {
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected TTF::RenderTextBlended(Surface, Font, String, Number)")));
   }
 
   SDL_Surface* screen = UnwrapSurface(args[0]->ToObject());
   TTF_Font* font = UnwrapFont(args[1]->ToObject());
   String::Utf8Value text(args[2]);
-  int x = args[3]->Int32Value();
-  int y = args[4]->Int32Value();
-  int colorCode = args[5]->Int32Value();
+  int colorCode = args[3]->Int32Value();
 
   Uint8 r, g, b;
   SDL_GetRGB(colorCode, screen->format, &r, &g, &b);
@@ -564,23 +586,23 @@ static Handle<Value> sdl::TTF::RenderTextBlended(const Arguments& args) {
       String::New(TTF_GetError())
     )));
   }
+  return scope.Close(WrapSurface(resulting_text));
 
-  SDL_Rect destRect;
-  destRect.x = x;
-  destRect.y = y;
+//  SDL_Rect destRect;
+//  destRect.x = x;
+//  destRect.y = y;
 
-  int result = SDL_BlitSurface(resulting_text, NULL, screen, &destRect);
-  if (result < 0) {
-    return ThrowException(Exception::Error(String::Concat(
-      String::New("TTF::RenderTextBlended: "),
-      String::New(SDL_GetError())
-    )));
-  }
+//  int result = SDL_BlitSurface(resulting_text, NULL, screen, &destRect);
+//  if (result < 0) {
+//    return ThrowException(Exception::Error(String::Concat(
+//      String::New("TTF::RenderTextBlended: "),
+//      String::New(SDL_GetError())
+//    )));
+//  }
 
-  SDL_FreeSurface(resulting_text);
+//  SDL_FreeSurface(resulting_text);
 
-  return Undefined();
+//  return Undefined();
 }
-
 
 

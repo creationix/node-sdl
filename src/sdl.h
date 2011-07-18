@@ -37,6 +37,8 @@ namespace sdl {
   static Handle<Value> Flip(const Arguments& args);
   static Handle<Value> FillRect(const Arguments& args);
   static Handle<Value> UpdateRect(const Arguments& args);
+  static Handle<Value> BlitSurface(const Arguments& args);
+  static Handle<Value> FreeSurface(const Arguments& args);
 
   namespace TTF {
   
