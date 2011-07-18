@@ -561,10 +561,10 @@ static Handle<Value> sdl::BlitSurface(const Arguments& args) {
     dstrect = UnwrapRect(args[3]->ToObject());
   }
 
-  if (srcrect) printf("srcrect = {x: %d, y: %d, w: %d, h: %d}\n", srcrect->x, srcrect->y, srcrect->w, srcrect->h);
-  else printf("srcrect = null\n");
-  if (dstrect) printf("dstrect = {x: %d, y: %d, w: %d, h: %d}\n", dstrect->x, dstrect->y, dstrect->w, dstrect->h);
-  else printf("dstrect = null\n");
+//  if (srcrect) printf("srcrect = {x: %d, y: %d, w: %d, h: %d}\n", srcrect->x, srcrect->y, srcrect->w, srcrect->h);
+//  else printf("srcrect = null\n");
+//  if (dstrect) printf("dstrect = {x: %d, y: %d, w: %d, h: %d}\n", dstrect->x, dstrect->y, dstrect->w, dstrect->h);
+//  else printf("dstrect = null\n");
 
 
   if (SDL_BlitSurface(src, srcrect, dst, dstrect) < 0) return ThrowSDLException(__func__);

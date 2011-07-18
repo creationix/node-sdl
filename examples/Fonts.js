@@ -18,7 +18,7 @@ var screen = SDL.setVideoMode(1024,768,0,0);
 TTF.init()
 process.on('exit', function () { SDL.quit(); });
 
-var font = TTF.openFont("Jura-DemiBold.ttf", 32);
+var font = TTF.openFont(__dirname + "/Jura-DemiBold.ttf", 32);
 
 var y = 10;
 var x = 10;
