@@ -82,6 +82,11 @@ init(Handle<Object> target)
   IMG_INIT->Set(String::New("PNG"), Number::New(IMG_INIT_PNG));
   IMG_INIT->Set(String::New("TIF"), Number::New(IMG_INIT_TIF));
 
+  Local<Object> WM = Object::New();
+  target->Set(String::New("WM"), WM);
+
+  NODE_SET_METHOD(WM, "setCaption", sdl::WM::SetCaption);
+  NODE_SET_METHOD(WM, "setIcon", sdl::WM::SetIcon);
 
 }
 
@@ -585,13 +590,12 @@ static Handle<Value> sdl::BlitSurface(const Arguments& args) {
   if (args[1]->IsNull()) {
     srcrect = NULL;
   } else if (args[1]->IsArray()) {
-    SDL_Rect rect;
-    Handle<Object> arr = args[1]->ToObject();
-    rect.x = arr->Get(String::New("0"))->Int32Value();
-    rect.y = arr->Get(String::New("1"))->Int32Value();
-    rect.w = arr->Get(String::New("2"))->Int32Value();
-    rect.h = arr->Get(String::New("3"))->Int32Value();
-    srcrect = &rect;
+    Handle<Object> arr1 = args[1]->ToObject();
+    srcrect = new SDL_Rect();
+    srcrect->x = arr1->Get(String::New("0"))->Int32Value();
+    srcrect->y = arr1->Get(String::New("1"))->Int32Value();
+    srcrect->w = arr1->Get(String::New("2"))->Int32Value();
+    srcrect->h = arr1->Get(String::New("3"))->Int32Value();
   } else {
     srcrect = UnwrapRect(args[1]->ToObject());
   }
@@ -600,21 +604,20 @@ static Handle<Value> sdl::BlitSurface(const Arguments& args) {
   if (args[3]->IsNull()) {
     dstrect = NULL;
   } else if (args[3]->IsArray()) {
-    SDL_Rect rect;
-    Handle<Object> arr = args[3]->ToObject();
-    rect.x = arr->Get(String::New("0"))->Int32Value();
-    rect.y = arr->Get(String::New("1"))->Int32Value();
-    rect.w = arr->Get(String::New("2"))->Int32Value();
-    rect.h = arr->Get(String::New("3"))->Int32Value();
-    dstrect = &rect;
+    Handle<Object> arr2 = args[3]->ToObject();
+    dstrect = new SDL_Rect();
+    dstrect->x = arr2->Get(String::New("0"))->Int32Value();
+    dstrect->y = arr2->Get(String::New("1"))->Int32Value();
+    dstrect->w = arr2->Get(String::New("2"))->Int32Value();
+    dstrect->h = arr2->Get(String::New("3"))->Int32Value();
   } else {
     dstrect = UnwrapRect(args[3]->ToObject());
   }
 
-//  if (srcrect) printf("srcrect = {x: %d, y: %d, w: %d, h: %d}\n", srcrect->x, srcrect->y, srcrect->w, srcrect->h);
-//  else printf("srcrect = null\n");
-//  if (dstrect) printf("dstrect = {x: %d, y: %d, w: %d, h: %d}\n", dstrect->x, dstrect->y, dstrect->w, dstrect->h);
-//  else printf("dstrect = null\n");
+  if (srcrect) printf("srcrect = {x: %d, y: %d, w: %d, h: %d}\n", srcrect->x, srcrect->y, srcrect->w, srcrect->h);
+  else printf("srcrect = null\n");
+  if (dstrect) printf("dstrect = {x: %d, y: %d, w: %d, h: %d}\n", dstrect->x, dstrect->y, dstrect->w, dstrect->h);
+  else printf("dstrect = null\n");
 
 
   if (SDL_BlitSurface(src, srcrect, dst, dstrect) < 0) return ThrowSDLException(__func__);
@@ -755,5 +758,35 @@ static Handle<Value> sdl::IMG::Load(const Arguments& args) {
   }
 
   return scope.Close(WrapSurface(image));
+}
+
+static Handle<Value> sdl::WM::SetCaption(const Arguments& args) {
+  HandleScope scope;
+
+  if (!(args.Length() == 2 && args[0]->IsString() && args[1]->IsString())) {
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected WM::SetCaption(String, String)")));
+  }
+
+  String::Utf8Value title(args[0]);
+  String::Utf8Value icon(args[0]);
+  
+  SDL_WM_SetCaption(*title, *icon);
+
+  return Undefined();
+}
+
+static Handle<Value> sdl::WM::SetIcon(const Arguments& args) {
+  HandleScope scope;
+
+  if (!(args.Length() == 1 && args[0]->IsObject())) {
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected WM::SetIcon(Surface)")));
+  }
+
+  SDL_Surface* icon = UnwrapSurface(args[0]->ToObject());  
+  int colorkey = SDL_MapRGB(icon->format, 255, 0, 255);
+  SDL_SetColorKey(icon, SDL_SRCCOLORKEY, colorkey);              
+  SDL_WM_SetIcon(icon, NULL);
+
+  return Undefined();
 }
 

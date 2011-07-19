@@ -43,20 +43,21 @@ namespace sdl {
   static Handle<Value> FreeSurface(const Arguments& args);
 
   namespace TTF {
-
     static Handle<Value> Init(const Arguments& args);
     static Handle<Value> OpenFont(const Arguments& args);
     static Handle<Value> RenderTextBlended(const Arguments& args);
-
   }
 
   namespace IMG {
-
     static Handle<Value> Init(const Arguments& args);
     static Handle<Value> Quit(const Arguments& args);
     static Handle<Value> Load(const Arguments& args);
-
   }
+
+  namespace WM {
+    static Handle<Value> SetCaption(const Arguments& args);
+    static Handle<Value> SetIcon(const Arguments& args);
+  }  
 
   typedef struct {
     Persistent<Function> fn;
