@@ -39,6 +39,10 @@ init(Handle<Object> target)
   NODE_SET_METHOD(target, "displayFormat", sdl::DisplayFormat);
   NODE_SET_METHOD(target, "displayFormatAlpha", sdl::DisplayFormatAlpha);
   NODE_SET_METHOD(target, "setAlpha", sdl::SetAlpha);
+  NODE_SET_METHOD(target, "mapRGB", sdl::MapRGB);
+  NODE_SET_METHOD(target, "mapRGBA", sdl::MapRGBA);
+  NODE_SET_METHOD(target, "getRGB", sdl::GetRGB);
+  NODE_SET_METHOD(target, "getRGBA", sdl::GetRGBA);
 
   Local<Object> INIT = Object::New();
   target->Set(String::New("INIT"), INIT);
@@ -656,7 +660,7 @@ static Handle<Value> sdl::SetColorKey(const Arguments& args) {
   if (SDL_SetColorKey(surface, flag, key) < 0) return ThrowSDLException(__func__);
 
   return Undefined();
-  
+
 }
 
 static Handle<Value> sdl::DisplayFormat(const Arguments& args) {
@@ -695,8 +699,82 @@ static Handle<Value> sdl::SetAlpha(const Arguments& args) {
   int alpha = args[2]->Int32Value();
 
   if (SDL_SetAlpha(surface, flags, alpha) < 0) return ThrowSDLException(__func__);
-  
+
   return Undefined();
+}
+
+static Handle<Value> sdl::MapRGB(const Arguments& args) {
+  HandleScope scope;
+
+  if (!(args.Length() == 4 && args[0]->IsObject() && args[1]->IsNumber() && args[2]->IsNumber() && args[4]->IsNumber())) {
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected MapRGB(PixelFormat, Number, Number, Number)")));
+  }
+
+  SDL_PixelFormat* fmt = UnwrapPixelFormat(args[0]->ToObject());
+  int r = args[1]->Int32Value();
+  int g = args[2]->Int32Value();
+  int b = args[3]->Int32Value();
+
+  return Number::New(SDL_MapRGB(fmt, r, g, b));
+}
+
+static Handle<Value> sdl::MapRGBA(const Arguments& args) {
+  HandleScope scope;
+
+  if (!(args.Length() == 5 && args[0]->IsObject() && args[1]->IsNumber() && args[2]->IsNumber() && args[4]->IsNumber() && args[5]->IsNumber())) {
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected MapRGBA(PixelFormat, Number, Number, Number, Number)")));
+  }
+
+  SDL_PixelFormat* fmt = UnwrapPixelFormat(args[0]->ToObject());
+  int r = args[1]->Int32Value();
+  int g = args[2]->Int32Value();
+  int b = args[3]->Int32Value();
+  int a = args[4]->Int32Value();
+
+  return Number::New(SDL_MapRGBA(fmt, r, g, b, a));
+}
+
+static Handle<Value> sdl::GetRGB(const Arguments& args) {
+  HandleScope scope;
+
+  if (!(args.Length() == 2 && args[0]->IsNumber() && args[1]->IsObject())) {
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected GetRGB(Number, PixelFormat)")));
+  }
+
+  int pixel = args[0]->Int32Value();
+  SDL_PixelFormat* fmt = UnwrapPixelFormat(args[1]->ToObject());
+  ::Uint8 r, g, b;
+
+  SDL_GetRGB(pixel, fmt, &r, &g, &b);
+
+  Local<Object> rgb = Object::New();
+  rgb->Set(String::New("r"), Number::New(r));
+  rgb->Set(String::New("g"), Number::New(g));
+  rgb->Set(String::New("b"), Number::New(b));
+
+  return scope.Close(rgb);
+}
+
+static Handle<Value> sdl::GetRGBA(const Arguments& args) {
+  HandleScope scope;
+
+  if (!(args.Length() == 2 && args[0]->IsNumber() && args[1]->IsObject())) {
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected GetRGBA(Number, PixelFormat)")));
+  }
+
+  int pixel = args[0]->Int32Value();
+  SDL_PixelFormat* fmt = UnwrapPixelFormat(args[1]->ToObject());
+  ::Uint8 r, g, b, a;
+
+  SDL_GetRGBA(pixel, fmt, &r, &g, &b, &a);
+
+  Local<Object> rgba = Object::New();
+  rgba->Set(String::New("r"), Number::New(r));
+  rgba->Set(String::New("g"), Number::New(g));
+  rgba->Set(String::New("b"), Number::New(b));
+  rgba->Set(String::New("a"), Number::New(a));
+
+  return scope.Close(rgba);
 }
 
 
@@ -831,7 +909,7 @@ static Handle<Value> sdl::WM::SetCaption(const Arguments& args) {
 
   String::Utf8Value title(args[0]);
   String::Utf8Value icon(args[0]);
-  
+
   SDL_WM_SetCaption(*title, *icon);
 
   return Undefined();
@@ -844,9 +922,9 @@ static Handle<Value> sdl::WM::SetIcon(const Arguments& args) {
     return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected WM::SetIcon(Surface)")));
   }
 
-  SDL_Surface* icon = UnwrapSurface(args[0]->ToObject());  
+  SDL_Surface* icon = UnwrapSurface(args[0]->ToObject());
   int colorkey = SDL_MapRGB(icon->format, 255, 0, 255);
-  SDL_SetColorKey(icon, SDL_SRCCOLORKEY, colorkey);              
+  SDL_SetColorKey(icon, SDL_SRCCOLORKEY, colorkey);
   SDL_WM_SetIcon(icon, NULL);
 
   return Undefined();

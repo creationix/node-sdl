@@ -45,6 +45,10 @@ namespace sdl {
   static Handle<Value> DisplayFormat(const Arguments& args);
   static Handle<Value> DisplayFormatAlpha(const Arguments& args);
   static Handle<Value> SetAlpha(const Arguments& args);
+  static Handle<Value> MapRGB(const Arguments& args);
+  static Handle<Value> MapRGBA(const Arguments& args);
+  static Handle<Value> GetRGB(const Arguments& args);
+  static Handle<Value> GetRGBA(const Arguments& args);
 
   namespace TTF {
     static Handle<Value> Init(const Arguments& args);
@@ -61,7 +65,7 @@ namespace sdl {
   namespace WM {
     static Handle<Value> SetCaption(const Arguments& args);
     static Handle<Value> SetIcon(const Arguments& args);
-  }  
+  }
 
   typedef struct {
     Persistent<Function> fn;
