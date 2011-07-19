@@ -5,7 +5,7 @@ var TILE_WIDTH = 99,
     TILE_HEIGHT = 82;
 
 SDL.init(SDL.INIT.VIDEO);
-var screen = SDL.setVideoMode(1024,768,32,0);
+var screen = SDL.setVideoMode(1024,768,32,SDL.SURFACE.HWACCEL);
 
 SDL.WM.setCaption("Node Explorer", "Node Exlorer");
 SDL.WM.setIcon(IMG.load(__dirname + "/rock.png"));
@@ -13,7 +13,11 @@ SDL.WM.setIcon(IMG.load(__dirname + "/rock.png"));
 process.on('exit', function () { SDL.quit(); });
 
 var t = IMG.load(__dirname + "/tiles.png");
-var tiles = SDL.displayFormatAlpha(t);
+//SDL.setColorKey(t, SDL.SURFACE.SRCALPHA|SDL.SURFACE.RLEACCEL, 0);
+//SDL.setAlpha(t, SDL.SURFACE.SRCALPHA|SDL.SURFACE.RLEACCEL, 0);
+var tiles = SDL.displayFormat(t);
+SDL.setColorKey(tiles, SDL.SURFACE.SRCCOLORKEY|SDL.SURFACE.RLEACCEL, SDL.mapRGB(tiles.format, 255, 255, 255));
+//SDL.setAlpha(tiles, SDL.SURFACE.RLEACCEL, 0);
 SDL.freeSurface(t);
 
 var spriteData = require('./spriteData');
@@ -49,7 +53,7 @@ SDL.events.on("KEYDOWN", function (evt) {
 });
 
 var map = [
- [
+  [
     ["grass-block","grass-block","grass-block","grass-block","grass-block","grass-block","grass-block","water-block","water-block","water-block","grass-block"],
     ["grass-block","grass-block","grass-block","grass-block","grass-block","grass-block","grass-block","water-block","water-block","water-block","grass-block"],
     ["grass-block","grass-block","grass-block","grass-block","grass-block","grass-block","grass-block","water-block","water-block","water-block","grass-block"],
