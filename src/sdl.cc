@@ -35,6 +35,7 @@ init(Handle<Object> target)
   NODE_SET_METHOD(target, "createRGBSurface", sdl::CreateRGBSurface);
   NODE_SET_METHOD(target, "blitSurface", sdl::BlitSurface);
   NODE_SET_METHOD(target, "freeSurface", sdl::FreeSurface);
+  NODE_SET_METHOD(target, "setColorKey", sdl::SetColorKey);
 
   Local<Object> INIT = Object::New();
   target->Set(String::New("INIT"), INIT);
@@ -61,6 +62,8 @@ init(Handle<Object> target)
   SURFACE->Set(String::New("SRCCOLORKEY"), Number::New(SDL_SRCCOLORKEY));
   SURFACE->Set(String::New("SWSURFACE"), Number::New(SDL_SWSURFACE));
   SURFACE->Set(String::New("PREALLOC"), Number::New(SDL_PREALLOC));
+  SURFACE->Set(String::New("SRCCOLORKEY"), Number::New(SDL_SRCCOLORKEY));
+  SURFACE->Set(String::New("RLEACCEL"), Number::New(SDL_RLEACCEL));
 
   Local<Object> TTF = Object::New();
   target->Set(String::New("TTF"), TTF);
@@ -614,10 +617,10 @@ static Handle<Value> sdl::BlitSurface(const Arguments& args) {
     dstrect = UnwrapRect(args[3]->ToObject());
   }
 
-  if (srcrect) printf("srcrect = {x: %d, y: %d, w: %d, h: %d}\n", srcrect->x, srcrect->y, srcrect->w, srcrect->h);
-  else printf("srcrect = null\n");
-  if (dstrect) printf("dstrect = {x: %d, y: %d, w: %d, h: %d}\n", dstrect->x, dstrect->y, dstrect->w, dstrect->h);
-  else printf("dstrect = null\n");
+//  if (srcrect) printf("srcrect = {x: %d, y: %d, w: %d, h: %d}\n", srcrect->x, srcrect->y, srcrect->w, srcrect->h);
+//  else printf("srcrect = null\n");
+//  if (dstrect) printf("dstrect = {x: %d, y: %d, w: %d, h: %d}\n", dstrect->x, dstrect->y, dstrect->w, dstrect->h);
+//  else printf("dstrect = null\n");
 
 
   if (SDL_BlitSurface(src, srcrect, dst, dstrect) < 0) return ThrowSDLException(__func__);
@@ -636,6 +639,23 @@ static Handle<Value> sdl::FreeSurface(const Arguments& args) {
   args[0]->ToObject()->Set(String::New("DEAD"), Boolean::New(true));
 
   return Undefined();
+}
+
+static Handle<Value> sdl::SetColorKey(const Arguments& args) {
+  HandleScope scope;
+
+  if (!(args.Length() == 3 && args[0]->IsObject() && args[1]->IsNumber() && args[2]->IsNumber())) {
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected SetColorKey(Surface, Number, Number)")));
+  }
+
+  SDL_Surface* surface = UnwrapSurface(args[0]->ToObject());
+  int flag = args[1]->Int32Value();
+  int key = args[2]->Int32Value();
+
+  if (SDL_SetColorKey(surface, flag, key) < 0) return ThrowSDLException(__func__);
+
+  return Undefined();
+  
 }
 
 static Handle<Value> sdl::TTF::Init(const Arguments& args) {

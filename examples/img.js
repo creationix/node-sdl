@@ -12,16 +12,28 @@ SDL.WM.setIcon(IMG.load(__dirname + "/rock.png"));
 
 process.on('exit', function () { SDL.quit(); });
 
-IMG.init(IMG.INIT.PNG);
+//IMG.init(IMG.INIT.PNG);
 
 var tiles = IMG.load(__dirname + "/tiles.png");
+
+//SDL.setColorKey(tiles, SDL.SURFACE.SRCCOLORKEY | SDL.SURFACE.RLEACCEL, 0);
 var spriteData = require('./spriteData');
+var images = {};
+Object.keys(spriteData).forEach(function (name) {
+  var s = SDL.createRGBSurface(0, 101, 171);
+  var offsets = spriteData[name];
+  SDL.blitSurface(tiles, [offsets[0], offsets[1], 101, 171], s, null);
+//  SDL.setColorKey(s, SDL.SURFACE.SRCCOLORKEY | SDL.SURFACE.RLEACCEL, 0);
+  images[name] = s;
+});
+SDL.freeSurface(tiles);
 
 
 function draw(surface, name, x, y) {
   if (!spriteData.hasOwnProperty(name)) throw new Error("Invalid image name");
   var offsets = spriteData[name];
-  SDL.blitSurface(tiles, [offsets[0], offsets[1], 101, 171], surface, [x, y + (offsets[2] || 0)]);
+  var image = images[name]
+  SDL.blitSurface(image, null, surface, [x, y + (offsets[2] || 0)]);
 }
 
 
@@ -32,68 +44,68 @@ SDL.events.on("KEYDOWN", function (evt) {
 });
 
 var map = [
-  [
-    ["grass-block","grass-block","grass-block","grass-block","grass-block","grass-block","grass-block","water-block","water-block","water-block","grass-block"],
-    ["grass-block","grass-block","grass-block","grass-block","grass-block","grass-block","grass-block","water-block","water-block","water-block","grass-block"],
-    ["grass-block","grass-block","grass-block","grass-block","grass-block","grass-block","grass-block","water-block","water-block","water-block","grass-block"],
-    ["grass-block","grass-block","grass-block","grass-block","grass-block","grass-block","grass-block","water-block","water-block","water-block","grass-block"],
-    ["grass-block","grass-block","grass-block","grass-block","grass-block","grass-block","dirt-block","dirt-block","water-block","dirt-block","dirt-block"],
-    ["grass-block","grass-block","grass-block","grass-block","grass-block","grass-block","dirt-block","water-block","water-block","water-block","water-block"],
-    ["grass-block","grass-block","grass-block","grass-block","grass-block","grass-block","dirt-block","grass-block","water-block","water-block","water-block"],
-    ["grass-block","grass-block","grass-block","grass-block","grass-block","grass-block","dirt-block","grass-block","grass-block","grass-block","grass-block"],
-    ["grass-block","grass-block","grass-block","dirt-block","grass-block","dirt-block","dirt-block","dirt-block","dirt-block","dirt-block","dirt-block"],
-    ["grass-block","grass-block","grass-block","dirt-block","dirt-block","dirt-block","grass-block","grass-block","grass-block","grass-block","grass-block"],
-  ],
-  [
-    [null, null, null, null, null, null],
-    [null, null, null, null, null, null],
-    [null, null, null, null, null, null],
-    [null, "wood-block", "wood-block", "wood-block", "wood-block", "wood-block"],
-    [null, "wood-block", null, null, null, "wood-block",null, "ramp-west","stone-block","ramp-east"],
-    [null, "wood-block", null, null, null, "wood-block"],
-    [null, "wood-block", null, null, null, "wood-block"],
-    [null, "wood-block", "wood-block", "door-tall-closed", "wood-block", "wood-block"],
-  ],
-  [
-    [null, null, null, null, null, null],
-    [null, null, null, null, null, null],
-    [null, null, null, null, null, null],
-    [null, "wood-block", "window-tall", "wood-block", "window-tall", "wood-block"],
-    [null, "wood-block", null, null, null, "wood-block", null, null, "selector"],
-    [null, "wood-block", null, null, null, "wood-block"],
-    [null, "wood-block", null, null, null, "wood-block"],
-    [null, "wood-block", "window-tall", null, "window-tall", "wood-block"],
-  ],
-  [
-    [null, null, null, null, null, null],
-    [null, null, null, null, null, null],
-    [null, null, null, null, null, null],
-    [null, "wood-block", null, "wood-block", null, "wood-block"],
-    [null, "wood-block", null, null, null, "wood-block"],
-    [null, "wood-block", null, null, null, "wood-block"],
-    [null, "wood-block", null, null, null, "wood-block"],
-    [null, "wood-block", null, "wood-block", null, "wood-block"],
-  ],
-  [
-    [null, null, null, null, null, null],
-    [null, null, null, null, null, null],
-    [null, null, null, null, null, null],
-    [null, "roof-north-west", "roof-north", "roof-north", "roof-north", "roof-north-east"],
-    [null, "roof-west", "wood-block", "wood-block", "wood-block", "roof-east"],
-    [null, "roof-west", "wood-block", null, "wood-block", "roof-east"],
-    [null, "roof-west", "wood-block", "wood-block", "wood-block", "roof-east"],
-    [null, "roof-south-west", "roof-south", "roof-south", "roof-south", "roof-south-east"],
-  ],
-  [
-    [null, null, null, null, null, null],
-    [null, null, null, null, null, null],
-    [null, null, null, null, null, null],
-    [null, null, null, null, null, null],
-    [null, null, "wood-block", "window-tall", "wood-block", null],
-    [null, null, "wood-block", null, "wood-block", null],
-    [null, null, "wood-block", "window-tall", "wood-block", null],
-    [null, null, null, null, null, null],
-  ],
+// [
+//    ["grass-block","grass-block","grass-block","grass-block","grass-block","grass-block","grass-block","water-block","water-block","water-block","grass-block"],
+//    ["grass-block","grass-block","grass-block","grass-block","grass-block","grass-block","grass-block","water-block","water-block","water-block","grass-block"],
+//    ["grass-block","grass-block","grass-block","grass-block","grass-block","grass-block","grass-block","water-block","water-block","water-block","grass-block"],
+//    ["grass-block","grass-block","grass-block","grass-block","grass-block","grass-block","grass-block","water-block","water-block","water-block","grass-block"],
+//    ["grass-block","grass-block","grass-block","grass-block","grass-block","grass-block","dirt-block","dirt-block","water-block","dirt-block","dirt-block"],
+//    ["grass-block","grass-block","grass-block","grass-block","grass-block","grass-block","dirt-block","water-block","water-block","water-block","water-block"],
+//    ["grass-block","grass-block","grass-block","grass-block","grass-block","grass-block","dirt-block","grass-block","water-block","water-block","water-block"],
+//    ["grass-block","grass-block","grass-block","grass-block","grass-block","grass-block","dirt-block","grass-block","grass-block","grass-block","grass-block"],
+//    ["grass-block","grass-block","grass-block","dirt-block","grass-block","dirt-block","dirt-block","dirt-block","dirt-block","dirt-block","dirt-block"],
+//    ["grass-block","grass-block","grass-block","dirt-block","dirt-block","dirt-block","grass-block","grass-block","grass-block","grass-block","grass-block"],
+//  ],
+//  [
+//    [null, null, null, null, null, null],
+//    [null, null, null, null, null, null],
+//    [null, null, null, null, null, null],
+//    [null, "wood-block", "wood-block", "wood-block", "wood-block", "wood-block"],
+//    [null, "wood-block", null, null, null, "wood-block",null, "ramp-west","stone-block","ramp-east"],
+//    [null, "wood-block", null, null, null, "wood-block"],
+//    [null, "wood-block", null, null, null, "wood-block"],
+//    [null, "wood-block", "wood-block", "door-tall-closed", "wood-block", "wood-block"],
+//  ],
+//  [
+//    [null, null, null, null, null, null],
+//    [null, null, null, null, null, null],
+//    [null, null, null, null, null, null],
+//    [null, "wood-block", "window-tall", "wood-block", "window-tall", "wood-block"],
+//    [null, "wood-block", null, null, null, "wood-block", null, null, "selector"],
+//    [null, "wood-block", null, null, null, "wood-block"],
+//    [null, "wood-block", null, null, null, "wood-block"],
+//    [null, "wood-block", "window-tall", null, "window-tall", "wood-block"],
+//  ],
+//  [
+//    [null, null, null, null, null, null],
+//    [null, null, null, null, null, null],
+//    [null, null, null, null, null, null],
+//    [null, "wood-block", null, "wood-block", null, "wood-block"],
+//    [null, "wood-block", null, null, null, "wood-block"],
+//    [null, "wood-block", null, null, null, "wood-block"],
+//    [null, "wood-block", null, null, null, "wood-block"],
+//    [null, "wood-block", null, "wood-block", null, "wood-block"],
+//  ],
+//  [
+//    [null, null, null, null, null, null],
+//    [null, null, null, null, null, null],
+//    [null, null, null, null, null, null],
+//    [null, "roof-north-west", "roof-north", "roof-north", "roof-north", "roof-north-east"],
+//    [null, "roof-west", "wood-block", "wood-block", "wood-block", "roof-east"],
+//    [null, "roof-west", "wood-block", null, "wood-block", "roof-east"],
+//    [null, "roof-west", "wood-block", "wood-block", "wood-block", "roof-east"],
+//    [null, "roof-south-west", "roof-south", "roof-south", "roof-south", "roof-south-east"],
+//  ],
+//  [
+//    [null, null, null, null, null, null],
+//    [null, null, null, null, null, null],
+//    [null, null, null, null, null, null],
+//    [null, null, null, null, null, null],
+//    [null, null, "wood-block", "window-tall", "wood-block", null],
+//    [null, null, "wood-block", null, "wood-block", null],
+//    [null, null, "wood-block", "window-tall", "wood-block", null],
+//    [null, null, null, null, null, null],
+//  ],
   [
     [null, null, null, null, null, null],
     [null, null, null, null, null, null],
@@ -116,13 +128,20 @@ var map = [
   ]
 ];
 
-map.forEach(function (layer, z) {
-  layer.forEach(function (row, y) {
-    row.forEach(function (cell, x) {
-      if (cell) draw(screen, cell, x * 99 - 20, y * 82 - z * 41 - 70);
+setInterval(function () {
+
+  SDL.fillRect(screen, null, 0);
+
+  map.forEach(function (layer, z) {
+    layer.forEach(function (row, y) {
+      row.forEach(function (cell, x) {
+        if (cell) draw(screen, cell, x * 99 - 20 + Math.floor(Math.random() * 10), y * 82 - z * 41 - 70 + Math.floor(Math.random() * 10));
+      });
     });
   });
-});
 
-SDL.flip(screen);
+  SDL.flip(screen);
+
+}, 10)
+
 
