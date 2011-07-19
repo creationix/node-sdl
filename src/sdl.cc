@@ -38,6 +38,7 @@ init(Handle<Object> target)
   NODE_SET_METHOD(target, "setColorKey", sdl::SetColorKey);
   NODE_SET_METHOD(target, "displayFormat", sdl::DisplayFormat);
   NODE_SET_METHOD(target, "displayFormatAlpha", sdl::DisplayFormatAlpha);
+  NODE_SET_METHOD(target, "setAlpha", sdl::SetAlpha);
 
   Local<Object> INIT = Object::New();
   target->Set(String::New("INIT"), INIT);
@@ -680,6 +681,22 @@ static Handle<Value> sdl::DisplayFormatAlpha(const Arguments& args) {
   SDL_Surface* surface = UnwrapSurface(args[0]->ToObject());
 
   return scope.Close(WrapSurface(SDL_DisplayFormatAlpha(surface)));
+}
+
+static Handle<Value> sdl::SetAlpha(const Arguments& args) {
+  HandleScope scope;
+
+  if (!(args.Length() == 3 && args[0]->IsObject() && args[1]->IsNumber() && args[2]->IsNumber())) {
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected SetColorKey(Surface, Number, Number)")));
+  }
+
+  SDL_Surface* surface = UnwrapSurface(args[0]->ToObject());
+  int flags = args[1]->Int32Value();
+  int alpha = args[2]->Int32Value();
+
+  if (SDL_SetAlpha(surface, flags, alpha) < 0) return ThrowSDLException(__func__);
+  
+  return Undefined();
 }
 
 

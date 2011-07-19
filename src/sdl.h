@@ -44,6 +44,7 @@ namespace sdl {
   static Handle<Value> SetColorKey(const Arguments& args);
   static Handle<Value> DisplayFormat(const Arguments& args);
   static Handle<Value> DisplayFormatAlpha(const Arguments& args);
+  static Handle<Value> SetAlpha(const Arguments& args);
 
   namespace TTF {
     static Handle<Value> Init(const Arguments& args);
