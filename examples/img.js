@@ -6,6 +6,7 @@ var TILE_WIDTH = 99,
 
 SDL.init(SDL.INIT.VIDEO);
 var screen = SDL.setVideoMode(1024,768,32,0);
+console.dir({screen:screen});
 
 SDL.WM.setCaption("Node Explorer", "Node Exlorer");
 SDL.WM.setIcon(IMG.load(__dirname + "/rock.png"));
@@ -14,20 +15,23 @@ process.on('exit', function () { SDL.quit(); });
 
 //IMG.init(IMG.INIT.PNG);
 
-var t = IMG.load(__dirname + "/tiles.png");
-var tiles = SDL.displayFormatAlpha(t);
-SDL.freeSurface(t);
+var tiles = IMG.load(__dirname + "/tiles.png");
+console.dir({tiles:tiles});
 
 //SDL.setColorKey(tiles, SDL.SURFACE.SRCCOLORKEY | SDL.SURFACE.RLEACCEL, 0);
 var spriteData = require('./spriteData');
 var images = {};
 Object.keys(spriteData).forEach(function (name) {
-  var s = SDL.createRGBSurface(0, 101, 171);
+  var s = SDL.createRGBSurface(SDL.SURFACE.SRCALPHA, 101, 171);
+  console.dir({s:s});
   var offsets = spriteData[name];
   SDL.blitSurface(tiles, [offsets[0], offsets[1], 101, 171], s, null);
   SDL.setColorKey(s, SDL.SURFACE.SRCCOLORKEY | SDL.SURFACE.RLEACCEL, 0);
-  images[name] = SDL.displayFormat(s);
-  SDL.freeSurface(s);
+  console.dir({s:s});
+  images[name] = s;
+//  images[name] = SDL.displayFormat(s);
+//  console.dir({image:images[name]});
+//  SDL.freeSurface(s);
 });
 SDL.freeSurface(tiles);
 
