@@ -706,7 +706,7 @@ static Handle<Value> sdl::SetAlpha(const Arguments& args) {
 static Handle<Value> sdl::MapRGB(const Arguments& args) {
   HandleScope scope;
 
-  if (!(args.Length() == 4 && args[0]->IsObject() && args[1]->IsNumber() && args[2]->IsNumber() && args[4]->IsNumber())) {
+  if (!(args.Length() == 4 && args[0]->IsObject() && args[1]->IsNumber() && args[2]->IsNumber() && args[3]->IsNumber())) {
     return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected MapRGB(PixelFormat, Number, Number, Number)")));
   }
 
@@ -721,7 +721,7 @@ static Handle<Value> sdl::MapRGB(const Arguments& args) {
 static Handle<Value> sdl::MapRGBA(const Arguments& args) {
   HandleScope scope;
 
-  if (!(args.Length() == 5 && args[0]->IsObject() && args[1]->IsNumber() && args[2]->IsNumber() && args[4]->IsNumber() && args[5]->IsNumber())) {
+  if (!(args.Length() == 5 && args[0]->IsObject() && args[1]->IsNumber() && args[2]->IsNumber() && args[3]->IsNumber() && args[4]->IsNumber())) {
     return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected MapRGBA(PixelFormat, Number, Number, Number, Number)")));
   }
 
