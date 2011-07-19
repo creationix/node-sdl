@@ -691,7 +691,7 @@ static Handle<Value> sdl::SetAlpha(const Arguments& args) {
   HandleScope scope;
 
   if (!(args.Length() == 3 && args[0]->IsObject() && args[1]->IsNumber() && args[2]->IsNumber())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected SetColorKey(Surface, Number, Number)")));
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected SetAlpha(Surface, Number, Number)")));
   }
 
   SDL_Surface* surface = UnwrapSurface(args[0]->ToObject());
