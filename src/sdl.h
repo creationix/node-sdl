@@ -5,6 +5,7 @@
 #include <v8.h>
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include <SDL_image.h>
 #include "helpers.h"
 
 using namespace v8;
@@ -37,18 +38,27 @@ namespace sdl {
   static Handle<Value> Flip(const Arguments& args);
   static Handle<Value> FillRect(const Arguments& args);
   static Handle<Value> UpdateRect(const Arguments& args);
+  static Handle<Value> CreateRGBSurface(const Arguments& args);
   static Handle<Value> BlitSurface(const Arguments& args);
   static Handle<Value> FreeSurface(const Arguments& args);
 
   namespace TTF {
-  
+
     static Handle<Value> Init(const Arguments& args);
     static Handle<Value> OpenFont(const Arguments& args);
     static Handle<Value> RenderTextBlended(const Arguments& args);
-  
+
   }
-  
-  typedef struct { 
+
+  namespace IMG {
+
+    static Handle<Value> Init(const Arguments& args);
+    static Handle<Value> Quit(const Arguments& args);
+    static Handle<Value> Load(const Arguments& args);
+
+  }
+
+  typedef struct {
     Persistent<Function> fn;
     int status;
   } closure_t;

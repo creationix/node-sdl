@@ -32,6 +32,7 @@ init(Handle<Object> target)
   NODE_SET_METHOD(target, "flip", sdl::Flip);
   NODE_SET_METHOD(target, "fillRect", sdl::FillRect);
   NODE_SET_METHOD(target, "updateRect", sdl::UpdateRect);
+  NODE_SET_METHOD(target, "createRGBSurface", sdl::CreateRGBSurface);
   NODE_SET_METHOD(target, "blitSurface", sdl::BlitSurface);
   NODE_SET_METHOD(target, "freeSurface", sdl::FreeSurface);
 
@@ -66,6 +67,21 @@ init(Handle<Object> target)
   NODE_SET_METHOD(TTF, "init", sdl::TTF::Init);
   NODE_SET_METHOD(TTF, "openFont", sdl::TTF::OpenFont);
   NODE_SET_METHOD(TTF, "renderTextBlended", sdl::TTF::RenderTextBlended);
+
+  Local<Object> IMG = Object::New();
+  target->Set(String::New("IMG"), IMG);
+
+  NODE_SET_METHOD(IMG, "init", sdl::IMG::Init);
+  NODE_SET_METHOD(IMG, "quit", sdl::IMG::Quit);
+  NODE_SET_METHOD(IMG, "load", sdl::IMG::Load);
+
+
+  Local<Object> IMG_INIT = Object::New();
+  IMG->Set(String::New("INIT"), IMG_INIT);
+  IMG_INIT->Set(String::New("JPG"), Number::New(IMG_INIT_JPG));
+  IMG_INIT->Set(String::New("PNG"), Number::New(IMG_INIT_PNG));
+  IMG_INIT->Set(String::New("TIF"), Number::New(IMG_INIT_TIF));
+
 
 }
 
@@ -516,6 +532,40 @@ static Handle<Value> sdl::UpdateRect(const Arguments& args) {
   return Undefined();
 }
 
+
+static Handle<Value> sdl::CreateRGBSurface(const Arguments& args) {
+  HandleScope scope;
+
+  if (!(args.Length() == 3 && args[0]->IsNumber() && args[1]->IsNumber() && args[2]->IsNumber())) {
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected CreateRGBSurface(Number, Number, Number)")));
+  }
+
+  int flags = args[0]->Int32Value();
+  int width = args[1]->Int32Value();
+  int height = args[2]->Int32Value();
+
+  SDL_Surface *surface;
+  int rmask, gmask, bmask, amask;
+
+  /* SDL interprets each pixel as a 32-bit number, so our masks must depend
+     on the endianness (byte order) of the machine */
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+  rmask = 0xff000000;
+  gmask = 0x00ff0000;
+  bmask = 0x0000ff00;
+  amask = 0x000000ff;
+#else
+  rmask = 0x000000ff;
+  gmask = 0x0000ff00;
+  bmask = 0x00ff0000;
+  amask = 0xff000000;
+#endif
+
+  surface = SDL_CreateRGBSurface(flags, width, height, 32, rmask, gmask, bmask, amask);
+  if (surface == NULL) return ThrowSDLException(__func__);
+  return scope.Close(WrapSurface(surface));
+}
+
 static Handle<Value> sdl::BlitSurface(const Arguments& args) {
   HandleScope scope;
 
@@ -651,22 +701,59 @@ static Handle<Value> sdl::TTF::RenderTextBlended(const Arguments& args) {
     )));
   }
   return scope.Close(WrapSurface(resulting_text));
-
-//  SDL_Rect destRect;
-//  destRect.x = x;
-//  destRect.y = y;
-
-//  int result = SDL_BlitSurface(resulting_text, NULL, screen, &destRect);
-//  if (result < 0) {
-//    return ThrowException(Exception::Error(String::Concat(
-//      String::New("TTF::RenderTextBlended: "),
-//      String::New(SDL_GetError())
-//    )));
-//  }
-
-//  SDL_FreeSurface(resulting_text);
-
-//  return Undefined();
 }
 
+static Handle<Value> sdl::IMG::Init(const Arguments& args) {
+  HandleScope scope;
+
+  if (!(args.Length() == 1 && args[0]->IsNumber())) {
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected IMG::Init(Number)")));
+  }
+
+  int flags = args[0]->Int32Value();
+
+  int initted = IMG_Init(flags);
+  if ((initted & flags) != flags) {
+    return ThrowException(Exception::Error(String::Concat(
+      String::New("IMG::Init: "),
+      String::New(IMG_GetError())
+    )));
+  }
+
+  return Undefined();
+}
+
+static Handle<Value> sdl::IMG::Quit(const Arguments& args) {
+  HandleScope scope;
+
+  if (!(args.Length() == 0)) {
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected IMG::Quit()")));
+  }
+
+  IMG_Quit();
+
+  return Undefined();
+}
+
+// TODO: make an async version so this can be used in loops or parallel load images
+static Handle<Value> sdl::IMG::Load(const Arguments& args) {
+  HandleScope scope;
+
+  if (!(args.Length() == 1 && args[0]->IsString())) {
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected IMG::Load(String)")));
+  }
+
+  String::Utf8Value file(args[0]);
+
+  SDL_Surface *image;
+  image=IMG_Load(*file);
+  if(!image) {
+    return ThrowException(Exception::Error(String::Concat(
+      String::New("IMG::Load: "),
+      String::New(IMG_GetError())
+    )));
+  }
+
+  return scope.Close(WrapSurface(image));
+}
 

@@ -33,7 +33,7 @@ def build(bld):
   obj = bld.new_task_gen('cxx', 'shlib', 'node_addon')
   obj.target = "node-sdl"
   obj.cxxflags = ["-pthread", "-Wall"]
-  obj.linkflags = ["-lSDL_ttf"]
+  obj.linkflags = ["-lSDL_ttf", "-lSDL_image"]
   obj.includes = ["/home/tim/include", "/home/tim/include/SDL"]
   obj.source = ["src/sdl.cc", "src/helpers.cc"]
   obj.uselib = "SDL"
