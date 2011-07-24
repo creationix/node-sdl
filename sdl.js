@@ -10,9 +10,20 @@ Object.defineProperty(SDL, 'events', {
     function getEvent(err) {
       if (err) events.emit('error', err);
       var data;
+      var mousemotion;
       while (data = SDL.pollEvent()) {
+        if (data.type === "MOUSEMOTION") {
+          // Collapse motion events to just the last position
+          // TODO: collapse other high frequency events
+          mousemotion = data;
+          continue;
+        }
         events.emit(data.type, data);
         events.emit("event", data);
+      }
+      if (mousemotion) {
+        events.emit(mousemotion.type, mousemotion);
+        events.emit("event", mousemotion);
       }
       SDL.waitEvent(getEvent);
     }
