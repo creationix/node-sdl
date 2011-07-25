@@ -818,17 +818,17 @@ static Handle<Value> sdl::TTF::OpenFont(const Arguments& args) {
 static Handle<Value> sdl::TTF::RenderTextBlended(const Arguments& args) {
   HandleScope scope;
 
-  if (!(args.Length() == 4 && args[0]->IsObject() && args[1]->IsObject() && args[2]->IsString() && args[3]->IsNumber())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected TTF::RenderTextBlended(Surface, Font, String, Number)")));
+  if (!(args.Length() == 3 && args[0]->IsObject() && args[1]->IsString() && args[2]->IsNumber())) {
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected TTF::RenderTextBlended(Font, String, Number)")));
   }
 
-  SDL_Surface* screen = UnwrapSurface(args[0]->ToObject());
-  TTF_Font* font = UnwrapFont(args[1]->ToObject());
-  String::Utf8Value text(args[2]);
-  int colorCode = args[3]->Int32Value();
+  SDL_PixelFormat* vfmt = SDL_GetVideoInfo()->vfmt;
+  TTF_Font* font = UnwrapFont(args[0]->ToObject());
+  String::Utf8Value text(args[1]);
+  int colorCode = args[2]->Int32Value();
 
   Uint8 r, g, b;
-  SDL_GetRGB(colorCode, screen->format, &r, &g, &b);
+  SDL_GetRGB(colorCode, vfmt, &r, &g, &b);
 
   SDL_Color color;
   color.r = r;
