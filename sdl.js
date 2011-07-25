@@ -9,21 +9,20 @@ Object.defineProperty(SDL, 'events', {
     events = new (require('events').EventEmitter);
     setInterval(function () {
       var data;
-      var mousemotion;
+      var motion = {};
       while (data = SDL.pollEvent()) {
-        if (data.type === "MOUSEMOTION") {
-          // Collapse motion events to just the last position
-          // TODO: collapse other high frequency events
-          mousemotion = data;
+        if (data.type.substr(data.type.length - 6) === "MOTION") {
+          motion[data.type] = data;
           continue;
         }
         events.emit(data.type, data);
         events.emit("event", data);
       }
-      if (mousemotion) {
-        events.emit(mousemotion.type, mousemotion);
-        events.emit("event", mousemotion);
-      }
+      Object.keys(motion).forEach(function (name) {
+        var event = motion[name];
+        events.emit(event.type, event);
+        events.emit("event", event);
+      });
     }, 13);
     return events;
   }
