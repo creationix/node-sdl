@@ -7,8 +7,7 @@ Object.defineProperty(SDL, 'events', {
   get: function () {
     if (events) return events;
     events = new (require('events').EventEmitter);
-    function getEvent(err) {
-      if (err) events.emit('error', err);
+    setInterval(function () {
       var data;
       var mousemotion;
       while (data = SDL.pollEvent()) {
@@ -25,9 +24,7 @@ Object.defineProperty(SDL, 'events', {
         events.emit(mousemotion.type, mousemotion);
         events.emit("event", mousemotion);
       }
-      SDL.waitEvent(getEvent);
-    }
-    SDL.waitEvent(getEvent);
+    }, 13);
     return events;
   }
 });
