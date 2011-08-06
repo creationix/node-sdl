@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from os import popen
 
 srcdir = '.'
