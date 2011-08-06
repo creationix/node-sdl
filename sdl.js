@@ -7,23 +7,17 @@ Object.defineProperty(SDL, 'events', {
   get: function () {
     if (events) return events;
     events = new (require('events').EventEmitter);
+    var now = Date.now();
     setInterval(function () {
+      var after = Date.now();
+      var delta = after - now;
+      now = after;
       var data;
-      var motion = {};
       while (data = SDL.pollEvent()) {
-        if (data.type.substr(data.type.length - 6) === "MOTION") {
-          motion[data.type] = data;
-          continue;
-        }
         events.emit(data.type, data);
-        events.emit("event", data);
       }
-      Object.keys(motion).forEach(function (name) {
-        var event = motion[name];
-        events.emit(event.type, event);
-        events.emit("event", event);
-      });
-    }, 13);
+      events.emit('tick', delta);
+    }, 16);
     return events;
   }
 });

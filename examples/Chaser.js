@@ -89,11 +89,7 @@ for (var i = 0; i < numPlayers; i++) {
   new Player(i);
 }
 
-var before = Date.now();
-setInterval(function () {
-  var after = Date.now();
-  var delta = after - before;
-  before = after;
+SDL.events.on('tick', function (delta) {
   // Check for collisions
   var collision = false;
   for (var i = 0; i < numPlayers - 1; i++) {
@@ -119,7 +115,7 @@ setInterval(function () {
   
   
   SDL.flip(screen);
-}, 10);
+});
 
 SDL.events.on("QUIT", function (evt) { process.exit(0); }); // Window close
 SDL.events.on("KEYDOWN", function (evt) {
