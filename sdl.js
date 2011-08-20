@@ -14,6 +14,7 @@ Object.defineProperty(SDL, 'events', {
       now = after;
       var data;
       while (data = SDL.pollEvent()) {
+        events.emit('event', data);
         events.emit(data.type, data);
       }
       events.emit('tick', delta);
