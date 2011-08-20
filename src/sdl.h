@@ -3,9 +3,12 @@
 
 #include <node.h>
 #include <v8.h>
+#include <GLES2/gl2.h>
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <SDL_image.h>
+
+
 #include "helpers.h"
 
 using namespace v8;
@@ -57,8 +60,6 @@ namespace sdl {
   }
 
   namespace IMG {
-    static Handle<Value> Init(const Arguments& args);
-    static Handle<Value> Quit(const Arguments& args);
     static Handle<Value> Load(const Arguments& args);
   }
 
@@ -66,6 +67,30 @@ namespace sdl {
     static Handle<Value> SetCaption(const Arguments& args);
     static Handle<Value> SetIcon(const Arguments& args);
   }
+
+  namespace GLES {
+    static Handle<Value> Doit(const Arguments& args);
+    static Handle<Value> LoadShader(const Arguments& args);
+    static Handle<Value> CreateShader(const Arguments& args);
+    static Handle<Value> CreateProgram(const Arguments& args);
+    static Handle<Value> AttachShader(const Arguments& args);
+    static Handle<Value> BindAttribLocation(const Arguments& args);
+    static Handle<Value> LinkProgram(const Arguments& args);
+    static Handle<Value> UseProgram(const Arguments& args);
+    static Handle<Value> EnableVertexAttribArray(const Arguments& args);
+    static Handle<Value> DisableVertexAttribArray(const Arguments& args);
+    static Handle<Value> GetUniformLocation(const Arguments& args);
+    static Handle<Value> ClearColor(const Arguments& args);
+    static Handle<Value> Enable(const Arguments& args);
+    static Handle<Value> CullFace(const Arguments& args);
+
+
+  }
+
+
+
+
+
 
   typedef struct {
     Persistent<Function> fn;
