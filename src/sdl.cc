@@ -87,236 +87,68 @@ init(Handle<Object> target)
   NODE_SET_METHOD(WM, "setCaption", sdl::WM::SetCaption);
   NODE_SET_METHOD(WM, "setIcon", sdl::WM::SetIcon);
 
-  Local<Object> GLES = Object::New();
-  target->Set(String::New("GLES"), GLES);
-
-  NODE_SET_METHOD(GLES, "doit", sdl::GLES::Doit);
-  NODE_SET_METHOD(GLES, "loadShader", sdl::GLES::LoadShader);
-  NODE_SET_METHOD(GLES, "createShader", sdl::GLES::CreateShader);
-  NODE_SET_METHOD(GLES, "createProgram", sdl::GLES::CreateProgram);
-  NODE_SET_METHOD(GLES, "attachShader", sdl::GLES::AttachShader);
-  NODE_SET_METHOD(GLES, "bindAttribLocation", sdl::GLES::BindAttribLocation);
-  NODE_SET_METHOD(GLES, "linkProgram", sdl::GLES::LinkProgram);
-  NODE_SET_METHOD(GLES, "useProgram", sdl::GLES::UseProgram);
-  NODE_SET_METHOD(GLES, "enableVertexAttribArray", sdl::GLES::EnableVertexAttribArray);
-  NODE_SET_METHOD(GLES, "disableVertexAttribArray", sdl::GLES::DisableVertexAttribArray);
-  NODE_SET_METHOD(GLES, "getUniformLocation", sdl::GLES::GetUniformLocation);
-  NODE_SET_METHOD(GLES, "clearColor", sdl::GLES::ClearColor);
-  NODE_SET_METHOD(GLES, "enable", sdl::GLES::Enable);
-  NODE_SET_METHOD(GLES, "cullFace", sdl::GLES::CullFace);
+  Local<Object> GL = Object::New();
+  target->Set(String::New("GL"), GL);
 
 
-  GLES->Set(String::New("VERTEX_SHADER"), Number::New(GL_VERTEX_SHADER));
-  GLES->Set(String::New("FRAGMENT_SHADER"), Number::New(GL_FRAGMENT_SHADER));
-  GLES->Set(String::New("CULL_FACE"), Number::New(GL_CULL_FACE));
-  GLES->Set(String::New("BACK"), Number::New(GL_BACK));
+  NODE_SET_METHOD(GL, "setAttribute", sdl::GL::SetAttribute);
+  NODE_SET_METHOD(GL, "getAttribute", sdl::GL::GetAttribute);
+  NODE_SET_METHOD(GL, "swapBuffers", sdl::GL::SwapBuffers);
+
+  GL->Set(String::New("RED_SIZE"), Number::New(SDL_GL_RED_SIZE));
+  GL->Set(String::New("GREEN_SIZE"), Number::New(SDL_GL_GREEN_SIZE));
+  GL->Set(String::New("BLUE_SIZE"), Number::New(SDL_GL_BLUE_SIZE));
+  GL->Set(String::New("ALPHA_SIZE"), Number::New(SDL_GL_ALPHA_SIZE));
+  GL->Set(String::New("DOUBLEBUFFER"), Number::New(SDL_GL_DOUBLEBUFFER));
+  GL->Set(String::New("BUFFER_SIZE"), Number::New(SDL_GL_BUFFER_SIZE));
+  GL->Set(String::New("DEPTH_SIZE"), Number::New(SDL_GL_DEPTH_SIZE));
+  GL->Set(String::New("STENCIL_SIZE"), Number::New(SDL_GL_STENCIL_SIZE));
+  GL->Set(String::New("ACCUM_RED_SIZE"), Number::New(SDL_GL_ACCUM_RED_SIZE));
+  GL->Set(String::New("ACCUM_GREEN_SIZE"), Number::New(SDL_GL_ACCUM_GREEN_SIZE));
+  GL->Set(String::New("ACCUM_BLUE_SIZE"), Number::New(SDL_GL_ACCUM_BLUE_SIZE));
+  GL->Set(String::New("ACCUM_ALPHA_SIZE"), Number::New(SDL_GL_ACCUM_ALPHA_SIZE));
 
 }
 
-Handle<Value> sdl::GLES::Doit(const Arguments& args) {
-  HandleScope scope;
+////////////////////////////////////////////////////////////////////////////////
 
-  printf("ME\n");
-
-  return Undefined();
-}
-
-Handle<Value> sdl::GLES::CreateShader(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 1 && args[0]->IsNumber())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected CreateShader(Number)")));
-  }
-
-  return Number::New(glCreateShader(args[0]->Int32Value()));
-}
-
-Handle<Value> sdl::GLES::CreateProgram(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 0)) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected CreateProgram()")));
-  }
-
-  return Number::New(glCreateProgram());
-}
-
-Handle<Value> sdl::GLES::LoadShader(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 2 && args[0]->IsString() && args[1]->IsNumber())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected LoadShader(String, Number)")));
-  }
-
-  String::Utf8Value code(args[0]);
-  int id = args[1]->Int32Value();
-  const char* codes[1];
-  codes[0] = *code;
-
-  // Compile the shader code
-  glShaderSource  (id, 1, codes, NULL);
-  glCompileShader (id);
-
-  // Verify that it worked
-  int ShaderStatus;
-  glGetShaderiv(id, GL_COMPILE_STATUS, &ShaderStatus);
-
-  // Check the compile status
-  if (ShaderStatus != GL_TRUE) {
-    int Len = 1024;
-    char Error[1024];
-    glGetShaderInfoLog(id, 1024, &Len, Error);
-    return ThrowException(Exception::Error(String::New(Error)));
-  }
-
-  return Undefined();
-}
-
-Handle<Value> sdl::GLES::AttachShader(const Arguments& args) {
+Handle<Value> sdl::GL::SetAttribute(const Arguments& args) {
   HandleScope scope;
 
   if (!(args.Length() == 2 && args[0]->IsNumber() && args[1]->IsNumber())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected AttachShader(Number, Number)")));
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected SetAttribute(Number, Number)")));
   }
 
-  int program = args[0]->Int32Value();
-  int shader = args[1]->Int32Value();
+  int attr = args[0]->Int32Value();
+  int value = args[1]->Int32Value();
 
-  glAttachShader(program, shader);
-
+  if (SDL_GL_SetAttribute((SDL_GLattr)attr, value)) return ThrowSDLException(__func__);
   return Undefined();
 }
 
-Handle<Value> sdl::GLES::BindAttribLocation(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 3 && args[0]->IsNumber() && args[1]->IsNumber() && args[2]->IsString())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected BindAttribLocation(Number, Number, String)")));
-  }
-
-  int program = args[0]->Int32Value();
-  int index = args[1]->Int32Value();
-  String::Utf8Value name(args[2]);
-
-  glBindAttribLocation(program, index, *name);
-
-  return Undefined();
-}
-
-Handle<Value> sdl::GLES::LinkProgram(const Arguments& args) {
+Handle<Value> sdl::GL::GetAttribute(const Arguments& args) {
   HandleScope scope;
 
   if (!(args.Length() == 1 && args[0]->IsNumber())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected LinkProgram(Number)")));
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected GetAttribute(Number)")));
   }
 
-  int program = args[0]->Int32Value();
+  int attr = args[0]->Int32Value();
+  int value;
 
-  glLinkProgram(program);
+  if (SDL_GL_GetAttribute((SDL_GLattr)attr, &value)) return ThrowSDLException(__func__);
 
-  int ShaderStatus;
-  glGetProgramiv(program, GL_LINK_STATUS, &ShaderStatus);
-
-  if (ShaderStatus != GL_TRUE) {
-    int Len = 1024;
-    char Error[1024];
-    glGetProgramInfoLog(program, 1024, &Len, Error);
-    return ThrowException(Exception::Error(String::New(Error)));
-  }
-
-  glValidateProgram(program);
-  glGetProgramiv(program, GL_VALIDATE_STATUS, &ShaderStatus);
-  if (ShaderStatus != GL_TRUE) {
-    return ThrowException(Exception::Error(String::New("Failed to validate GLSL program")));
-  }
-
-  return Undefined();
+  return Number::New(value);
 }
 
-
-Handle<Value> sdl::GLES::UseProgram(const Arguments& args) {
+Handle<Value> sdl::GL::SwapBuffers(const Arguments& args) {
   HandleScope scope;
 
-  if (!(args.Length() == 1 && args[0]->IsNumber())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected UseProgram(Number)")));
+  if (!(args.Length() == 0)) {
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected SwapBuffers()")));
   }
 
-  glUseProgram(args[0]->Int32Value());
-  return Undefined();
-}
-
-Handle<Value> sdl::GLES::EnableVertexAttribArray(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 1 && args[0]->IsNumber())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected EnableVertexAttribArray(Number)")));
-  }
-
-  glEnableVertexAttribArray(args[0]->Int32Value());
-  return Undefined();
-}
-
-Handle<Value> sdl::GLES::DisableVertexAttribArray(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 1 && args[0]->IsNumber())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected DisableVertexAttribArray(Number)")));
-  }
-
-  glDisableVertexAttribArray(args[0]->Int32Value());
-  return Undefined();
-}
-
-Handle<Value> sdl::GLES::GetUniformLocation(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 2 && args[0]->IsNumber() && args[1]->IsString())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected GetUniformLocation(Number, String)")));
-  }
-
-  int program = args[0]->Int32Value();
-  String::Utf8Value name(args[1]);
-
-  return Number::New(glGetUniformLocation(program, *name));
-}
-
-Handle<Value> sdl::GLES::ClearColor(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 4 && args[0]->IsNumber() && args[1]->IsNumber() && args[2]->IsNumber() && args[3]->IsNumber() )) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected ClearColor(Number, Number, Number, Number)")));
-  }
-
-  double red = args[0]->NumberValue();
-  double green = args[1]->NumberValue();
-  double blue = args[2]->NumberValue();
-  double alpha = args[3]->NumberValue();
-
-  glClearColor(red, green, blue, alpha);
-
-  return Undefined();
-}
-
-Handle<Value> sdl::GLES::Enable(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 1 && args[0]->IsNumber())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected Enable(Number)")));
-  }
-
-  glEnable(args[0]->Int32Value());
-  return Undefined();
-}
-
-
-Handle<Value> sdl::GLES::CullFace(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 1 && args[0]->IsNumber())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected CullFace(Number)")));
-  }
-
-  glCullFace(args[0]->Int32Value());
+  SDL_GL_SwapBuffers();
   return Undefined();
 }
 

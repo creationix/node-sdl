@@ -68,23 +68,10 @@ namespace sdl {
     static Handle<Value> SetIcon(const Arguments& args);
   }
 
-  namespace GLES {
-    static Handle<Value> Doit(const Arguments& args);
-    static Handle<Value> LoadShader(const Arguments& args);
-    static Handle<Value> CreateShader(const Arguments& args);
-    static Handle<Value> CreateProgram(const Arguments& args);
-    static Handle<Value> AttachShader(const Arguments& args);
-    static Handle<Value> BindAttribLocation(const Arguments& args);
-    static Handle<Value> LinkProgram(const Arguments& args);
-    static Handle<Value> UseProgram(const Arguments& args);
-    static Handle<Value> EnableVertexAttribArray(const Arguments& args);
-    static Handle<Value> DisableVertexAttribArray(const Arguments& args);
-    static Handle<Value> GetUniformLocation(const Arguments& args);
-    static Handle<Value> ClearColor(const Arguments& args);
-    static Handle<Value> Enable(const Arguments& args);
-    static Handle<Value> CullFace(const Arguments& args);
-
-
+  namespace GL {
+    static Handle<Value> SetAttribute (const Arguments& args);
+    static Handle<Value> GetAttribute (const Arguments& args);
+    static Handle<Value> SwapBuffers (const Arguments& args);
   }
 
 
