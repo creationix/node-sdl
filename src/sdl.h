@@ -3,7 +3,6 @@
 
 #include <node.h>
 #include <v8.h>
-#include <GLES2/gl2.h>
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <SDL_image.h>
