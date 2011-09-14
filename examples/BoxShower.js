@@ -5,7 +5,7 @@ SDL.IMG.init( 0 );
 
 var doit = true;
 
-var screen = SDL.setVideoMode( 640, 640, 32, SDL.SURFACE.SWSURFACE );
+var screen = SDL.setVideoMode( 640, 480, 32, SDL.SURFACE.SWSURFACE );
 var rectangles = [];
 var colors = [ 0xFFFF0000, 0xFF00FF00, 0xFF0000FF ];
 
