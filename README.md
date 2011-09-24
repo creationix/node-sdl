@@ -227,7 +227,7 @@ joysticks present with the numJoysticks() function. The following code checks
 to see if there's at least one joystick and complains if there's not:
 
 <pre>    var numPlayers = SDL.numJoysticks();
-    if( numPlayers < 1 ) {
+    if( numPlayers &lt; 1 ) {
         console.log( 'Blargh! At least one joystick is required!' );
         process.exit( 2 );
     }</pre>
