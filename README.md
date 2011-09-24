@@ -299,7 +299,7 @@ properties:
 
 <pre>    scancode - the scancode of the key pressed
     sym      - the symbol of the key pressed
-    mod      - key modifier<pre>
+    mod      - key modifier</pre>
 
 Key scancodes are hardware and locale dependent; it's recommended they be
 left alone unless you really are targeting a specific piece of hardware. Key
