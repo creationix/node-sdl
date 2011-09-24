@@ -1,6 +1,6 @@
 # node-sdl ( Simple DirectMedia Layer bindings for node.js )
 
-## Installation
+## 0. Installation
 
 Installation of the node-sdl package is straight-forward: first clone the
 package using git, then build the C++ portion of the package with the
@@ -28,9 +28,9 @@ example programs:
 <pre>    cd examples
     node img.js</pre>
 
-## Usage
+## 1. Usage
 
-### Initialization and Shutdown
+### 1.1. Initialization and Shutdown
 
 Begin by requiring the node-sdl package and calling the init() function:
 
@@ -69,7 +69,7 @@ can be achieved by adding a listener to the KEYDOWN event:
       }
     } );</pre>
 
-### Video Functions
+### 1.2. Video Functions
 
 To create a window under SDL control, use the setVideoMode() function to 
 create a "surface".
@@ -194,7 +194,7 @@ example:
     SDL.flip( screen );
 </pre>
 
-### Image Related Functions
+### 1.3. Image Related Functions
 
 This package uses a supplimentary image library intended to make it easy for
 node-sdl applications to load and use JPG, PNG or TIFF images. Before using
@@ -215,7 +215,7 @@ quit() function:
 
 <pre>    SDL.IMG.quit();</pre>
 
-### Joystick Functions
+### 1.4. Joystick Functions
 
 If you are developing an application that uses joysticks, you'll need to pass
 the SDL.INIT.JOYSTICK option along to the SDL.init() call:
@@ -257,7 +257,7 @@ After the joystick is opened, it will start to generate events. You can register
 event handlers with the SDL.events.on() function. Joystick related events are
 described in the events section below.
 
-### Window Manager Functions
+### 1.5. Window Manager Functions
 
 node-sdl is capable of setting window manager related info with the SDL.WM.*
 functions.
@@ -275,13 +275,13 @@ uses it as the app's icon:
 
 <pre>    SDL.WM.setIcon( SDL.IMG.load( __dirname + '/eight.png' ) );</pre>
 
-### Events
+## 2. Events
 
 node-sdl uses javascript events to communicate certain conditions. The
 events.on() function is used to set handlers for these events. Event handlers
 are passed an object describing the event as a parameter.
 
-#### Quit
+### 2.1. Quit
 
 As described above, the QUIT event is called when the user closes a SDL window.
 The proper response is to free buffers, and exit:
@@ -291,7 +291,7 @@ The proper response is to free buffers, and exit:
        process.exit( 0 );
     } );</pre>
 
-#### KEYDOWN & KEYUP
+### 2.2. KEYDOWN & KEYUP
 
 The KEYDOWN and KEYUP events signal the app that the user has pressed (or
 released) a key. The event passed to the handler includes the following
@@ -343,7 +343,7 @@ The following code converts the modifier and symbol to an ascii value:
         console.log( 'ascii: ' + ascii );
     } );</pre>
 
-#### MOUSEMOTION
+### 2.3. MOUSEMOTION
 
 When the user moves a mouse over an SDL screen, the system will generate
 MOUSEMOTION events. If you create a handler for these events, every time the
@@ -367,7 +367,7 @@ emulate a 3 button mouse. In these systems, pressing the left and right button
 together will generate a middle button press (code 0x0002) instead of the
 mouse chord you might be expecting (code 0x0005).
 
-#### MOUSEBUTTONDOWN & MOUSEBUTTONUP
+### 2.4. MOUSEBUTTONDOWN & MOUSEBUTTONUP
 
 The MOUSEBUTTONUP and MOUSEBUTTONDOWN events report more data and have
 slightly different semantics than the button state in the MOUSEMOTION event.
@@ -387,7 +387,7 @@ buttons supported:
     4 - scroll wheel up
     5 - scroll wheel down</pre>
 
-#### JOYAXISMOTION (Joystick Axis Motion)
+### 2.5. JOYAXISMOTION (Joystick Axis Motion)
 
 The JOYAXISMOTION event reports movement of the joystick device along one of
 its axes. Handlers for this event are passed an object with the following
@@ -397,7 +397,7 @@ properties:
     axis  - which axis (x or y) the event is reporting movement upon
     value - a value from -32768 to 32767 describing the logical position of the joystick</pre>
 
-#### JOYBALLMOTION (Joystick Trackball Motion)
+### 2.6. JOYBALLMOTION (Joystick Trackball Motion)
 
 If a user's joystick is equipped with a trackball, it may generate these events
 when motion along the trackball is detected. Handlers assigned to listen for
@@ -408,7 +408,7 @@ these events will receive an object with the following properties:
     xrel  - relative trackball motion along the x axis
     yrel  - relative trackball motion along the y axis</pre>
 
-#### JOYHATMOTION (Joystick Hat Motion)
+### 2.7. JOYHATMOTION (Joystick Hat Motion)
 
 If a user's joystick is equipped with a hat, it may generate these events when
 hat motion is detected. Handlers for this event will be passed an object with
@@ -418,7 +418,7 @@ the following properties:
     hat   - which hat on the joystick generated the event
     value - the position of the hat</pre>
 
-#### JOYBUTTONDOWN & JOYBUTTONUP
+### 2.8. JOYBUTTONDOWN & JOYBUTTONUP
 
 If a user's joystick is equipped with buttons, it may generate these events when
 a button press is detected. Handlers for these events will be passed an object
