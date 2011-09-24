@@ -240,7 +240,7 @@ following code prints out the name of each joystick:
 <pre>    SDL.init( SDL.INIT.VIDEO | SDL.INIT.JOYSTICK );
     var stickCount = SDL.numJoysticks();
 
-    for( var i = 0; i < stickCount; i ++ ) {
+    for( var i = 0; i &lt; stickCount; i ++ ) {
         console.log( 'joystick ' + i + ': ' + SDL.joystickName( i ) );
     }
 
@@ -334,7 +334,7 @@ The following code converts the modifier and symbol to an ascii value:
 <pre>    SDL.events.on( 'KEYDOWN', function( evt ) {
         var ascii = evt.sym;
         
-        if( ( ascii < 123 ) && ( ascii > 96 ) ) {
+        if( ( ascii &lt; 123 ) && ( ascii &gt; 96 ) ) {
             if( 0 != ( evt.mod && 0x2003 ) ) {
                 ascii -= 32;
             }
