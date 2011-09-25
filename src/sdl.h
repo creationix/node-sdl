@@ -61,6 +61,7 @@ namespace sdl {
     static Handle<Value> Init(const Arguments& args);
     static Handle<Value> Quit(const Arguments& args);
     static Handle<Value> Load(const Arguments& args);
+    static Handle<Value> LoadBuf(const Arguments& args);
   }
 
   namespace WM {

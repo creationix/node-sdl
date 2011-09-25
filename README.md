@@ -128,11 +128,31 @@ This call is extremely useful in conjunction with the SDL.IMG.load() call:
     var sheet = SDL.displayFormat( tempSheet );
     SDL.freeSurface( tempSheet );</pre>
 
+You can also load image data into a javascript Buffer and use the loadbuf() call.
+This example renders an icon that's generated with the loadbuf() function. First,
+the contents of an image are BASE64 encoded, stored in the source as a string.
+Then the string is converted into a buffer and passed as a parameter into the
+SDL.IMG.loadbuf() function:
+
+<pre>    var iconsrc = 
+        "AAABAAEAEBAQAAAAAAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAA" +
+
+	// insert real BASE64 data here...
+
+        "AAD5nwAA+Z8AAD/8AAD//wAA//8AAPZvAAD2bwAA";
+
+    var iconbuf = new Buffer( iconsrc, 'base64' );
+    var tempSurface = SDL.IMG.loadbuf( iconbuf );
+    var currentIcon = SDL.displayFormat( tempSurface );
+    SDL.freeSurface( tempSurface );
+    SDL.blitSurface( currentIcon, [ 12, 12, 64, 64 ], screen, [12, 12] );
+</pre>
+
 SDL surfaces may have an Alpha value associated with them. This is a value from
 0 to 255 and sets the transparency of the surface's contents when blitted into
 another surface (like the frame buffer).
 
-<pre>    SDL.setAlpha( sheet, SDL.SURFACE.SRCALPHA | SRC.SURFACE.RLEACCEL, 192 );</pre>
+<pre>    SDL.setAlpha( sheet, SDL.SURFACE.SRCALPHA | SDL.SURFACE.RLEACCEL, 192 );</pre>
 
 Options to the setAlpha() function include:
 

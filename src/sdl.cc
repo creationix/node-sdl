@@ -84,7 +84,7 @@ init(Handle<Object> target)
   NODE_SET_METHOD(IMG, "init", sdl::IMG::Init);
   NODE_SET_METHOD(IMG, "quit", sdl::IMG::Quit);
   NODE_SET_METHOD(IMG, "load", sdl::IMG::Load);
-
+  NODE_SET_METHOD(IMG, "loadbuf", sdl::IMG::LoadBuf);
 
   Local<Object> IMG_INIT = Object::New();
   IMG->Set(String::New("INIT"), IMG_INIT);
@@ -920,6 +920,30 @@ static Handle<Value> sdl::IMG::Load(const Arguments& args) {
 
   return scope.Close(WrapSurface(image));
 }
+
+static Handle<Value> sdl::IMG::LoadBuf(const Arguments& args) {
+  HandleScope scope;
+
+  if (!(args.Length() == 1 && args[0]->IsObject())) {
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected IMG::LoadBuf(String)")));
+  }
+
+  Handle<Object> buffer = args[0]->ToObject();
+  size_t bufferLength = Buffer::Length( buffer );
+  char * bufferData   = Buffer::Data( buffer );
+
+  SDL_Surface *image = IMG_Load_RW( SDL_RWFromMem( bufferData, bufferLength ), 1 );
+
+  if(!image) {
+    return ThrowException(Exception::Error(String::Concat(
+      String::New("IMG::Load: "),
+      String::New(IMG_GetError())
+    )));
+  }
+
+  return scope.Close(WrapSurface(image));
+}
+
 
 static Handle<Value> sdl::WM::SetCaption(const Arguments& args) {
   HandleScope scope;
