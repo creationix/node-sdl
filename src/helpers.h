@@ -15,6 +15,9 @@ namespace sdl {
   Local<Value> MakeSDLException(const char* name);
 
   // Wrapper and Unwrappers
+  Handle<Object> WrapChunk( Mix_Chunk *chunk );
+  Mix_Chunk * UnwrapChunk( Handle<Object> obj );
+
   Handle<Object> WrapSurface(SDL_Surface* surface);
   SDL_Surface* UnwrapSurface(Handle<Object> obj);
 

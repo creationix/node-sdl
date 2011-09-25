@@ -3,6 +3,7 @@
 #include <node_buffer.h>
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include <SDL_mixer.h>
 
 #include "helpers.h"
 
@@ -416,6 +417,54 @@ TTF_Font* UnwrapFont(Handle<Object> obj) {
   return static_cast<TTF_Font*>(ptr);
 }
 
+  // Wrap/Unwrap Audio Chunk
+
+  static Persistent<ObjectTemplate> chunk_template_;
+
+  Handle<Value> GetChunkAlen( Local<String> name, const AccessorInfo& info ) {
+    Mix_Chunk * chunk = UnwrapChunk( info.Holder() );
+    return( Number::New( chunk->alen ) );
+  }
+
+  Handle<Value> GetChunkVolume( Local<String> name, const AccessorInfo& info ) {
+    Mix_Chunk * chunk = UnwrapChunk( info.Holder() );
+    return( Number::New( chunk->volume ) );
+  }
+
+  Handle<ObjectTemplate> MakeChunkTemplate ( ) {
+    HandleScope handle_scope;
+
+    Handle<ObjectTemplate> result = ObjectTemplate::New();
+    result->SetInternalFieldCount(1);
+
+    result->SetAccessor( String::NewSymbol( "alen" ), GetChunkAlen );
+    result->SetAccessor( String::NewSymbol( "volume" ), GetChunkVolume );
+
+    return( handle_scope.Close( result ) );
+  }
+
+  Handle<Object> WrapChunk( Mix_Chunk * chunk ) {
+    HandleScope handle_scope;
+
+    if( chunk_template_.IsEmpty() ) {
+      Handle<ObjectTemplate> raw_template = MakeChunkTemplate();
+      chunk_template_ = Persistent<ObjectTemplate>::New( raw_template );
+    }
+
+    Handle<ObjectTemplate> templ = chunk_template_;
+    Handle<Object> result = templ->NewInstance();
+
+    Handle<External> request_ptr = External::New( chunk );
+    result->SetInternalField( 0, request_ptr );
+
+    return( handle_scope.Close( result ) );
+  }
+
+  Mix_Chunk * UnwrapChunk( Handle<Object> obj ) {
+    Handle<External> field = Handle<External>::Cast( obj->GetInternalField(0) );
+    void *ptr = field->Value();
+    return( static_cast<Mix_Chunk *>(ptr) );
+  }
 
 char* BufferData(Buffer *b) {
   return Buffer::Data(b->handle_);

@@ -6,6 +6,7 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <SDL_image.h>
+#include <SDL_mixer.h>
 #include "helpers.h"
 
 using namespace v8;
@@ -65,6 +66,18 @@ namespace sdl {
   namespace WM {
     static Handle<Value> SetCaption(const Arguments& args);
     static Handle<Value> SetIcon(const Arguments& args);
+  }
+
+  namespace MIXER {
+    static Handle<Value> OpenAudio( const Arguments& args );
+    static Handle<Value> CloseAudio( const Arguments& args );
+    static Handle<Value> LoadWAV( const Arguments& args );
+    static Handle<Value> VolumeChunk( const Arguments& args );
+    static Handle<Value> FreeChunk( const Arguments& args );
+    static Handle<Value> AllocateChannels( const Arguments& args );
+    static Handle<Value> Volume( const Arguments& args );
+    static Handle<Value> PlayChannel( const Arguments& args );
+    static Handle<Value> PlayChannelTimed( const Arguments& args );
   }
 
   typedef struct {

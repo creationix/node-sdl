@@ -10,7 +10,7 @@ This package depends on the SDL libraries being present on the target system.
 The following command was required to install these libraries on a "stock"
 Ubuntu 11.04 install:
 
-<pre>    sudo apt-get install libsdl1.2-dev libsdl-image1.2-dev libsdl-ttf2.0-dev</pre>
+<pre>    sudo apt-get install libsdl-mixer1.2-dev libsdl-image1.2-dev libsdl-ttf2.0-dev</pre>
 
 Now that your library dependencies are satisfied, check out the source from
 github:
@@ -26,7 +26,8 @@ You can test if the package was properly built by running one or more of the
 example programs:
 
 <pre>    cd examples
-    node img.js</pre>
+    node img.js
+</pre>
 
 ## 1. Usage
 
@@ -42,7 +43,7 @@ subsystems to initialize. The node-sdl package defines the following
 constants:
 
 <pre>    SDL.INIT.TIMER - initializes timers (not currently supported)
-    SDL.INIT.AUDIO - initialize audio subsystem (not currently supported)
+    SDL.INIT.AUDIO - initialize audio subsystem
     SDL.INIT.VIDEO - initialize video subsystem
     SDL.INIT.CDROM - initialize CD playback subsystem (not currently supported)
     SDL.INIT.JOYSTICK - initialize joystick support
@@ -67,7 +68,8 @@ can be achieved by adding a listener to the KEYDOWN event:
           ( ( evt.sym === 27 ) && ( evt.mod === 0  ) ) ) {
         process.exit( 0 );
       }
-    } );</pre>
+    } );
+</pre>
 
 ### 1.2. Video Functions
 
@@ -123,8 +125,8 @@ parameter and returns a new surface conformable with the system's frame buffer.
 This call is extremely useful in conjunction with the SDL.IMG.load() call:
 
 <pre>    var tempSheet = SDL.IMG.load( __dirname + "/sprites.png" );
-var sheet = SDL.displayFormat( tempSheet );
-SDL.freeSurface( tempSheet );</pre>
+    var sheet = SDL.displayFormat( tempSheet );
+    SDL.freeSurface( tempSheet );</pre>
 
 SDL surfaces may have an Alpha value associated with them. This is a value from
 0 to 255 and sets the transparency of the surface's contents when blitted into
@@ -213,7 +215,8 @@ The foo variable can now be used as a surface blit calls (see below.)
 After you are finished using the image functions, be sure to use the image
 quit() function:
 
-<pre>    SDL.IMG.quit();</pre>
+<pre>    SDL.IMG.quit();
+</pre>
 
 ### 1.4. Joystick Functions
 
@@ -255,7 +258,7 @@ some code that opens joystick number zero:
 
 After the joystick is opened, it will start to generate events. You can register
 event handlers with the SDL.events.on() function. Joystick related events are
-described in the events section below.
+described in the events section below.  
 
 ### 1.5. Window Manager Functions
 
@@ -273,7 +276,42 @@ to be passed as it's parameter, so it's common practice to use the image load()
 function. The following example loads an icon from the file 'eight.png' and
 uses it as the app's icon:
 
-<pre>    SDL.WM.setIcon( SDL.IMG.load( __dirname + '/eight.png' ) );</pre>
+<pre>    SDL.WM.setIcon( SDL.IMG.load( __dirname + '/eight.png' ) );
+</pre>
+
+### 1.6. Audio Files
+
+node-sdl uses the SDL_mixer library to play audio files. To initialize the audio
+subsystem, call the SDL.init() function with the SDL.INIT.AUDIO parameter specified:
+
+<pre>    SDL.init( SDL.INIT.VIDEO | SDL.INIT.AUDIO );</pre>
+
+Next initialize the audio subsystem with a call to the openAudio() function:
+
+<pre>    SDL.MIXER.openAudio( 44100, SDL.MIXER.AUDIO_S16SYS, 2, 1024 );</pre>
+
+The first parameter to the openAudio() function is the sample rate you want to use. The
+second is a constant representing what kind of samples you anticipate using. The next
+is the number of channels to initialize and the last is the audio chunk size. 
+
+To load an audio file, use the loadWAV() function. Don't worry, even though the name is
+"loadWAV", it also loads other formats just fine.
+
+<pre>    var chunk = SDL.MIXER.loadWAV( __dirname + "/sample.wav" );</pre>
+
+This function returns a "chunk" used by the playChannel() function to acutally play the
+file:
+
+<pre>    SDL.MIXER.playChannel( 0, chunk, -1 );</pre>
+
+The first parameter is the channel number to play the sample in. The second is the
+sample's "chunk" and the last is the number of times to play the sample (index 0). If
+you pass a -1, like we did here, it will repeat indefinitely.
+
+When you're finished with the audio subsystem, it's good practice to close the audio
+subsystem with the closeAudio() function:
+
+<pre>    SDL.MIXER.closeAudio();</pre>
 
 ## 2. Events
 
@@ -341,7 +379,8 @@ The following code converts the modifier and symbol to an ascii value:
         }
     
         console.log( 'ascii: ' + ascii );
-    } );</pre>
+    } );
+</pre>
 
 ### 2.3. MOUSEMOTION
 
@@ -385,7 +424,8 @@ buttons supported:
     2 - middle button
     3 - right button
     4 - scroll wheel up
-    5 - scroll wheel down</pre>
+    5 - scroll wheel down
+</pre>
 
 ### 2.5. JOYAXISMOTION (Joystick Axis Motion)
 
@@ -395,7 +435,8 @@ properties:
 
 <pre>    which - which joystick generated the event
     axis  - which axis (x or y) the event is reporting movement upon
-    value - a value from -32768 to 32767 describing the logical position of the joystick</pre>
+    value - a value from -32768 to 32767 describing the logical position of the joystick
+</pre>
 
 ### 2.6. JOYBALLMOTION (Joystick Trackball Motion)
 
@@ -406,7 +447,8 @@ these events will receive an object with the following properties:
 <pre>    which - which joystick generated the event
     ball  - which trackball generated the event
     xrel  - relative trackball motion along the x axis
-    yrel  - relative trackball motion along the y axis</pre>
+    yrel  - relative trackball motion along the y axis
+</pre>
 
 ### 2.7. JOYHATMOTION (Joystick Hat Motion)
 
@@ -416,7 +458,8 @@ the following properties:
 
 <pre>    which - which joystick generated the event
     hat   - which hat on the joystick generated the event
-    value - the position of the hat</pre>
+    value - the position of the hat
+</pre>
 
 ### 2.8. JOYBUTTONDOWN & JOYBUTTONUP
 
@@ -425,5 +468,6 @@ a button press is detected. Handlers for these events will be passed an object
 with the following properties:
 
 <pre>    which  - which joystick generated the event
-    button - which button was pressed</pre>
+    button - which button was pressed
+</pre>
 
