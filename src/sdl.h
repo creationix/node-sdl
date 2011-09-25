@@ -68,7 +68,7 @@ namespace sdl {
     static Handle<Value> SetIcon(const Arguments& args);
   }
 
-  namespace MIXER {
+  namespace MIX {
     static Handle<Value> OpenAudio( const Arguments& args );
     static Handle<Value> CloseAudio( const Arguments& args );
     static Handle<Value> LoadWAV( const Arguments& args );

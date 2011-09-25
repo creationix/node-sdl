@@ -288,7 +288,7 @@ subsystem, call the SDL.init() function with the SDL.INIT.AUDIO parameter specif
 
 Next initialize the audio subsystem with a call to the openAudio() function:
 
-<pre>    SDL.MIXER.openAudio( 44100, SDL.MIXER.AUDIO_S16SYS, 2, 1024 );</pre>
+<pre>    SDL.MIX.openAudio( 44100, SDL.MIX.AUDIO_S16SYS, 2, 1024 );</pre>
 
 The first parameter to the openAudio() function is the sample rate you want to use. The
 second is a constant representing what kind of samples you anticipate using. The next
@@ -297,12 +297,12 @@ is the number of channels to initialize and the last is the audio chunk size.
 To load an audio file, use the loadWAV() function. Don't worry, even though the name is
 "loadWAV", it also loads other formats just fine.
 
-<pre>    var chunk = SDL.MIXER.loadWAV( __dirname + "/sample.wav" );</pre>
+<pre>    var chunk = SDL.MIX.loadWAV( __dirname + "/sample.wav" );</pre>
 
 This function returns a "chunk" used by the playChannel() function to acutally play the
 file:
 
-<pre>    SDL.MIXER.playChannel( 0, chunk, -1 );</pre>
+<pre>    SDL.MIX.playChannel( 0, chunk, -1 );</pre>
 
 The first parameter is the channel number to play the sample in. The second is the
 sample's "chunk" and the last is the number of times to play the sample (index 0). If
@@ -311,7 +311,7 @@ you pass a -1, like we did here, it will repeat indefinitely.
 When you're finished with the audio subsystem, it's good practice to close the audio
 subsystem with the closeAudio() function:
 
-<pre>    SDL.MIXER.closeAudio();</pre>
+<pre>    SDL.MIX.closeAudio();</pre>
 
 ## 2. Events
 

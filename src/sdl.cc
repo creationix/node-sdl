@@ -98,24 +98,24 @@ init(Handle<Object> target)
   NODE_SET_METHOD(WM, "setCaption", sdl::WM::SetCaption);
   NODE_SET_METHOD(WM, "setIcon", sdl::WM::SetIcon);
 
-  Local<Object> MIXER = Object::New();
-  target->Set( String::New( "MIXER" ), MIXER );
+  Local<Object> MIX = Object::New();
+  target->Set( String::New( "MIX" ), MIX );
 
-  MIXER->Set( String::New( "AUDIO_U8" ), Number::New( AUDIO_U8 ) );
-  MIXER->Set( String::New( "AUDIO_S8" ), Number::New( AUDIO_S8 ) );
-  MIXER->Set( String::New( "AUDIO_U16SYS" ), Number::New( AUDIO_U16SYS ) );
-  MIXER->Set( String::New( "AUDIO_S16SYS" ), Number::New( AUDIO_S16SYS ) );
-  MIXER->Set( String::New( "MIX_MAX_VOLUME" ), Number::New( MIX_MAX_VOLUME ) );
+  MIX->Set( String::New( "AUDIO_U8" ), Number::New( AUDIO_U8 ) );
+  MIX->Set( String::New( "AUDIO_S8" ), Number::New( AUDIO_S8 ) );
+  MIX->Set( String::New( "AUDIO_U16SYS" ), Number::New( AUDIO_U16SYS ) );
+  MIX->Set( String::New( "AUDIO_S16SYS" ), Number::New( AUDIO_S16SYS ) );
+  MIX->Set( String::New( "MIX_MAX_VOLUME" ), Number::New( MIX_MAX_VOLUME ) );
 
-  NODE_SET_METHOD( MIXER, "openAudio", sdl::MIXER::OpenAudio );
-  NODE_SET_METHOD( MIXER, "closeAudio", sdl::MIXER::CloseAudio );
-  NODE_SET_METHOD( MIXER, "loadWAV", sdl::MIXER::LoadWAV );
-  NODE_SET_METHOD( MIXER, "volumeChunk", sdl::MIXER::VolumeChunk );
-  NODE_SET_METHOD( MIXER, "freeChunk", sdl::MIXER::FreeChunk );
-  NODE_SET_METHOD( MIXER, "allocateChannels", sdl::MIXER::AllocateChannels );
-  NODE_SET_METHOD( MIXER, "volume", sdl::MIXER::Volume );
-  NODE_SET_METHOD( MIXER, "playChannel", sdl::MIXER::PlayChannel );
-  NODE_SET_METHOD( MIXER, "playChannelTimed", sdl::MIXER::PlayChannelTimed );
+  NODE_SET_METHOD( MIX, "openAudio", sdl::MIX::OpenAudio );
+  NODE_SET_METHOD( MIX, "closeAudio", sdl::MIX::CloseAudio );
+  NODE_SET_METHOD( MIX, "loadWAV", sdl::MIX::LoadWAV );
+  NODE_SET_METHOD( MIX, "volumeChunk", sdl::MIX::VolumeChunk );
+  NODE_SET_METHOD( MIX, "freeChunk", sdl::MIX::FreeChunk );
+  NODE_SET_METHOD( MIX, "allocateChannels", sdl::MIX::AllocateChannels );
+  NODE_SET_METHOD( MIX, "volume", sdl::MIX::Volume );
+  NODE_SET_METHOD( MIX, "playChannel", sdl::MIX::PlayChannel );
+  NODE_SET_METHOD( MIX, "playChannelTimed", sdl::MIX::PlayChannelTimed );
 
 }
 
@@ -951,11 +951,11 @@ static Handle<Value> sdl::WM::SetIcon(const Arguments& args) {
   return Undefined();
 }
 
-static Handle<Value> sdl::MIXER::OpenAudio( const Arguments& args ) {
+static Handle<Value> sdl::MIX::OpenAudio( const Arguments& args ) {
   HandleScope scope;
 
   if (!(args.Length() == 4 && args[0]->IsNumber() && args[1]->IsNumber() && args[2]->IsNumber() && args[3]->IsNumber())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected MIXER::OpenAudio(Number, Number, Number, Number)")));
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected MIX::OpenAudio(Number, Number, Number, Number)")));
   }
 
   int freq = ( args[0]->Int32Value() );
@@ -966,21 +966,21 @@ static Handle<Value> sdl::MIXER::OpenAudio( const Arguments& args ) {
   return Number::New( Mix_OpenAudio( freq, format, channels, chunksize ) );
 }
 
-static Handle<Value> sdl::MIXER::CloseAudio( const Arguments& args ) {
+static Handle<Value> sdl::MIX::CloseAudio( const Arguments& args ) {
   HandleScope scope;
 
   if( 0 != args.Length() ) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected MIXER::CloseAudio()")));
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected MIX::CloseAudio()")));
   }
 
   return Undefined();
 }
 
-static Handle<Value> sdl::MIXER::LoadWAV( const Arguments& args ) {
+static Handle<Value> sdl::MIX::LoadWAV( const Arguments& args ) {
   HandleScope scope;
 
   if( ( 1 != args.Length() ) || ( ! args[0]->IsString() ) ) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected MIXER::LoadWAV(String)")));
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected MIX::LoadWAV(String)")));
   }
   
   String::Utf8Value file( args[0] );
@@ -994,11 +994,11 @@ static Handle<Value> sdl::MIXER::LoadWAV( const Arguments& args ) {
   }
 }
 
-static Handle<Value> sdl::MIXER::VolumeChunk( const Arguments& args ) {
+static Handle<Value> sdl::MIX::VolumeChunk( const Arguments& args ) {
   HandleScope scope;
 
   if ( ( 2 != args.Length() ) || ( ! args[0]->IsObject() ) || ( ! args[1]->IsNumber() ) ) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected MIXER::VolumeChunk(Chunk, Number)")));
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected MIX::VolumeChunk(Chunk, Number)")));
   }
 
   Mix_Chunk * chunk = UnwrapChunk( args[0]->ToObject() );
@@ -1007,11 +1007,11 @@ static Handle<Value> sdl::MIXER::VolumeChunk( const Arguments& args ) {
   return( Number::New( Mix_VolumeChunk( chunk, volume ) ) );
 }
 
-static Handle<Value> sdl::MIXER::FreeChunk( const Arguments& args ) {
+static Handle<Value> sdl::MIX::FreeChunk( const Arguments& args ) {
   HandleScope scope;
 
   if( ( 1 != args.Length() ) || ( ! args[0]->IsObject() ) ) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected MIXER::FreeChunk(Chunk)")));
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected MIX::FreeChunk(Chunk)")));
   }
 
   // TODO: dangerous. find a better way.
@@ -1021,31 +1021,31 @@ static Handle<Value> sdl::MIXER::FreeChunk( const Arguments& args ) {
   return Undefined();
 }
 
-static Handle<Value> sdl::MIXER::AllocateChannels( const Arguments& args ) {
+static Handle<Value> sdl::MIX::AllocateChannels( const Arguments& args ) {
   HandleScope scope;
 
   if( ( 1 != args.Length() ) || ( ! args[0]->IsNumber() ) ) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected MIXER::AllocateChannels(Number)")));
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected MIX::AllocateChannels(Number)")));
   }
 
   return( Number::New( Mix_AllocateChannels( args[0]->Int32Value() ) ) );
 }
 
-static Handle<Value> sdl::MIXER::Volume( const Arguments& args ) {
+static Handle<Value> sdl::MIX::Volume( const Arguments& args ) {
   HandleScope scope;
 
   if( ( 2 != args.Length() ) || ( ! args[0]->IsNumber() ) || ( ! args[1]->IsNumber() ) ) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected MIXER::Volume(Number,Number)")));
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected MIX::Volume(Number,Number)")));
   }
 
   return( Number::New( Mix_Volume( args[0]->Int32Value(), args[1]->Int32Value() ) ) );
 }
 
-static Handle<Value> sdl::MIXER::PlayChannel( const Arguments& args ) {
+static Handle<Value> sdl::MIX::PlayChannel( const Arguments& args ) {
   HandleScope scope;
 
   if( ( 3 != args.Length() ) || ( ! args[0]->IsNumber() ) || ( ! args[1]->IsObject() ) || ( ! args[2]->IsNumber() ) ) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected MIXER::PlayChannel(Number,Chunk,Number)")));
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected MIX::PlayChannel(Number,Chunk,Number)")));
   }
 
   int channel = args[0]->Int32Value();
@@ -1055,11 +1055,11 @@ static Handle<Value> sdl::MIXER::PlayChannel( const Arguments& args ) {
   return( Number::New( Mix_PlayChannel( channel, chunk, loops ) ) );
 }
 
-static Handle<Value> sdl::MIXER::PlayChannelTimed( const Arguments& args ) {
+static Handle<Value> sdl::MIX::PlayChannelTimed( const Arguments& args ) {
   HandleScope scope;
 
   if( ( 4 != args.Length() ) || ( ! args[0]->IsNumber() ) || ( ! args[1]->IsObject() ) || ( ! args[2]->IsNumber() ) || ( ! args[3]->IsNumber() ) ) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected MIXER::PlayChannelTimed(Number,Chunk,Number,Number)")));
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected MIX::PlayChannelTimed(Number,Chunk,Number,Number)")));
   }
 
   int channel = args[0]->Int32Value();
