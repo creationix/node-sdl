@@ -85,7 +85,8 @@ namespace sdl {
     Persistent<Function> fn;
     int status;
   } closure_t;
-  static int EIO_WaitEvent(eio_req *req);
+
+  static void EIO_WaitEvent(eio_req *req);
   static int EIO_OnEvent(eio_req *req);
 
 }

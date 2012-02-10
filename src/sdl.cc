@@ -213,10 +213,9 @@ Handle<Value> sdl::SetError(const Arguments& args) {
   return Undefined();
 }
 
-static int sdl::EIO_WaitEvent(eio_req *req) {
+static void sdl::EIO_WaitEvent(eio_req *req) {
   sdl::closure_t *closure = (sdl::closure_t *) req->data;
   closure->status = SDL_WaitEvent(NULL);
-  return 0;
 }
 
 static int sdl::EIO_OnEvent(eio_req *req) {
