@@ -1,11 +1,21 @@
-#include "sdl.h"
+#ifdef __APPLE__
+#include <objc/objc.h>
+#include <objc/objc-runtime.h>
+#endif
+
+#include "SDL.h"
+
 using namespace v8;
-
-
 
 extern "C" void
 init(Handle<Object> target)
 {
+#ifdef __APPLE__
+  // on the mac it is necessary to create to call [NSApplication sharedApplication]
+  // before we can create a rendering window
+  objc_msgSend(objc_lookUpClass("NSApplication"), sel_getUid("sharedApplication"));
+#endif
+    
   NODE_SET_METHOD(target, "init", sdl::Init);
   NODE_SET_METHOD(target, "initSubSystem", sdl::InitSubSystem);
   NODE_SET_METHOD(target, "quit", sdl::Quit);
@@ -107,7 +117,6 @@ init(Handle<Object> target)
   GL->Set(String::New("ACCUM_GREEN_SIZE"), Number::New(SDL_GL_ACCUM_GREEN_SIZE));
   GL->Set(String::New("ACCUM_BLUE_SIZE"), Number::New(SDL_GL_ACCUM_BLUE_SIZE));
   GL->Set(String::New("ACCUM_ALPHA_SIZE"), Number::New(SDL_GL_ACCUM_ALPHA_SIZE));
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -246,10 +255,9 @@ Handle<Value> sdl::SetError(const Arguments& args) {
   return Undefined();
 }
 
-static int sdl::EIO_WaitEvent(eio_req *req) {
+static void sdl::EIO_WaitEvent(eio_req *req) {
   sdl::closure_t *closure = (sdl::closure_t *) req->data;
   closure->status = SDL_WaitEvent(NULL);
-  return 0;
 }
 
 static int sdl::EIO_OnEvent(eio_req *req) {
