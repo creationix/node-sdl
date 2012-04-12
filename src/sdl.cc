@@ -4,6 +4,8 @@
 #endif
 
 #include "SDL.h"
+#include "sdl.h"
+#include <v8.h>
 
 using namespace v8;
 
