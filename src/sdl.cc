@@ -55,6 +55,7 @@ init(Handle<Object> target)
   NODE_SET_METHOD(target, "mapRGBA", sdl::MapRGBA);
   NODE_SET_METHOD(target, "getRGB", sdl::GetRGB);
   NODE_SET_METHOD(target, "getRGBA", sdl::GetRGBA);
+  NODE_SET_METHOD(target, "setClipRect",sdl::SetClipRect);
 
   Local<Object> INIT = Object::New();
   target->Set(String::New("INIT"), INIT);
@@ -841,6 +842,33 @@ static Handle<Value> sdl::GetRGBA(const Arguments& args) {
   return scope.Close(rgba);
 }
 
+
+static Handle<Value> sdl::SetClipRect(const Arguments& args) {
+  HandleScope scope;
+
+  if (!(args.Length() == 2 && args[0]->IsObject())) {
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected SetClipRect(SDL_Surface, SDL_Rect)")));
+  }    
+  
+  SDL_Surface* surface = UnwrapSurface(args[0]->ToObject());
+  SDL_Rect* rect;
+  if (args[1]->IsNull()) {
+    rect = NULL;
+  } else if (args[1]->IsArray()) {
+    SDL_Rect r;
+    Handle<Object> arr = args[1]->ToObject();
+    r.x = arr->Get(String::New("0"))->Int32Value();
+    r.y = arr->Get(String::New("1"))->Int32Value();
+    r.w = arr->Get(String::New("2"))->Int32Value();
+    r.h = arr->Get(String::New("3"))->Int32Value();
+    rect = &r;
+  } else {
+    rect = UnwrapRect(args[1]->ToObject());
+  }
+  if (SDL_SetClipRect (surface, rect ) < 0) return ThrowSDLException(__func__);
+
+  return Undefined();
+}
 
 static Handle<Value> sdl::TTF::Init(const Arguments& args) {
   HandleScope scope;
