@@ -51,6 +51,7 @@ namespace sdl {
   static Handle<Value> MapRGBA(const Arguments& args);
   static Handle<Value> GetRGB(const Arguments& args);
   static Handle<Value> GetRGBA(const Arguments& args);
+  static Handle<Value> SetClipRect(const Arguments& args);
 
   namespace TTF {
     static Handle<Value> Init(const Arguments& args);
