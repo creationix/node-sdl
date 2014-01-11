@@ -6,33 +6,38 @@
 #include "SDL.h"
 #include "sdl.h"
 #include <v8.h>
+#include <string>
 
 using namespace v8;
+
+static uv_loop_t *video_loop;
 
 extern "C" void
 init(Handle<Object> target)
 {
-#ifdef __APPLE__
-  // on the mac it is necessary to create to call [NSApplication sharedApplication]
-  // before we can create a rendering window
-  objc_msgSend(objc_lookUpClass("NSApplication"), sel_getUid("sharedApplication"));
-#endif
+// #ifdef __APPLE__
+//   // on the mac it is necessary to create to call [NSApplication sharedApplication]
+//   // before we can create a rendering window
+//   objc_msgSend(objc_getClass("NSApplication"), sel_getUid("sharedApplication"));
+// #endif
+  sdl::ColorWrapper::Init(target);
     
   NODE_SET_METHOD(target, "init", sdl::Init);
   NODE_SET_METHOD(target, "initSubSystem", sdl::InitSubSystem);
+  NODE_SET_METHOD(target, "wasInit", sdl::WasInit);
+
   NODE_SET_METHOD(target, "quit", sdl::Quit);
   NODE_SET_METHOD(target, "quitSubSystem", sdl::QuitSubSystem);
-  NODE_SET_METHOD(target, "wasInit", sdl::WasInit);
+
   NODE_SET_METHOD(target, "clearError", sdl::ClearError);
   NODE_SET_METHOD(target, "getError", sdl::GetError);
   NODE_SET_METHOD(target, "setError", sdl::SetError);
+
   NODE_SET_METHOD(target, "waitEvent", sdl::WaitEvent);
   NODE_SET_METHOD(target, "pollEvent", sdl::PollEvent);
-  NODE_SET_METHOD(target, "setVideoMode", sdl::SetVideoMode);
-  NODE_SET_METHOD(target, "videoModeOK", sdl::VideoModeOK);
+
   NODE_SET_METHOD(target, "numJoysticks", sdl::NumJoysticks);
   NODE_SET_METHOD(target, "joystickOpen", sdl::JoystickOpen);
-  NODE_SET_METHOD(target, "joystickOpened", sdl::JoystickOpened);
   NODE_SET_METHOD(target, "joystickName", sdl::JoystickName);
   NODE_SET_METHOD(target, "joystickNumAxes", sdl::JoystickNumAxes);
   NODE_SET_METHOD(target, "joystickNumButtons", sdl::JoystickNumButtons);
@@ -41,16 +46,13 @@ init(Handle<Object> target)
   NODE_SET_METHOD(target, "joystickClose", sdl::JoystickClose);
   NODE_SET_METHOD(target, "joystickUpdate", sdl::JoystickUpdate);
   NODE_SET_METHOD(target, "joystickEventState", sdl::JoystickEventState);
-  NODE_SET_METHOD(target, "flip", sdl::Flip);
+
   NODE_SET_METHOD(target, "fillRect", sdl::FillRect);
-  NODE_SET_METHOD(target, "updateRect", sdl::UpdateRect);
   NODE_SET_METHOD(target, "createRGBSurface", sdl::CreateRGBSurface);
   NODE_SET_METHOD(target, "blitSurface", sdl::BlitSurface);
   NODE_SET_METHOD(target, "freeSurface", sdl::FreeSurface);
   NODE_SET_METHOD(target, "setColorKey", sdl::SetColorKey);
-  NODE_SET_METHOD(target, "displayFormat", sdl::DisplayFormat);
-  NODE_SET_METHOD(target, "displayFormatAlpha", sdl::DisplayFormatAlpha);
-  NODE_SET_METHOD(target, "setAlpha", sdl::SetAlpha);
+
   NODE_SET_METHOD(target, "mapRGB", sdl::MapRGB);
   NODE_SET_METHOD(target, "mapRGBA", sdl::MapRGBA);
   NODE_SET_METHOD(target, "getRGB", sdl::GetRGB);
@@ -68,26 +70,40 @@ init(Handle<Object> target)
 
   Local<Object> SURFACE = Object::New();
   target->Set(String::New("SURFACE"), SURFACE);
-  SURFACE->Set(String::New("ANYFORMAT"), Number::New(SDL_ANYFORMAT));
-  SURFACE->Set(String::New("ASYNCBLIT"), Number::New(SDL_ASYNCBLIT));
-  SURFACE->Set(String::New("DOUBLEBUF"), Number::New(SDL_DOUBLEBUF));
-  SURFACE->Set(String::New("HWACCEL"), Number::New(SDL_HWACCEL));
-  SURFACE->Set(String::New("HWPALETTE"), Number::New(SDL_HWPALETTE));
-  SURFACE->Set(String::New("HWSURFACE"), Number::New(SDL_HWSURFACE));
-  SURFACE->Set(String::New("FULLSCREEN"), Number::New(SDL_FULLSCREEN));
-  SURFACE->Set(String::New("OPENGL"), Number::New(SDL_OPENGL));
-  SURFACE->Set(String::New("RESIZABLE"), Number::New(SDL_RESIZABLE));
+  // SURFACE->Set(String::New("ANYFORMAT"), Number::New(SDL_ANYFORMAT));
+  // SURFACE->Set(String::New("ASYNCBLIT"), Number::New(SDL_ASYNCBLIT));
+  // SURFACE->Set(String::New("DOUBLEBUF"), Number::New(SDL_DOUBLEBUF));
+  // SURFACE->Set(String::New("HWACCEL"), Number::New(SDL_HWACCEL));
+  // SURFACE->Set(String::New("HWPALETTE"), Number::New(SDL_HWPALETTE));
+  // SURFACE->Set(String::New("HWSURFACE"), Number::New(SDL_HWSURFACE));
+  // SURFACE->Set(String::New("FULLSCREEN"), Number::New(SDL_FULLSCREEN));
+  // SURFACE->Set(String::New("OPENGL"), Number::New(SDL_OPENGL));
+  // SURFACE->Set(String::New("RESIZABLE"), Number::New(SDL_RESIZABLE));
   SURFACE->Set(String::New("RLEACCEL"), Number::New(SDL_RLEACCEL));
-  SURFACE->Set(String::New("SRCALPHA"), Number::New(SDL_SRCALPHA));
-  SURFACE->Set(String::New("SRCCOLORKEY"), Number::New(SDL_SRCCOLORKEY));
+  // SURFACE->Set(String::New("SRCALPHA"), Number::New(SDL_SRCALPHA));
+  // SURFACE->Set(String::New("SRCCOLORKEY"), Number::New(SDL_SRCCOLORKEY));
   SURFACE->Set(String::New("SWSURFACE"), Number::New(SDL_SWSURFACE));
   SURFACE->Set(String::New("PREALLOC"), Number::New(SDL_PREALLOC));
+
+  // SDL Enumerations start:
+
+  Local<Object> AUDIOFORMAT = Object::New();
+  target->Set(String::New("AUDIOFORMAT"), AUDIOFORMAT);
+  AUDIOFORMAT->Set(String::New("MASK_BITSIZE"), Number::New(SDL_AUDIO_MASK_BITSIZE));
+  AUDIOFORMAT->Set(String::New("MASK_DATATYPE"), Number::New(SDL_AUDIO_MASK_DATATYPE));
+  AUDIOFORMAT->Set(String::New("MASK_ENDIAN"), Number::New(SDL_AUDIO_MASK_ENDIAN));
+  AUDIOFORMAT->Set(String::New("MASK_SIGNED"), Number::New(SDL_AUDIO_MASK_SIGNED));
+
+  Local<Object> TEXTUREACCESS = Object::New();
+  target->Set(String::New("TEXTUREACCESS"), TEXTUREACCESS);
+  TEXTUREACCESS->Set(String::New("STATIC"), Number::New(SDL_TEXTUREACCESS_STATIC));
+  TEXTUREACCESS->Set(String::New("STREAMING"), Number::New(SDL_TEXTUREACCESS_STREAMING));
 
   Local<Object> TTF = Object::New();
   target->Set(String::New("TTF"), TTF);
   NODE_SET_METHOD(TTF, "init", sdl::TTF::Init);
   NODE_SET_METHOD(TTF, "openFont", sdl::TTF::OpenFont);
-  NODE_SET_METHOD(TTF, "renderTextBlended", sdl::TTF::RenderTextBlended);
+  // NODE_SET_METHOD(TTF, "renderTextBlended", sdl::TTF::RenderTextBlended);
 
   Local<Object> IMG = Object::New();
   target->Set(String::New("IMG"), IMG);
@@ -97,16 +113,12 @@ init(Handle<Object> target)
   Local<Object> WM = Object::New();
   target->Set(String::New("WM"), WM);
 
-  NODE_SET_METHOD(WM, "setCaption", sdl::WM::SetCaption);
-  NODE_SET_METHOD(WM, "setIcon", sdl::WM::SetIcon);
-
   Local<Object> GL = Object::New();
   target->Set(String::New("GL"), GL);
 
 
   NODE_SET_METHOD(GL, "setAttribute", sdl::GL::SetAttribute);
   NODE_SET_METHOD(GL, "getAttribute", sdl::GL::GetAttribute);
-  NODE_SET_METHOD(GL, "swapBuffers", sdl::GL::SwapBuffers);
 
   GL->Set(String::New("RED_SIZE"), Number::New(SDL_GL_RED_SIZE));
   GL->Set(String::New("GREEN_SIZE"), Number::New(SDL_GL_GREEN_SIZE));
@@ -120,6 +132,190 @@ init(Handle<Object> target)
   GL->Set(String::New("ACCUM_GREEN_SIZE"), Number::New(SDL_GL_ACCUM_GREEN_SIZE));
   GL->Set(String::New("ACCUM_BLUE_SIZE"), Number::New(SDL_GL_ACCUM_BLUE_SIZE));
   GL->Set(String::New("ACCUM_ALPHA_SIZE"), Number::New(SDL_GL_ACCUM_ALPHA_SIZE));
+
+  Local<Object> HINT = Object::New();
+  target->Set(String::New("HINT"), HINT);
+
+  HINT->Set(String::New("FRAMEBUFFER_ACCELERATION"), String::New(SDL_HINT_FRAMEBUFFER_ACCELERATION));
+  HINT->Set(String::New("IDLE_TIMER_DISABLED"), String::New(SDL_HINT_IDLE_TIMER_DISABLED));
+  HINT->Set(String::New("ORIENTATIONS"), String::New(SDL_HINT_ORIENTATIONS));
+  HINT->Set(String::New("RENDER_DRIVER"), String::New(SDL_HINT_RENDER_DRIVER));
+  HINT->Set(String::New("RENDER_OPENGL_SHADERS"), String::New(SDL_HINT_RENDER_OPENGL_SHADERS));
+  HINT->Set(String::New("SCALE_QUALITY"), String::New(SDL_HINT_RENDER_SCALE_QUALITY));
+  HINT->Set(String::New("RENDER_VSYNC"), String::New(SDL_HINT_RENDER_VSYNC));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+sdl::ColorWrapper::ColorWrapper() {
+}
+
+sdl::ColorWrapper::~ColorWrapper() {
+}
+
+void sdl::ColorWrapper::Init(Handle<Object> exports) {
+  Local<FunctionTemplate> tpl = FunctionTemplate::New(New);
+
+  color_wrap_template_ = Persistent<FunctionTemplate>::New(tpl);
+
+  color_wrap_template_->InstanceTemplate()->SetInternalFieldCount(1);
+  color_wrap_template_->SetClassName(String::NewSymbol("ColorWrapper"));
+
+  NODE_SET_PROTOTYPE_METHOD(color_wrap_template_, "red", GetRed);
+  NODE_SET_PROTOTYPE_METHOD(color_wrap_template_, "r", GetRed);
+
+  NODE_SET_PROTOTYPE_METHOD(color_wrap_template_, "green", GetGreen);
+  NODE_SET_PROTOTYPE_METHOD(color_wrap_template_, "g", GetGreen);
+
+  NODE_SET_PROTOTYPE_METHOD(color_wrap_template_, "blue", GetBlue);
+  NODE_SET_PROTOTYPE_METHOD(color_wrap_template_, "b", GetBlue);
+
+  NODE_SET_PROTOTYPE_METHOD(color_wrap_template_, "alpha", GetAlpha);
+  NODE_SET_PROTOTYPE_METHOD(color_wrap_template_, "a", GetAlpha);
+
+  exports->Set(String::NewSymbol("Color"), color_wrap_template_->GetFunction());
+}
+
+Handle<Value> sdl::ColorWrapper::New(const Arguments& args) {
+  HandleScope scope;
+
+  ColorWrapper* wrap = new ColorWrapper();
+  int red = args[0]->IsUndefined() ? 0 : args[0]->Int32Value();
+  int green = args[1]->IsUndefined() ? 0 : args[1]->Int32Value();
+  int blue = args[2]->IsUndefined() ? 0 : args[2]->Int32Value();
+  int alpha = args[3]->IsUndefined() ? 0 : args[3]->Int32Value();
+
+  if(red > 255) {
+    red = 255;
+  }
+  else if(red < 0) {
+    red = 0;
+  }
+
+  if(green > 255) {
+    green = 255;
+  }
+  else if(green < 0) {
+    green = 0;
+  }
+
+  if(blue > 255) {
+    blue = 255;
+  }
+  else if(blue < 0) {
+    blue = 0;
+  }
+
+  if(alpha > 255) {
+    alpha = 255;
+  }
+  else if(alpha < 0) {
+    alpha = 0;
+  }
+
+  wrap->color_.r = static_cast<Uint8>(red);
+  wrap->color_.g = static_cast<Uint8>(green);
+  wrap->color_.b = static_cast<Uint8>(blue);
+  wrap->color_.a = static_cast<Uint8>(alpha);
+
+  wrap->Wrap(args.This());
+  return args.This();
+}
+
+Handle<Value> sdl::ColorWrapper::GetRed(const Arguments& args) {
+  HandleScope scope;
+
+  ColorWrapper* wrap = ObjectWrap::Unwrap<ColorWrapper>(args.This());
+  return scope.Close(Number::New(wrap->color_.r));
+}
+
+Handle<Value> sdl::ColorWrapper::GetGreen(const Arguments& args) {
+  HandleScope scope;
+
+  ColorWrapper* wrap = ObjectWrap::Unwrap<ColorWrapper>(args.This());
+  return scope.Close(Number::New(wrap->color_.g));
+}
+
+Handle<Value> sdl::ColorWrapper::GetBlue(const Arguments& args) {
+  HandleScope scope;
+
+  ColorWrapper* wrap = ObjectWrap::Unwrap<ColorWrapper>(args.This());
+  return scope.Close(Number::New(wrap->color_.b));
+}
+
+Handle<Value> sdl::ColorWrapper::GetAlpha(const Arguments& args) {
+  HandleScope scope;
+
+  ColorWrapper* wrap = ObjectWrap::Unwrap<ColorWrapper>(args.This());
+  return scope.Close(Number::New(wrap->color_.a));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+sdl::EventWrapper::EventWrapper() {
+}
+
+sdl::EventWrapper::~EventWrapper() {
+}
+
+void sdl::EventWrapper::Init(Handle<Object> exports) {
+  event_type_to_string_[SDL_DOLLARGESTURE] = "dollarGesture";
+  event_type_to_string_[SDL_DROPFILE] = "dropFile";
+  event_type_to_string_[SDL_FINGERMOTION] = "fingerMotion";
+  event_type_to_string_[SDL_FINGERDOWN] = "fingerDown";
+  event_type_to_string_[SDL_FINGERUP] = "fingerUp";
+  event_type_to_string_[SDL_KEYDOWN] = "keyDown";
+  event_type_to_string_[SDL_KEYUP] = "keyUp";
+  event_type_to_string_[SDL_JOYAXISMOTION] = "joyAxisMotion";
+  event_type_to_string_[SDL_JOYBALLMOTION] = "joyBallMotion";
+  event_type_to_string_[SDL_JOYHATMOTION] = "joyHatMotion";
+  event_type_to_string_[SDL_JOYBUTTONDOWN] = "joyButtonDown";
+  event_type_to_string_[SDL_JOYBUTTONUP] = "joyButtonUp";
+  event_type_to_string_[SDL_MOUSEMOTION] = "mouseMotion";
+  event_type_to_string_[SDL_MOUSEBUTTONDOWN] = "mouseButtonDown";
+  event_type_to_string_[SDL_MOUSEBUTTONUP] = "mouseButtonUp";
+  event_type_to_string_[SDL_MOUSEWHEEL] = "mouseWheel";
+  event_type_to_string_[SDL_MULTIGESTURE] = "multiGesture";
+  event_type_to_string_[SDL_QUIT] = "quit";
+  event_type_to_string_[SDL_SYSWMEVENT] = "sysWMEvent";
+  event_type_to_string_[SDL_TEXTEDITING] = "textEditing";
+  event_type_to_string_[SDL_TEXTINPUT] = "textInput";
+  event_type_to_string_[SDL_USEREVENT] = "userEvent";
+  event_type_to_string_[SDL_WINDOWEVENT] = "windowEvent";
+
+  Local<FunctionTemplate> tpl = FunctionTemplate::New(New);
+
+  event_wrap_template_ = Persistent<FunctionTemplate>::New(tpl);
+
+  event_wrap_template_->InstanceTemplate()->SetInternalFieldCount(1);
+  event_wrap_template_->SetClassName(String::NewSymbol("EventWrapper"));
+
+  NODE_SET_PROTOTYPE_METHOD(event_wrap_template_, "type", GetType);
+  NODE_SET_PROTOTYPE_METHOD(event_wrap_template_, "specificType", GetSpecificType);
+
+  exports->Set(String::NewSymbol("Event"), event_wrap_template_->GetFunction());
+}
+
+Handle<Value> sdl::EventWrapper::New(const Arguments& args) {
+  HandleScope scope;
+
+  return Undefined();
+}
+
+Handle<Value> sdl::EventWrapper::GetType(const Arguments& args) {
+  HandleScope scope;
+
+  EventWrapper* wrap = ObjectWrap::Unwrap<EventWrapper>(args.This());
+  std::string type_string = event_type_to_string_[wrap->event_.type];
+  return scope.Close(String::New(type_string.c_str()));
+}
+
+Handle<Value> sdl::EventWrapper::GetSpecificType(const Arguments& args) {
+  HandleScope scope;
+
+  EventWrapper* wrap = ObjectWrap::Unwrap<EventWrapper>(args.This());
+  return Undefined();
+  // return scope.Close(String::New(window_event_to_string_[wrap->event_.type]));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -151,17 +347,6 @@ Handle<Value> sdl::GL::GetAttribute(const Arguments& args) {
   if (SDL_GL_GetAttribute((SDL_GLattr)attr, &value)) return ThrowSDLException(__func__);
 
   return Number::New(value);
-}
-
-Handle<Value> sdl::GL::SwapBuffers(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 0)) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected SwapBuffers()")));
-  }
-
-  SDL_GL_SwapBuffers();
-  return Undefined();
 }
 
 Handle<Value> sdl::Init(const Arguments& args) {
@@ -258,31 +443,6 @@ Handle<Value> sdl::SetError(const Arguments& args) {
   return Undefined();
 }
 
-static void sdl::EIO_WaitEvent(eio_req *req) {
-  sdl::closure_t *closure = (sdl::closure_t *) req->data;
-  closure->status = SDL_WaitEvent(NULL);
-}
-
-static int sdl::EIO_OnEvent(eio_req *req) {
-  HandleScope scope;
-
-  sdl::closure_t *closure = (sdl::closure_t *) req->data;
-  ev_unref(EV_DEFAULT_UC);
-
-  Handle<Value> argv[1];
-  if (closure->status == 0) {
-    argv[0] = MakeSDLException("WaitEvent");
-  } else {
-    argv[0] = Undefined();
-  }
-
-  closure->fn->Call(Context::GetCurrent()->Global(), 1, argv);
-
-  closure->fn.Dispose();
-  free(closure);
-  return 0;
-}
-
 static Handle<Value> sdl::WaitEvent(const Arguments& args) {
   HandleScope scope;
 
@@ -290,14 +450,39 @@ static Handle<Value> sdl::WaitEvent(const Arguments& args) {
     return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected WaitEvent(Function)")));
   }
 
-  closure_t *closure = (closure_t*) malloc(sizeof(closure_t));
-  closure->fn = Persistent<Function>::New(Handle<Function>::Cast(args[0]));
-  eio_custom(EIO_WaitEvent, EIO_PRI_DEFAULT, EIO_OnEvent, closure);
-  ev_ref(EV_DEFAULT_UC);
+  SDL_Event e;
+  int err = SDL_WaitEvent(&e);
+  if(0 == err) {
+    std::string err = "WaitEvent failed: ";
+    err += SDL_GetError();
+    return ThrowException(MakeSDLException(err.c_str()));
+  }
+  Handle<Value> argv[1];
+  argv[0] = sdl::SDLEventToJavascriptObject(e);
+  Handle<Function>::Cast(args[0])->Call(Context::GetCurrent()->Global(), 1, argv);
   return Undefined();
 }
 
+static Handle<Value> sdl::WaitEventTimeout(const Arguments& args) {
+  HandleScope scope;
 
+  if(!(args.Length() == 2 && args[0]->IsFunction() && args[1]->IsNumber())) {
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected WaitEventTimeout(Function, Number)")));
+  }
+
+  SDL_Event e;
+  int timeout = args[1]->Int32Value();
+  int err = SDL_WaitEventTimeout(&e, timeout);
+  if(0 == err) {
+    std::string err = "WaitEventTimeout failed: ";
+    err += SDL_GetError();
+    return ThrowException(MakeSDLException(err.c_str()));
+  }
+  Handle<Value> argv[1];
+  argv[0] = sdl::SDLEventToJavascriptObject(e);
+  Handle<Function>::Cast(args[0])->Call(Context::GetCurrent()->Global(), 1, argv);
+  return Undefined();
+}
 
 Handle<Value> sdl::PollEvent(const Arguments& args) {
   HandleScope scope;
@@ -311,105 +496,8 @@ Handle<Value> sdl::PollEvent(const Arguments& args) {
     return Undefined();
   }
 
-  Local<Object> evt = Object::New();
-
-  switch (event.type) {
-    case SDL_ACTIVEEVENT:
-      evt->Set(String::New("type"), String::New("ACTIVEEVENT"));
-      evt->Set(String::New("gain"), Boolean::New(event.active.gain));
-      evt->Set(String::New("state"), Number::New(event.active.state));
-      break;
-    case SDL_KEYDOWN:
-    case SDL_KEYUP:
-      evt->Set(String::New("type"), String::New(event.type == SDL_KEYDOWN ? "KEYDOWN" : "KEYUP"));
-      evt->Set(String::New("scancode"), Number::New(event.key.keysym.scancode));
-      evt->Set(String::New("sym"), Number::New(event.key.keysym.sym));
-      evt->Set(String::New("mod"), Number::New(event.key.keysym.mod));
-      break;
-    case SDL_MOUSEMOTION:
-      evt->Set(String::New("type"), String::New("MOUSEMOTION"));
-      evt->Set(String::New("state"), Number::New(event.motion.state));
-      evt->Set(String::New("which"), Number::New(event.motion.which));
-      evt->Set(String::New("x"), Number::New(event.motion.x));
-      evt->Set(String::New("y"), Number::New(event.motion.y));
-      evt->Set(String::New("xrel"), Number::New(event.motion.xrel));
-      evt->Set(String::New("yrel"), Number::New(event.motion.yrel));
-      break;
-    case SDL_MOUSEBUTTONDOWN:
-    case SDL_MOUSEBUTTONUP:
-      evt->Set(String::New("type"), String::New(event.type == SDL_MOUSEBUTTONDOWN ? "MOUSEBUTTONDOWN" : "MOUSEBUTTONUP"));
-      evt->Set(String::New("button"), Number::New(event.button.button));
-      evt->Set(String::New("which"), Number::New(event.button.which));
-      evt->Set(String::New("x"), Number::New(event.button.x));
-      evt->Set(String::New("y"), Number::New(event.button.y));
-      break;
-    case SDL_JOYAXISMOTION:
-      evt->Set(String::New("type"), String::New("JOYAXISMOTION"));
-      evt->Set(String::New("which"), Number::New(event.jaxis.which));
-      evt->Set(String::New("axis"), Number::New(event.jaxis.axis));
-      evt->Set(String::New("value"), Number::New(event.jaxis.value));
-      break;
-    case SDL_JOYBALLMOTION:
-      evt->Set(String::New("type"), String::New("JOYBALLMOTION"));
-      evt->Set(String::New("which"), Number::New(event.jball.which));
-      evt->Set(String::New("ball"), Number::New(event.jball.ball));
-      evt->Set(String::New("xrel"), Number::New(event.jball.xrel));
-      evt->Set(String::New("yrel"), Number::New(event.jball.yrel));
-      break;
-    case SDL_JOYHATMOTION:
-      evt->Set(String::New("type"), String::New("JOYHATMOTION"));
-      evt->Set(String::New("which"), Number::New(event.jhat.which));
-      evt->Set(String::New("hat"), Number::New(event.jhat.hat));
-      evt->Set(String::New("value"), Number::New(event.jhat.value));
-      break;
-    case SDL_JOYBUTTONDOWN:
-    case SDL_JOYBUTTONUP:
-      evt->Set(String::New("type"), String::New(event.type == SDL_JOYBUTTONDOWN ? "JOYBUTTONDOWN" : "JOYBUTTONUP"));
-      evt->Set(String::New("which"), Number::New(event.jbutton.which));
-      evt->Set(String::New("button"), Number::New(event.jbutton.button));
-      break;
-    case SDL_QUIT:
-      evt->Set(String::New("type"), String::New("QUIT"));
-      break;
-    default:
-      evt->Set(String::New("type"), String::New("UNKNOWN"));
-      evt->Set(String::New("typeCode"), Number::New(event.type));
-      break;
-  }
-
+  Local<Object> evt = SDLEventToJavascriptObject(event);
   return scope.Close(evt);
-}
-
-static Handle<Value> sdl::SetVideoMode(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 4 && args[0]->IsNumber() && args[1]->IsNumber() && args[2]->IsNumber() && args[3]->IsNumber())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected SetVideoMode(Number, Number, Number, Number)")));
-  }
-
-  int width = (args[0]->Int32Value());
-  int height = (args[1]->Int32Value());
-  int bpp = (args[2]->Int32Value());
-  int flags = (args[3]->Int32Value());
-
-  SDL_Surface* screen = SDL_SetVideoMode(width, height, bpp, flags);
-  if (screen == NULL) return ThrowSDLException(__func__);
-  return scope.Close(WrapSurface(screen));
-}
-
-static Handle<Value> sdl::VideoModeOK(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 4 && args[0]->IsNumber() && args[1]->IsNumber() && args[2]->IsNumber() && args[3]->IsNumber())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected VideoModeOK(Number, Number, Number, Number)")));
-  }
-
-  int width = (args[0]->Int32Value());
-  int height = (args[1]->Int32Value());
-  int bpp = (args[2]->Int32Value());
-  int flags = (args[3]->Int32Value());
-
-  return Number::New(SDL_VideoModeOK(width, height, bpp, flags));
 }
 
 static Handle<Value> sdl::NumJoysticks(const Arguments& args) {
@@ -434,25 +522,15 @@ static Handle<Value> sdl::JoystickOpen(const Arguments& args) {
   return scope.Close(WrapJoystick(joystick));
 }
 
-static Handle<Value> sdl::JoystickOpened(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 1 && args[0]->IsNumber())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected JoystickOpened(Number)")));
-  }
-
-  return Number::New(SDL_JoystickOpened(args[0]->Int32Value()));
-}
-
-
 static Handle<Value> sdl::JoystickName(const Arguments& args) {
-  HandleScope scope;
+  return Undefined();
+  // HandleScope scope;
 
-  if (!(args.Length() == 1 && args[0]->IsNumber())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected JoystickName(Number)")));
-  }
+  // if (!(args.Length() == 1 && args[0]->IsNumber())) {
+  //   return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected JoystickName(Number)")));
+  // }
 
-  return String::New(SDL_JoystickName(args[0]->Int32Value()));
+  // return String::New(SDL_JoystickName(UnwrapJoystick(args[0])));
 }
 
 static Handle<Value> sdl::JoystickNumAxes(const Arguments& args) {
@@ -533,19 +611,6 @@ static Handle<Value> sdl::JoystickEventState(const Arguments& args) {
   return Boolean::New(SDL_JoystickEventState(state));
 }
 
-
-static Handle<Value> sdl::Flip(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 1 && args[0]->IsObject())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected Flip(Surface)")));
-  }
-
-  SDL_Flip(UnwrapSurface(args[0]->ToObject()));
-
-  return Undefined();
-}
-
 static Handle<Value> sdl::FillRect(const Arguments& args) {
   HandleScope scope;
 
@@ -578,38 +643,6 @@ static Handle<Value> sdl::FillRect(const Arguments& args) {
 
   return Undefined();
 }
-
-static Handle<Value> sdl::UpdateRect(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 2
-      && args[0]->IsObject()
-      && (args[1]->IsObject() || args[1]->IsNull())
-  )) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected UpdateRect(Surface, Rect)")));
-  }
-
-  SDL_Surface* surface = UnwrapSurface(args[0]->ToObject());
-  SDL_Rect* rect;
-  if (args[1]->IsNull()) {
-    rect = NULL;
-  } else if (args[1]->IsArray()) {
-    SDL_Rect r;
-    Handle<Object> arr = args[1]->ToObject();
-    r.x = arr->Get(String::New("0"))->Int32Value();
-    r.y = arr->Get(String::New("1"))->Int32Value();
-    r.w = arr->Get(String::New("2"))->Int32Value();
-    r.h = arr->Get(String::New("3"))->Int32Value();
-    rect = &r;
-  } else {
-    rect = UnwrapRect(args[1]->ToObject());
-  }
-
-  SDL_UpdateRect(surface, rect->x, rect->y, rect->w, rect->h);
-
-  return Undefined();
-}
-
 
 static Handle<Value> sdl::CreateRGBSurface(const Arguments& args) {
   HandleScope scope;
@@ -726,46 +759,6 @@ static Handle<Value> sdl::SetColorKey(const Arguments& args) {
 
   return Undefined();
 
-}
-
-static Handle<Value> sdl::DisplayFormat(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 1 && args[0]->IsObject())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected DisplayFormat(Surface)")));
-  }
-
-  SDL_Surface* surface = UnwrapSurface(args[0]->ToObject());
-
-  return scope.Close(WrapSurface(SDL_DisplayFormat(surface)));
-}
-
-static Handle<Value> sdl::DisplayFormatAlpha(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 1 && args[0]->IsObject())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected DisplayFormatAlpha(Surface)")));
-  }
-
-  SDL_Surface* surface = UnwrapSurface(args[0]->ToObject());
-
-  return scope.Close(WrapSurface(SDL_DisplayFormatAlpha(surface)));
-}
-
-static Handle<Value> sdl::SetAlpha(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 3 && args[0]->IsObject() && args[1]->IsNumber() && args[2]->IsNumber())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected SetAlpha(Surface, Number, Number)")));
-  }
-
-  SDL_Surface* surface = UnwrapSurface(args[0]->ToObject());
-  int flags = args[1]->Int32Value();
-  int alpha = args[2]->Int32Value();
-
-  if (SDL_SetAlpha(surface, flags, alpha) < 0) return ThrowSDLException(__func__);
-
-  return Undefined();
 }
 
 static Handle<Value> sdl::MapRGB(const Arguments& args) {
@@ -907,36 +900,37 @@ static Handle<Value> sdl::TTF::OpenFont(const Arguments& args) {
   return scope.Close(WrapFont(font));
 }
 
-static Handle<Value> sdl::TTF::RenderTextBlended(const Arguments& args) {
-  HandleScope scope;
+// TODO: Rewrite for SDL2.
+// static Handle<Value> sdl::TTF::RenderTextBlended(const Arguments& args) {
+//   HandleScope scope;
 
-  if (!(args.Length() == 3 && args[0]->IsObject() && args[1]->IsString() && args[2]->IsNumber())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected TTF::RenderTextBlended(Font, String, Number)")));
-  }
+//   if (!(args.Length() == 3 && args[0]->IsObject() && args[1]->IsString() && args[2]->IsNumber())) {
+//     return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected TTF::RenderTextBlended(Font, String, Number)")));
+//   }
 
-  SDL_PixelFormat* vfmt = SDL_GetVideoInfo()->vfmt;
-  TTF_Font* font = UnwrapFont(args[0]->ToObject());
-  String::Utf8Value text(args[1]);
-  int colorCode = args[2]->Int32Value();
+//   SDL_PixelFormat* vfmt = SDL_GetVideoInfo()->vfmt;
+//   TTF_Font* font = UnwrapFont(args[0]->ToObject());
+//   String::Utf8Value text(args[1]);
+//   int colorCode = args[2]->Int32Value();
 
-  Uint8 r, g, b;
-  SDL_GetRGB(colorCode, vfmt, &r, &g, &b);
+//   Uint8 r, g, b;
+//   SDL_GetRGB(colorCode, vfmt, &r, &g, &b);
 
-  SDL_Color color;
-  color.r = r;
-  color.g = g;
-  color.b = b;
+//   SDL_Color color;
+//   color.r = r;
+//   color.g = g;
+//   color.b = b;
 
-  SDL_Surface *resulting_text;
-  resulting_text = TTF_RenderText_Blended(font, *text, color);
-  if (!resulting_text) {
-    return ThrowException(Exception::Error(String::Concat(
-      String::New("TTF::RenderTextBlended: "),
-      String::New(TTF_GetError())
-    )));
-  }
-  return scope.Close(WrapSurface(resulting_text));
-}
+//   SDL_Surface *resulting_text;
+//   resulting_text = TTF_RenderText_Blended(font, *text, color);
+//   if (!resulting_text) {
+//     return ThrowException(Exception::Error(String::Concat(
+//       String::New("TTF::RenderTextBlended: "),
+//       String::New(TTF_GetError())
+//     )));
+//   }
+//   return scope.Close(WrapSurface(resulting_text));
+// }
 
 // TODO: make an async version so this can be used in loops or parallel load images
 static Handle<Value> sdl::IMG::Load(const Arguments& args) {
@@ -959,34 +953,3 @@ static Handle<Value> sdl::IMG::Load(const Arguments& args) {
 
   return scope.Close(WrapSurface(image));
 }
-
-static Handle<Value> sdl::WM::SetCaption(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 2 && args[0]->IsString() && args[1]->IsString())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected WM::SetCaption(String, String)")));
-  }
-
-  String::Utf8Value title(args[0]);
-  String::Utf8Value icon(args[0]);
-
-  SDL_WM_SetCaption(*title, *icon);
-
-  return Undefined();
-}
-
-static Handle<Value> sdl::WM::SetIcon(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 1 && args[0]->IsObject())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected WM::SetIcon(Surface)")));
-  }
-
-  SDL_Surface* icon = UnwrapSurface(args[0]->ToObject());
-  int colorkey = SDL_MapRGB(icon->format, 255, 0, 255);
-  SDL_SetColorKey(icon, SDL_SRCCOLORKEY, colorkey);
-  SDL_WM_SetIcon(icon, NULL);
-
-  return Undefined();
-}
-

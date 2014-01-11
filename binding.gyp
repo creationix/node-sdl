@@ -7,14 +7,19 @@
         'src/helpers.cc',
         'src/sdl.cc',
       ],
-      'ldflags': [
-        '<!@(sdl-config --libs)',
-        "-lSDL_ttf",
-        "-lSDL_image"
+      'libraries': [
+        '/Library/Frameworks/SDL2.framework/SDL2',
+        '/Library/Frameworks/SDL2_ttf.framework/SDL2_ttf',
+        '/Library/Frameworks/SDL2_image.framework/SDL2_image',
+      ],
+      'include_dirs': [
+        "/Library/Frameworks/SDL2.framework/Headers",
+        "/Library/Frameworks/SDL2_ttf.framework/Headers",
+        "/Library/Frameworks/SDL2_image.framework/Headers",
       ],
       'cflags': [
-        '<!@(sdl-config --cflags)'
-      ],
+        "-D_THREAD_SAFE"
+      ]
     }
   ]
 }

@@ -13,7 +13,7 @@ def configure(conf):
   conf.check_tool('compiler_cxx')
   conf.check_tool('node_addon')
   
-  sdl_config = conf.find_program('sdl-config', var='SDL_CONFIG', mandatory=True)
+  sdl_config = conf.find_program('sdl2-config', var='SDL_CONFIG', mandatory=True)
   sdl_libs = popen("%s --libs" % sdl_config).readline().strip()
   sdl_cflags = popen("%s --cflags" % sdl_config).readline().strip()
 
