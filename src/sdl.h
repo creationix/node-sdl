@@ -6,6 +6,7 @@
 #include <map>
 #include <string>
 
+#define SDL_MAIN_HANDLED
 #include "SDL.h"
 #include "SDL_ttf.h"
 #include "SDL_image.h"
@@ -16,50 +17,102 @@ using namespace v8;
 
 namespace sdl {
 
-  class ColorWrapper : public node::ObjectWrap {
+  class WindowWrapper : public node::ObjectWrap {
   public:
-    ColorWrapper();
-    ~ColorWrapper();
+    WindowWrapper(std::string title, int x, int y, int w, int h, uint32_t flags);
+    ~WindowWrapper();
 
-    static Persistent<FunctionTemplate> color_wrap_template_;
+    static Persistent<FunctionTemplate> window_wrap_template_;
 
     static void Init(Handle<Object> exports);
     static Handle<Value> New(const Arguments& args);
-    static Handle<Value> GetRed(const Arguments& args);
-    static Handle<Value> GetGreen(const Arguments& args);
-    static Handle<Value> GetBlue(const Arguments& args);
-    static Handle<Value> GetAlpha(const Arguments& args);
+
+    static Handle<Value> GetBrightness(const Arguments& args);
+    static Handle<Value> GetDisplayIndex(const Arguments& args);
+    static Handle<Value> GetDisplayMode(const Arguments& args);
+    static Handle<Value> GetFlags(const Arguments& args);
+    static Handle<Value> GetGammaRamp(const Arguments& args);
+    static Handle<Value> GetGrab(const Arguments& args);
+    static Handle<Value> GetWindowID(const Arguments& args);
+    static Handle<Value> GetMaximumSize(const Arguments& args);
+    static Handle<Value> GetMinimumSize(const Arguments& args);
+    static Handle<Value> GetPixelFormat(const Arguments& args);
+    static Handle<Value> GetPosition(const Arguments& args);
+    static Handle<Value> GetSize(const Arguments& args);
+    static Handle<Value> GetSurface(const Arguments& args);
+    static Handle<Value> GetTitle(const Arguments& args);
+    // TODO: Implement this. Probably won't get to this anytime soon.
+    //       Too specific to be useful?
+    // static Handle<Value> GetWMInfo(const Arguments& args);
+
+    static Handle<Value> Hide(const Arguments& args);
+    static Handle<Value> Show(const Arguments& args);
+
+    static Handle<Value> Maximize(const Arguments& args);
+    static Handle<Value> Minimize(const Arguments& args);
+
+    static Handle<Value> Raise(const Arguments& args);
+    static Handle<Value> Restore(const Arguments& args);
+
+    static Handle<Value> SetBordered(const Arguments& args);
+    static Handle<Value> SetBrightness(const Arguments& args);
+    // TODO: Implement this? Because Javascript can just set arbritary data, not needed?
+    // static Handle<Value> SetData(const Arguments& args);
+    static Handle<Value> SetDisplayMode(const Arguments& args);
+    static Handle<Value> SetFullscreen(const Arguments& args);
+    static Handle<Value> SetGammaRamp(const Arguments& args);
+    static Handle<Value> SetGrab(const Arguments& args);
+    static Handle<Value> SetIcon(const Arguments& args);
+    static Handle<Value> SetMaximumSize(const Arguments& args);
+    static Handle<Value> SetMinimumSize(const Arguments& args);
+    static Handle<Value> SetPosition(const Arguments& args);
+    static Handle<Value> SetSize(const Arguments& args);
+    static Handle<Value> SetTitle(const Arguments& args);
+
+    static Handle<Value> UpdateWindowSurface(const Arguments& args);
+    static Handle<Value> UpdateWindowSurfaceRects(const Arguments& args);
 
   private:
-    SDL_Color color_;
+    SDL_Window* window_;
   };
 
-  class EventWrapper : public node::ObjectWrap {
-  public:
-    EventWrapper();
-    ~EventWrapper();
-
-    static Persistent<FunctionTemplate> event_wrap_template_;
-    
-    static std::map<uint32_t, std::string> event_type_to_string_;
-    static std::map<SDL_WindowEventID, std::string> window_event_to_string_;
-
-    static void Init(Handle<Object> exports);
-    static Handle<Value> New(const Arguments& args);
-    static Handle<Value> GetType(const Arguments& args);
-    static Handle<Value> GetSpecificType(const Arguments& args);
-
-  private:
-    SDL_Event event_;
-  };
-
+  // Initialization and Shutdown.
   static Handle<Value> Init(const Arguments& args);
   static Handle<Value> InitSubSystem(const Arguments& args);
   static Handle<Value> WasInit(const Arguments& args);
-
   static Handle<Value> Quit(const Arguments& args);
   static Handle<Value> QuitSubSystem(const Arguments& args);
 
+  // Display and Window Management.
+  static Handle<Value> CreateWindow(const Arguments& args);
+  static Handle<Value> CreateWindowAndRenderer(const Arguments& args);
+  static Handle<Value> CreateWindowFrom(const Arguments& args);
+  static Handle<Value> DestroyWindow(const Arguments& args);
+
+  static Handle<Value> DisableScreenSaver(const Arguments& args);
+  static Handle<Value> EnableScreenSaver(const Arguments& args);
+  static Handle<Value> IsScreenSaverEnabled(const Arguments& args);
+
+  static Handle<Value> GetClosestDisplayMode(const Arguments& args);
+  static Handle<Value> GetCurrentDisplayMode(const Arguments& args);
+  static Handle<Value> GetCurrentVideoDriver(const Arguments& args);
+  static Handle<Value> GetDesktopDisplayMode(const Arguments& args);
+  static Handle<Value> GetDisplayBounds(const Arguments& args);
+  static Handle<Value> GetDisplayMode(const Arguments& args);
+  static Handle<Value> GetDisplayName(const Arguments& args);
+  static Handle<Value> GetNumDisplayModes(const Arguments& args);
+  static Handle<Value> GetNumVideoDisplays(const Arguments& args);
+  static Handle<Value> GetNumVideoDrivers(const Arguments& args);
+  static Handle<Value> GetVideoDrivers(const Arguments& args);
+  static Handle<Value> GetWindowFromID(const Arguments& args);
+
+  static Handle<Value> ShowMessageBox(const Arguments& args);
+  static Handle<Value> ShowSimpleMessageBox(const Arguments& args);
+
+  static Handle<Value> VideoInit(const Arguments& args);
+  static Handle<Value> VideoQuit(const Arguments& args);
+
+  // Error handling?
   static Handle<Value> ClearError(const Arguments& args);
   static Handle<Value> GetError(const Arguments& args);
   static Handle<Value> SetError(const Arguments& args);

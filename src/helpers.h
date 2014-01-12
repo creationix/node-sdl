@@ -13,37 +13,6 @@ namespace sdl {
   // Error reporting helpers
   Handle<Value> ThrowSDLException(const char* name);
   Local<Value> MakeSDLException(const char* name);
-
-  // Wrapper and Unwrappers
-  Handle<Object> WrapSurface(SDL_Surface* surface);
-  SDL_Surface* UnwrapSurface(Handle<Object> obj);
-
-  Handle<Object> WrapRect(SDL_Rect* rect);
-  SDL_Rect* UnwrapRect(Handle<Object> obj);
-
-  Handle<ObjectTemplate> MakeColorTemplate();
-  Handle<Object> WrapColor(SDL_Color* color);
-  SDL_Color* UnwrapColor(Handle<Object> obj);
-  Handle<Value> GetColorRed(Local<String> name, const AccessorInfo& info);
-  Handle<Value> GetColorGreen(Local<String> name, const AccessorInfo& info);
-  Handle<Value> GetColorBlue(Local<String> name, const AccessorInfo& info);
-  Handle<Value> GetColorAlpha(Local<String> name, const AccessorInfo& info);
-
-  Handle<ObjectTemplate> MakePaletteTemplate();
-  Handle<Object> WrapPalette(SDL_Palette* palette);
-  SDL_Palette* UnwrapPalette(Handle<Object> obj);
-  Handle<Value> GetNcolors(Local<String> name, const AccessorInfo& info);
-  Handle<Value> GetColors(Local<String> name, const AccessorInfo& info);
-
-  Handle<Object> WrapPixelFormat(SDL_PixelFormat* pixelformat);
-  SDL_PixelFormat* UnwrapPixelFormat(Handle<Object> obj);
-
-  Handle<Object> WrapJoystick(SDL_Joystick* joystick);
-  SDL_Joystick* UnwrapJoystick(Handle<Object> obj);
-
-  Handle<Object> WrapFont(TTF_Font* font);
-  TTF_Font* UnwrapFont(Handle<Object> obj);
-
   
   // Helpers to work with buffers
   char* BufferData(Buffer *b);
@@ -52,6 +21,7 @@ namespace sdl {
   size_t BufferLength(Local<Object> buf_obj);
 
   static Local<Object> SDLEventToJavascriptObject(const SDL_Event& event);
+  static Local<Object> SDLDisplayModeToJavascriptObject(const SDL_DisplayMode& mode);
 
 } // sdl
 

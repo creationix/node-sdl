@@ -5,6 +5,7 @@
 #include "SDL_ttf.h"
 
 #include "helpers.h"
+#include "struct_wrappers.h"
 
 namespace sdl {
 
@@ -20,231 +21,7 @@ Local<Value> MakeSDLException(const char* name) {
   ));
 }
 
-// Wrap/Unwrap Surface
 
-static Persistent<ObjectTemplate> surface_template_;
-
-Handle<Value> GetSurfaceFlags(Local<String> name, const AccessorInfo& info) {
-  SDL_Surface* surface = UnwrapSurface(info.Holder());
-  return Number::New(surface->flags);
-}
-Handle<Value> GetSurfaceFormat(Local<String> name, const AccessorInfo& info) {
-  HandleScope scope;
-  SDL_Surface* surface = UnwrapSurface(info.Holder());
-  return scope.Close(WrapPixelFormat(surface->format));
-}
-Handle<Value> GetSurfaceWidth(Local<String> name, const AccessorInfo& info) {
-  SDL_Surface* surface = UnwrapSurface(info.Holder());
-  return Number::New(surface->w);
-}
-Handle<Value> GetSurfaceHeight(Local<String> name, const AccessorInfo& info) {
-  SDL_Surface* surface = UnwrapSurface(info.Holder());
-  return Number::New(surface->h);
-}
-Handle<Value> GetSurfacePitch(Local<String> name, const AccessorInfo& info) {
-  SDL_Surface* surface = UnwrapSurface(info.Holder());
-  return Number::New(surface->pitch);
-}
-Handle<Value> GetSurfaceRect(Local<String> name, const AccessorInfo& info) {
-  HandleScope scope;
-  SDL_Surface* surface = UnwrapSurface(info.Holder());
-  return scope.Close(WrapRect(&surface->clip_rect));
-}
-
-Handle<ObjectTemplate> MakeSurfaceTemplate() {
-  HandleScope handle_scope;
-
-  Handle<ObjectTemplate> result = ObjectTemplate::New();
-  result->SetInternalFieldCount(1);
-
-  // Add accessors for some of the fields of the surface.
-  result->SetAccessor(String::NewSymbol("flags"), GetSurfaceFlags);
-  result->SetAccessor(String::NewSymbol("format"), GetSurfaceFormat);
-  result->SetAccessor(String::NewSymbol("w"), GetSurfaceWidth);
-  result->SetAccessor(String::NewSymbol("h"), GetSurfaceHeight);
-  result->SetAccessor(String::NewSymbol("pitch"), GetSurfacePitch);
-  result->SetAccessor(String::NewSymbol("clip_rect"), GetSurfaceRect);
-
-  // Again, return the result through the current handle scope.
-  return handle_scope.Close(result);
-}
-
-Handle<Object> WrapSurface(SDL_Surface* surface) {
-  // Handle scope for temporary handles.
-  HandleScope handle_scope;
-
-  // Fetch the template for creating JavaScript http request wrappers.
-  // It only has to be created once, which we do on demand.
-  if (surface_template_.IsEmpty()) {
-    Handle<ObjectTemplate> raw_template = MakeSurfaceTemplate();
-    surface_template_ = Persistent<ObjectTemplate>::New(raw_template);
-  }
-  Handle<ObjectTemplate> templ = surface_template_;
-
-  // Create an empty http request wrapper.
-  Handle<Object> result = templ->NewInstance();
-
-  // Wrap the raw C++ pointer in an External so it can be referenced
-  // from within JavaScript.
-  Handle<External> request_ptr = External::New(surface);
-
-  // Store the request pointer in the JavaScript wrapper.
-  result->SetInternalField(0, request_ptr);
-
-  // Return the result through the current handle scope.  Since each
-  // of these handles will go away when the handle scope is deleted
-  // we need to call Close to let one, the result, escape into the
-  // outer handle scope.
-  return handle_scope.Close(result);
-}
-
-SDL_Surface* UnwrapSurface(Handle<Object> obj) {
-  Handle<External> field = Handle<External>::Cast(obj->GetInternalField(0));
-  void* ptr = field->Value();
-  return static_cast<SDL_Surface*>(ptr);
-}
-
-// Wrap/Unwrap Rect
-
-static Persistent<ObjectTemplate> rect_template_;
-
-Handle<Value> GetRectX(Local<String> name, const AccessorInfo& info) {
-  SDL_Rect* rect = UnwrapRect(info.Holder());
-  return Number::New(rect->x);
-}
-Handle<Value> GetRectY(Local<String> name, const AccessorInfo& info) {
-  SDL_Rect* rect = UnwrapRect(info.Holder());
-  return Number::New(rect->y);
-}
-Handle<Value> GetRectW(Local<String> name, const AccessorInfo& info) {
-  SDL_Rect* rect = UnwrapRect(info.Holder());
-  return Number::New(rect->w);
-}
-Handle<Value> GetRectH(Local<String> name, const AccessorInfo& info) {
-  SDL_Rect* rect = UnwrapRect(info.Holder());
-  return Number::New(rect->h);
-}
-
-Handle<ObjectTemplate> MakeRectTemplate() {
-  HandleScope handle_scope;
-
-  Handle<ObjectTemplate> result = ObjectTemplate::New();
-  result->SetInternalFieldCount(1);
-
-  // Add accessors for some of the fields of the rect.
-  result->SetAccessor(String::NewSymbol("x"), GetRectX);
-  result->SetAccessor(String::NewSymbol("y"), GetRectY);
-  result->SetAccessor(String::NewSymbol("w"), GetRectW);
-  result->SetAccessor(String::NewSymbol("h"), GetRectH);
-
-  // Again, return the result through the current handle scope.
-  return handle_scope.Close(result);
-}
-
-Handle<Object> WrapRect(SDL_Rect* rect) {
-  // Handle scope for temporary handles.
-  HandleScope handle_scope;
-
-  // Fetch the template for creating JavaScript http request wrappers.
-  // It only has to be created once, which we do on demand.
-  if (rect_template_.IsEmpty()) {
-    Handle<ObjectTemplate> raw_template = MakeRectTemplate();
-    rect_template_ = Persistent<ObjectTemplate>::New(raw_template);
-  }
-  Handle<ObjectTemplate> templ = rect_template_;
-
-  // Create an empty http request wrapper.
-  Handle<Object> result = templ->NewInstance();
-
-  // Wrap the raw C++ pointer in an External so it can be referenced
-  // from within JavaScript.
-  Handle<External> request_ptr = External::New(rect);
-
-  // Store the request pointer in the JavaScript wrapper.
-  result->SetInternalField(0, request_ptr);
-
-  // Return the result through the current handle scope.  Since each
-  // of these handles will go away when the handle scope is deleted
-  // we need to call Close to let one, the result, escape into the
-  // outer handle scope.
-  return handle_scope.Close(result);
-}
-
-SDL_Rect* UnwrapRect(Handle<Object> obj) {
-  Handle<External> field = Handle<External>::Cast(obj->GetInternalField(0));
-  void* ptr = field->Value();
-  return static_cast<SDL_Rect*>(ptr);
-}
-
-// Wrap/Unwrap SDL_Color
-
-static Persistent<ObjectTemplate> color_template_;
-
-Handle<ObjectTemplate> MakeColorTemplate() {
-  HandleScope handle_scope;
-
-  Handle<ObjectTemplate> result = ObjectTemplate::New();
-  result->SetInternalFieldCount(1);
-
-  result->SetAccessor(String::NewSymbol("r"), GetColorRed);
-  result->SetAccessor(String::NewSymbol("g"), GetColorGreen);
-  result->SetAccessor(String::NewSymbol("b"), GetColorBlue);
-  result->SetAccessor(String::NewSymbol("a"), GetColorAlpha);
-
-  return handle_scope.Close(result);
-}
-
-Handle<Object> WrapColor(SDL_Color* color) {
-  // Handle scope for temporary handles.
-  HandleScope handle_scope;
-
-  // Fetch the template for creating JavaScript http request wrappers.
-  // It only has to be created once, which we do on demand.
-  if (color_template_.IsEmpty()) {
-    Handle<ObjectTemplate> raw_template = MakeColorTemplate();
-    color_template_ = Persistent<ObjectTemplate>::New(raw_template);
-  }
-  Handle<ObjectTemplate> templ = color_template_;
-
-  // Create an empty http request wrapper.
-  Handle<Object> result = templ->NewInstance();
-
-  // Wrap the raw C++ pointer in an External so it can be referenced
-  // from within JavaScript.
-  Handle<External> request_ptr = External::New(color);
-
-  // Store the request pointer in the JavaScript wrapper.
-  result->SetInternalField(0, request_ptr);
-
-  // Return the result through the current handle scope.  Since each
-  // of these handles will go away when the handle scope is deleted
-  // we need to call Close to let one, the result, escape into the
-  // outer handle scope.
-  return handle_scope.Close(result);
-}
-
-SDL_Color* UnwrapColor(Handle<Object> obj) {
-  Handle<External> field = Handle<External>::Cast(obj->GetInternalField(0));
-  void* ptr = field->Value();
-  return static_cast<SDL_Color*>(ptr);
-}
-
-Handle<Value> GetColorRed(Local<String> name, const AccessorInfo& info) {
-  SDL_Color* color = UnwrapColor(info.Holder());
-  return Number::New(color->r);
-}
-Handle<Value> GetColorGreen(Local<String> name, const AccessorInfo& info) {
-  SDL_Color* color = UnwrapColor(info.Holder());
-  return Number::New(color->g);
-}
-Handle<Value> GetColorBlue(Local<String> name, const AccessorInfo& info) {
-  SDL_Color* color = UnwrapColor(info.Holder());
-  return Number::New(color->b);
-}
-Handle<Value> GetColorAlpha(Local<String> name, const AccessorInfo& info) {
-  SDL_Color* color = UnwrapColor(info.Holder());
-  return Number::New(color->a);
-}
 
 // Wrap/Unwrap SDL_Palette
 
@@ -648,6 +425,15 @@ static Local<Object> SDLEventToJavascriptObject(const SDL_Event& event) {
   }
 
   return evt;
+}
+
+static Local<Object> SDLDisplayModeToJavascriptObject(const SDL_DisplayMode& mode) {
+  Local<Object> jsMode = Object::New();
+  jsMode->Set(String::New("format"), Number::New(mode.format));
+  jsMode->Set(String::New("w"), Number::New(mode.w));
+  jsMode->Set(String::New("h"), Number::New(mode.h));
+  jsMode->Set(String::New("refreshRate"), Number::New(mode.refresh_rate));
+  return jsMode;
 }
 
 } // node_sdl

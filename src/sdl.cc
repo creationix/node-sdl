@@ -5,12 +5,16 @@
 
 #include "SDL.h"
 #include "sdl.h"
+#include "struct_wrappers.h"
 #include <v8.h>
 #include <string>
 
 using namespace v8;
 
 static uv_loop_t *video_loop;
+
+static std::map<uint32_t, std::string> event_type_to_string_;
+static std::map<SDL_WindowEventID, std::string> window_event_to_string_;
 
 extern "C" void
 init(Handle<Object> target)
@@ -20,14 +24,57 @@ init(Handle<Object> target)
 //   // before we can create a rendering window
 //   objc_msgSend(objc_getClass("NSApplication"), sel_getUid("sharedApplication"));
 // #endif
-  sdl::ColorWrapper::Init(target);
+  // Initialize the SDL event type to string mappings.
+  event_type_to_string_[SDL_DOLLARGESTURE] = "dollarGesture";
+  event_type_to_string_[SDL_DROPFILE] = "dropFile";
+  event_type_to_string_[SDL_FINGERMOTION] = "fingerMotion";
+  event_type_to_string_[SDL_FINGERDOWN] = "fingerDown";
+  event_type_to_string_[SDL_FINGERUP] = "fingerUp";
+  event_type_to_string_[SDL_KEYDOWN] = "keyDown";
+  event_type_to_string_[SDL_KEYUP] = "keyUp";
+  event_type_to_string_[SDL_JOYAXISMOTION] = "joyAxisMotion";
+  event_type_to_string_[SDL_JOYBALLMOTION] = "joyBallMotion";
+  event_type_to_string_[SDL_JOYHATMOTION] = "joyHatMotion";
+  event_type_to_string_[SDL_JOYBUTTONDOWN] = "joyButtonDown";
+  event_type_to_string_[SDL_JOYBUTTONUP] = "joyButtonUp";
+  event_type_to_string_[SDL_MOUSEMOTION] = "mouseMotion";
+  event_type_to_string_[SDL_MOUSEBUTTONDOWN] = "mouseButtonDown";
+  event_type_to_string_[SDL_MOUSEBUTTONUP] = "mouseButtonUp";
+  event_type_to_string_[SDL_MOUSEWHEEL] = "mouseWheel";
+  event_type_to_string_[SDL_MULTIGESTURE] = "multiGesture";
+  event_type_to_string_[SDL_QUIT] = "quit";
+  event_type_to_string_[SDL_SYSWMEVENT] = "sysWMEvent";
+  event_type_to_string_[SDL_TEXTEDITING] = "textEditing";
+  event_type_to_string_[SDL_TEXTINPUT] = "textInput";
+  event_type_to_string_[SDL_USEREVENT] = "userEvent";
+  event_type_to_string_[SDL_WINDOWEVENT] = "windowEvent";
+
+  // Initialize the SDL WindowEvent type to string mappings.
+  window_event_to_string_[SDL_WINDOWEVENT_SHOWN] = "shown";
+  window_event_to_string_[SDL_WINDOWEVENT_HIDDEN] = "hidden";
+  window_event_to_string_[SDL_WINDOWEVENT_EXPOSED] = "exposed";
+  window_event_to_string_[SDL_WINDOWEVENT_MOVED] = "moved";
+  window_event_to_string_[SDL_WINDOWEVENT_RESIZED] = "resized";
+  window_event_to_string_[SDL_WINDOWEVENT_SIZE_CHANGED] = "sizeChanged";
+  window_event_to_string_[SDL_WINDOWEVENT_MINIMIZED] = "minimized";
+  window_event_to_string_[SDL_WINDOWEVENT_MAXIMIZED] = "maximized";
+  window_event_to_string_[SDL_WINDOWEVENT_RESTORED] = "restored";
+  window_event_to_string_[SDL_WINDOWEVENT_ENTER] = "enter";
+  window_event_to_string_[SDL_WINDOWEVENT_LEAVE] = "leave";
+  window_event_to_string_[SDL_WINDOWEVENT_FOCUS_GAINED] = "focusGained";
+  window_event_to_string_[SDL_WINDOWEVENT_FOCUS_LOST] = "focusLost";
+  window_event_to_string_[SDL_WINDOWEVENT_CLOSE] = "close";
+
+  sdl::InitWrappers();
     
+  // Initialization and Shutdown.
   NODE_SET_METHOD(target, "init", sdl::Init);
   NODE_SET_METHOD(target, "initSubSystem", sdl::InitSubSystem);
   NODE_SET_METHOD(target, "wasInit", sdl::WasInit);
-
   NODE_SET_METHOD(target, "quit", sdl::Quit);
   NODE_SET_METHOD(target, "quitSubSystem", sdl::QuitSubSystem);
+
+  // Display and Window Management.
 
   NODE_SET_METHOD(target, "clearError", sdl::ClearError);
   NODE_SET_METHOD(target, "getError", sdl::GetError);
@@ -67,6 +114,31 @@ init(Handle<Object> target)
   INIT->Set(String::New("JOYSTICK"), Number::New(SDL_INIT_JOYSTICK));
   INIT->Set(String::New("EVERYTHING"), Number::New(SDL_INIT_EVERYTHING));
   INIT->Set(String::New("NOPARACHUTE"), Number::New(SDL_INIT_NOPARACHUTE));
+
+  Local<Object> EVENT = Object::New();
+  target->Set(String::New("EVENT"), EVENT);
+  EVENT->Set(String::New("DOLLARGESTURE"), Number::New(SDL_DOLLARGESTURE));
+  EVENT->Set(String::New("DROPFILE"), Number::New(SDL_DROPFILE));
+  EVENT->Set(String::New("FINGERMOTION"), Number::New(SDL_FINGERMOTION));
+  EVENT->Set(String::New("FINGERUP"), Number::New(SDL_FINGERUP));
+  EVENT->Set(String::New("KEYDOWN"), Number::New(SDL_KEYDOWN));
+  EVENT->Set(String::New("KEYUP"), Number::New(SDL_KEYUP));
+  EVENT->Set(String::New("JOYAXISMOTION"), Number::New(SDL_JOYAXISMOTION));
+  EVENT->Set(String::New("JOYBALLMOTION"), Number::New(SDL_JOYBALLMOTION));
+  EVENT->Set(String::New("JOYHATMOTION"), Number::New(SDL_JOYHATMOTION));
+  EVENT->Set(String::New("JOYBUTTONDOWN"), Number::New(SDL_JOYBUTTONDOWN));
+  EVENT->Set(String::New("JOYBUTTONUP"), Number::New(SDL_JOYBUTTONUP));
+  EVENT->Set(String::New("MOUSEMOTION"), Number::New(SDL_MOUSEMOTION));
+  EVENT->Set(String::New("MOUSEBUTTONDOWN"), Number::New(SDL_MOUSEBUTTONDOWN));
+  EVENT->Set(String::New("MOUSEBUTTONUP"), Number::New(SDL_MOUSEBUTTONUP));
+  EVENT->Set(String::New("MOUSEWHEEL"), Number::New(SDL_MOUSEWHEEL));
+  EVENT->Set(String::New("MULTIGESTURE"), Number::New(SDL_MULTIGESTURE));
+  EVENT->Set(String::New("QUIT"), Number::New(SDL_QUIT));
+  EVENT->Set(String::New("SYSWMEVENT"), Number::New(SDL_SYSWMEVENT));
+  EVENT->Set(String::New("TEXTEDITING"), Number::New(SDL_TEXTEDITING));
+  EVENT->Set(String::New("TEXTINPUT"), Number::New(SDL_TEXTINPUT));
+  EVENT->Set(String::New("USEREVENT"), Number::New(SDL_USEREVENT));
+  EVENT->Set(String::New("WINDOWEVENT"), Number::New(SDL_WINDOWEVENT));
 
   Local<Object> SURFACE = Object::New();
   target->Set(String::New("SURFACE"), SURFACE);
@@ -146,208 +218,7 @@ init(Handle<Object> target)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
-sdl::ColorWrapper::ColorWrapper() {
-}
-
-sdl::ColorWrapper::~ColorWrapper() {
-}
-
-void sdl::ColorWrapper::Init(Handle<Object> exports) {
-  Local<FunctionTemplate> tpl = FunctionTemplate::New(New);
-
-  color_wrap_template_ = Persistent<FunctionTemplate>::New(tpl);
-
-  color_wrap_template_->InstanceTemplate()->SetInternalFieldCount(1);
-  color_wrap_template_->SetClassName(String::NewSymbol("ColorWrapper"));
-
-  NODE_SET_PROTOTYPE_METHOD(color_wrap_template_, "red", GetRed);
-  NODE_SET_PROTOTYPE_METHOD(color_wrap_template_, "r", GetRed);
-
-  NODE_SET_PROTOTYPE_METHOD(color_wrap_template_, "green", GetGreen);
-  NODE_SET_PROTOTYPE_METHOD(color_wrap_template_, "g", GetGreen);
-
-  NODE_SET_PROTOTYPE_METHOD(color_wrap_template_, "blue", GetBlue);
-  NODE_SET_PROTOTYPE_METHOD(color_wrap_template_, "b", GetBlue);
-
-  NODE_SET_PROTOTYPE_METHOD(color_wrap_template_, "alpha", GetAlpha);
-  NODE_SET_PROTOTYPE_METHOD(color_wrap_template_, "a", GetAlpha);
-
-  exports->Set(String::NewSymbol("Color"), color_wrap_template_->GetFunction());
-}
-
-Handle<Value> sdl::ColorWrapper::New(const Arguments& args) {
-  HandleScope scope;
-
-  ColorWrapper* wrap = new ColorWrapper();
-  int red = args[0]->IsUndefined() ? 0 : args[0]->Int32Value();
-  int green = args[1]->IsUndefined() ? 0 : args[1]->Int32Value();
-  int blue = args[2]->IsUndefined() ? 0 : args[2]->Int32Value();
-  int alpha = args[3]->IsUndefined() ? 0 : args[3]->Int32Value();
-
-  if(red > 255) {
-    red = 255;
-  }
-  else if(red < 0) {
-    red = 0;
-  }
-
-  if(green > 255) {
-    green = 255;
-  }
-  else if(green < 0) {
-    green = 0;
-  }
-
-  if(blue > 255) {
-    blue = 255;
-  }
-  else if(blue < 0) {
-    blue = 0;
-  }
-
-  if(alpha > 255) {
-    alpha = 255;
-  }
-  else if(alpha < 0) {
-    alpha = 0;
-  }
-
-  wrap->color_.r = static_cast<Uint8>(red);
-  wrap->color_.g = static_cast<Uint8>(green);
-  wrap->color_.b = static_cast<Uint8>(blue);
-  wrap->color_.a = static_cast<Uint8>(alpha);
-
-  wrap->Wrap(args.This());
-  return args.This();
-}
-
-Handle<Value> sdl::ColorWrapper::GetRed(const Arguments& args) {
-  HandleScope scope;
-
-  ColorWrapper* wrap = ObjectWrap::Unwrap<ColorWrapper>(args.This());
-  return scope.Close(Number::New(wrap->color_.r));
-}
-
-Handle<Value> sdl::ColorWrapper::GetGreen(const Arguments& args) {
-  HandleScope scope;
-
-  ColorWrapper* wrap = ObjectWrap::Unwrap<ColorWrapper>(args.This());
-  return scope.Close(Number::New(wrap->color_.g));
-}
-
-Handle<Value> sdl::ColorWrapper::GetBlue(const Arguments& args) {
-  HandleScope scope;
-
-  ColorWrapper* wrap = ObjectWrap::Unwrap<ColorWrapper>(args.This());
-  return scope.Close(Number::New(wrap->color_.b));
-}
-
-Handle<Value> sdl::ColorWrapper::GetAlpha(const Arguments& args) {
-  HandleScope scope;
-
-  ColorWrapper* wrap = ObjectWrap::Unwrap<ColorWrapper>(args.This());
-  return scope.Close(Number::New(wrap->color_.a));
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-sdl::EventWrapper::EventWrapper() {
-}
-
-sdl::EventWrapper::~EventWrapper() {
-}
-
-void sdl::EventWrapper::Init(Handle<Object> exports) {
-  event_type_to_string_[SDL_DOLLARGESTURE] = "dollarGesture";
-  event_type_to_string_[SDL_DROPFILE] = "dropFile";
-  event_type_to_string_[SDL_FINGERMOTION] = "fingerMotion";
-  event_type_to_string_[SDL_FINGERDOWN] = "fingerDown";
-  event_type_to_string_[SDL_FINGERUP] = "fingerUp";
-  event_type_to_string_[SDL_KEYDOWN] = "keyDown";
-  event_type_to_string_[SDL_KEYUP] = "keyUp";
-  event_type_to_string_[SDL_JOYAXISMOTION] = "joyAxisMotion";
-  event_type_to_string_[SDL_JOYBALLMOTION] = "joyBallMotion";
-  event_type_to_string_[SDL_JOYHATMOTION] = "joyHatMotion";
-  event_type_to_string_[SDL_JOYBUTTONDOWN] = "joyButtonDown";
-  event_type_to_string_[SDL_JOYBUTTONUP] = "joyButtonUp";
-  event_type_to_string_[SDL_MOUSEMOTION] = "mouseMotion";
-  event_type_to_string_[SDL_MOUSEBUTTONDOWN] = "mouseButtonDown";
-  event_type_to_string_[SDL_MOUSEBUTTONUP] = "mouseButtonUp";
-  event_type_to_string_[SDL_MOUSEWHEEL] = "mouseWheel";
-  event_type_to_string_[SDL_MULTIGESTURE] = "multiGesture";
-  event_type_to_string_[SDL_QUIT] = "quit";
-  event_type_to_string_[SDL_SYSWMEVENT] = "sysWMEvent";
-  event_type_to_string_[SDL_TEXTEDITING] = "textEditing";
-  event_type_to_string_[SDL_TEXTINPUT] = "textInput";
-  event_type_to_string_[SDL_USEREVENT] = "userEvent";
-  event_type_to_string_[SDL_WINDOWEVENT] = "windowEvent";
-
-  Local<FunctionTemplate> tpl = FunctionTemplate::New(New);
-
-  event_wrap_template_ = Persistent<FunctionTemplate>::New(tpl);
-
-  event_wrap_template_->InstanceTemplate()->SetInternalFieldCount(1);
-  event_wrap_template_->SetClassName(String::NewSymbol("EventWrapper"));
-
-  NODE_SET_PROTOTYPE_METHOD(event_wrap_template_, "type", GetType);
-  NODE_SET_PROTOTYPE_METHOD(event_wrap_template_, "specificType", GetSpecificType);
-
-  exports->Set(String::NewSymbol("Event"), event_wrap_template_->GetFunction());
-}
-
-Handle<Value> sdl::EventWrapper::New(const Arguments& args) {
-  HandleScope scope;
-
-  return Undefined();
-}
-
-Handle<Value> sdl::EventWrapper::GetType(const Arguments& args) {
-  HandleScope scope;
-
-  EventWrapper* wrap = ObjectWrap::Unwrap<EventWrapper>(args.This());
-  std::string type_string = event_type_to_string_[wrap->event_.type];
-  return scope.Close(String::New(type_string.c_str()));
-}
-
-Handle<Value> sdl::EventWrapper::GetSpecificType(const Arguments& args) {
-  HandleScope scope;
-
-  EventWrapper* wrap = ObjectWrap::Unwrap<EventWrapper>(args.This());
-  return Undefined();
-  // return scope.Close(String::New(window_event_to_string_[wrap->event_.type]));
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-Handle<Value> sdl::GL::SetAttribute(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 2 && args[0]->IsNumber() && args[1]->IsNumber())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected SetAttribute(Number, Number)")));
-  }
-
-  int attr = args[0]->Int32Value();
-  int value = args[1]->Int32Value();
-
-  if (SDL_GL_SetAttribute((SDL_GLattr)attr, value)) return ThrowSDLException(__func__);
-  return Undefined();
-}
-
-Handle<Value> sdl::GL::GetAttribute(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 1 && args[0]->IsNumber())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected GetAttribute(Number)")));
-  }
-
-  int attr = args[0]->Int32Value();
-  int value;
-
-  if (SDL_GL_GetAttribute((SDL_GLattr)attr, &value)) return ThrowSDLException(__func__);
-
-  return Number::New(value);
-}
+// Initialization and Shutdown.
 
 Handle<Value> sdl::Init(const Arguments& args) {
   HandleScope scope;
@@ -356,7 +227,10 @@ Handle<Value> sdl::Init(const Arguments& args) {
     return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected Init(Number)")));
   }
 
-  if (SDL_Init(args[0]->Int32Value()) < 0) return ThrowSDLException(__func__);
+  SDL_SetMainReady();
+  if (SDL_Init(args[0]->Int32Value()) < 0) {
+    return ThrowSDLException(__func__);
+  }
 
   return Undefined();
 }
@@ -406,6 +280,377 @@ Handle<Value> sdl::WasInit(const Arguments& args) {
 
   return Number::New(SDL_WasInit(args[0]->Int32Value()));
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// Display and Window Management.
+
+sdl::WindowWrapper::WindowWrapper(std::string title, int x, int y, int w, int h, uint32_t flags) {
+  window_ = SDL_CreateWindow(title.c_str(), x, y, w, h, flags);
+}
+
+sdl::WindowWrapper::~WindowWrapper() {
+  if(NULL != window_) {
+    SDL_DestroyWindow(window_);
+  }
+}
+
+void sdl::WindowWrapper::Init(Handle<Object> exports) {
+  Local<FunctionTemplate> tpl = FunctionTemplate::New(New);
+  window_wrap_template_ = Persistent<FunctionTemplate>::New(tpl);
+
+  window_wrap_template_->InstanceTemplate()->SetInternalFieldCount(1);
+  window_wrap_template_->SetClassName(String::NewSymbol("WindowWrapper"));
+
+  NODE_SET_PROTOTYPE_METHOD(window_wrap_template_, "getBrightness", GetBrightness);
+
+  exports->Set(String::NewSymbol("Window"), window_wrap_template_->GetFunction());
+}
+
+Handle<Value> sdl::WindowWrapper::New(const Arguments& args) {
+  HandleScope scope;
+
+  std::string title = args[0]->IsUndefined() ? "" : *(String::Utf8Value(args[0]));
+  int x = args[1]->IsUndefined() ? SDL_WINDOWPOS_UNDEFINED : args[1]->Int32Value();
+  int y = args[2]->IsUndefined() ? SDL_WINDOWPOS_UNDEFINED : args[2]->Int32Value();
+  int w = args[3]->IsUndefined() ? 640 : args[3]->Int32Value();
+  int h = args[4]->IsUndefined() ? 480 : args[4]->Int32Value();
+  uint32_t flags = args[5]->IsUndefined() ? 0 : args[5]->Int32Value();
+
+  WindowWrapper* obj = new WindowWrapper(title, x, y, w, h, flags);
+  if(NULL == obj->window_) {
+    delete obj;
+    return ThrowSDLException("Window->New");
+  }
+  obj->Wrap(args.This());
+  return args.This();
+}
+
+Handle<Value> sdl::WindowWrapper::GetBrightness(const Arguments& args) {
+  HandleScope scope;
+
+  WindowWrapper* obj = ObjectWrap::Unwrap<WindowWrapper>(args.This());
+  // SDL documentation does not say this function can return an erroneous value, so
+  // we don't do any error checking.
+  return scope.Close(Number::New(SDL_GetWindowBrightness(obj->window_)));
+}
+
+Handle<Value> sdl::WindowWrapper::GetDisplayIndex(const Arguments& args) {
+  HandleScope scope;
+
+  WindowWrapper* obj = ObjectWrap::Unwrap<WindowWrapper>(args.This());
+  int ret = SDL_GetWindowDisplayIndex(obj->window_);
+  // SDL documentation says that values less than 0 are returned upon error.
+  if(ret < 0) {
+    return ThrowSDLException("Window->GetDisplayIndex");
+  }
+
+  return scope.Close(Number::New(ret));
+}
+
+Handle<Value> sdl::WindowWrapper::GetDisplayMode(const Arguments& args) {
+  HandleScope scope;
+
+  WindowWrapper* obj = ObjectWrap::Unwrap<WindowWrapper>(args.This());
+  SDL_DisplayMode mode;
+  int err = SDL_GetWindowDisplayMode(obj->window_, &mode);
+  // SDL documentation says that 0 is success, and less than 0 is when an error
+  // occurred.
+  if(err < 0) {
+    return ThrowSDLException("Window->GetDisplayMode");
+  }
+
+  return scope.Close(SDLDisplayModeToJavascriptObject(mode));
+}
+
+Handle<Value> sdl::WindowWrapper::GetFlags(const Arguments& args) {
+  HandleScope scope;
+
+  WindowWrapper* obj = ObjectWrap::Unwrap<WindowWrapper>(args.This());
+  // TODO: Return an array of human-readable strings denoting each flag instead?
+  // SDL documentation does not say this function can return an error code.
+  return scope.Close(Number::New(SDL_GetWindowFlags(obj->window_)));
+}
+
+Handle<Value> sdl::WindowWrapper::GetGammaRamp(const Arguments& args) {
+  HandleScope scope;
+
+  WindowWrapper* obj = ObjectWrap::Unwrap<WindowWrapper>(args.This());
+  uint16_t redArr[256];
+  uint16_t greenArr[256];
+  uint16_t blueArr[256];
+  int err = SDL_GetWindowGammaRamp(obj->window_, redArr, greenArr, blueArr);
+  if(err < 0) {
+    return ThrowSDLException("Window->GetGammaRamp");
+  }
+
+  Handle<Array> ret = Array::New(3);
+  Handle<Array> jsRedArr = Array::New(256);
+  Handle<Array> jsGreenArr = Array::New(256);
+  Handle<Array> jsBlueArr = Array::New(256);
+  for(int i = 0; i < 256; i++) {
+    jsRedArr->Set(i, Number::New(redArr[i]));
+    jsGreenArr->Set(i, Number::New(greenArr[i]));
+    jsBlueArr->Set(i, Number::New(blueArr[i]));
+  }
+
+  ret->Set(0, jsRedArr);
+  ret->Set(1, jsGreenArr);
+  ret->Set(2, jsBlueArr);
+  return scope.Close(ret);
+}
+
+Handle<Value> sdl::WindowWrapper::GetGrab(const Arguments& args) {
+  HandleScope scope;
+
+  WindowWrapper* obj = ObjectWrap::Unwrap<WindowWrapper>(args.This());
+  return scope.Close(Boolean::New(SDL_GetWindowGrab(obj->window_)));
+}
+
+Handle<Value> sdl::WindowWrapper::GetWindowID(const Arguments& args) {
+  HandleScope scope;
+
+  WindowWrapper* obj = ObjectWrap::Unwrap<WindowWrapper>(args.This());
+  return scope.Close(Number::New(SDL_GetWindowID(obj->window_)));
+}
+
+Handle<Value> sdl::WindowWrapper::GetMaximumSize(const Arguments& args) {
+  HandleScope scope;
+
+  WindowWrapper* obj = ObjectWrap::Unwrap<WindowWrapper>(args.This());
+  int w, h;
+  SDL_GetWindowMaximumSize(obj->window_, &w, &h);
+  Handle<Array> ret = Array::New(2);
+  ret->Set(0, Number::New(w));
+  ret->Set(1, Number::New(h));
+  return scope.Close(ret);
+}
+
+Handle<Value> sdl::WindowWrapper::GetMinimumSize(const Arguments& args) {
+  HandleScope scope;
+
+  WindowWrapper* obj = ObjectWrap::Unwrap<WindowWrapper>(args.This());
+  int w, h;
+  SDL_GetWindowMinimumSize(obj->window_, &w, &h);
+  Handle<Array> ret = Array::New(2);
+  ret->Set(0, Number::New(w));
+  ret->Set(1, Number::New(h));
+  return scope.Close(ret);
+}
+
+Handle<Value> sdl::WindowWrapper::GetPixelFormat(const Arguments& args) {
+  HandleScope scope;
+
+  WindowWrapper* obj = ObjectWrap::Unwrap<WindowWrapper>(args.This());
+  uint32_t ret = SDL_GetWindowPixelFormat(obj->window_);
+  if(SDL_PIXELFORMAT_UNKNOWN == ret) {
+    return ThrowSDLException("Window->GetPixelFormat");
+  }
+
+  return scope.Close(Number::New(ret));
+}
+
+Handle<Value> sdl::WindowWrapper::GetPosition(const Arguments& args) {
+  HandleScope scope;
+
+  WindowWrapper* obj = ObjectWrap::Unwrap<WindowWrapper>(args.This());
+  int x, y;
+  SDL_GetWindowPosition(obj->window_, &x, &y);
+
+  Handle<Array> ret = Array::New(2);
+  ret->Set(1, Number::New(x));
+  ret->Set(2, Number::New(y));
+  return scope.Close(ret);
+}
+
+Handle<Value> sdl::WindowWrapper::GetSize(const Arguments& args) {
+  HandleScope scope;
+
+  WindowWrapper* obj = ObjectWrap::Unwrap<WindowWrapper>(args.This());
+  int w, h;
+  SDL_GetWindowSize(obj->window_, &w, &h);
+  
+  Handle<Array> ret = Array::New(2);
+  ret->Set(1, Number::New(w));
+  ret->Set(2, Number::New(h));
+  return scope.Close(ret);
+}
+
+Handle<Value> sdl::WindowWrapper::GetSurface(const Arguments& args) {
+  HandleScope scope;
+
+  WindowWrapper* obj = ObjectWrap::Unwrap<WindowWrapper>(args.This());
+  SDL_Surface* surf = SDL_GetWindowSurface(obj->window_);
+  if(NULL == surf) {
+    return ThrowSDLException("Window->GetSurface");
+  }
+  return scope.Close(WrapSurface(surf));
+}
+
+Handle<Value> sdl::WindowWrapper::GetTitle(const Arguments& args) {
+  HandleScope scope;
+
+  WindowWrapper* obj = ObjectWrap::Unwrap<WindowWrapper>(args.This());
+  return scope.Close(String::New(SDL_GetWindowTitle(obj->window_)));
+}
+
+Handle<Value> sdl::WindowWrapper::Hide(const Arguments& args) {
+  HandleScope scope;
+
+  WindowWrapper* obj = ObjectWrap::Unwrap<WindowWrapper>(args.This());
+  SDL_HideWindow(obj->window_);
+  return Undefined();
+}
+
+Handle<Value> sdl::WindowWrapper::Show(const Arguments& args) {
+  HandleScope scope;
+
+  WindowWrapper* obj = ObjectWrap::Unwrap<WindowWrapper>(args.This());
+  SDL_ShowWindow(obj->window_);
+  return Undefined();
+}
+
+Handle<Value> sdl::WindowWrapper::Maximize(const Arguments& args) {
+  HandleScope scope;
+
+  WindowWrapper* obj = ObjectWrap::Unwrap<WindowWrapper>(args.This());
+  SDL_MaximizeWindow(obj->window_);
+  return Undefined();
+}
+
+Handle<Value> sdl::WindowWrapper::Minimize(const Arguments& args) {
+  HandleScope scope;
+
+  WindowWrapper* obj = ObjectWrap::Unwrap<WindowWrapper>(args.This());
+  SDL_MinimizeWindow(obj->window_);
+  return Undefined();
+}
+
+Handle<Value> sdl::WindowWrapper::Raise(const Arguments& args) {
+  HandleScope scope;
+
+  WindowWrapper* obj = ObjectWrap::Unwrap<WindowWrapper>(args.This());
+  SDL_RaiseWindow(obj->window_);
+  return Undefined();
+}
+
+Handle<Value> sdl::WindowWrapper::Restore(const Arguments& args) {
+  HandleScope scope;
+
+  WindowWrapper* obj = ObjectWrap::Unwrap<WindowWrapper>(args.This());
+  SDL_RestoreWindow(obj->window_);
+  return Undefined();
+}
+
+Handle<Value> sdl::WindowWrapper::SetBordered(const Arguments& args) {
+  HandleScope scope;
+
+  WindowWrapper* obj = ObjectWrap::Unwrap<WindowWrapper>(args.This());
+  bool bordered = args[0]->IsUndefined() ? true : args[0]->BooleanValue();
+  SDL_SetWindowBordered(obj->window_, bordered ? SDL_TRUE : SDL_FALSE);
+  return Undefined();
+}
+
+Handle<Value> sdl::WindowWrapper::SetBrightness(const Arguments& args) {
+  HandleScope scope;
+
+  WindowWrapper* obj = ObjectWrap::Unwrap<WindowWrapper>(args.This());
+  double brightness = args[0]->IsUndefined() ? 1.0 : args[0]->NumberValue();
+  if(brightness > 1.0) {
+    brightness = 1.0;
+  }
+  else if(brightness < 0.0) {
+    brightness = 0.0;
+  }
+
+  SDL_SetWindowBrightness(obj->window_, static_cast<float>(brightness));
+  return Undefined();
+}
+
+Handle<Value> sdl::WindowWrapper::SetDisplayMode(const Arguments& args) {
+  HandleScope scope;
+
+  WindowWrapper* obj = ObjectWrap::Unwrap<WindowWrapper>(args.This());
+  if(args[0]->IsUndefined()) {
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected SetDisplayMode(DisplayMode)")));
+  }
+  SDL_DisplayMode* mode = UnwrapDisplayMode(args[0]);
+}
+
+static Handle<Value> CreateWindow(const Arguments& args) {
+  return sdl::WindowWrapper::New(args);
+}
+static Handle<Value> CreateWindowAndRenderer(const Arguments& args) {
+
+}
+static Handle<Value> CreateWindowFrom(const Arguments& args) {
+
+}
+static Handle<Value> DestroyWindow(const Arguments& args) {
+
+}
+
+static Handle<Value> DisableScreenSaver(const Arguments& args) {
+
+}
+static Handle<Value> EnableScreenSaver(const Arguments& args) {
+
+}
+static Handle<Value> IsScreenSaverEnabled(const Arguments& args) {
+
+}
+
+static Handle<Value> GetClosestDisplayMode(const Arguments& args) {
+
+}
+static Handle<Value> GetCurrentDisplayMode(const Arguments& args) {
+
+}
+static Handle<Value> GetCurrentVideoDriver(const Arguments& args) {
+
+}
+static Handle<Value> GetDesktopDisplayMode(const Arguments& args) {
+
+}
+static Handle<Value> GetDisplayBounds(const Arguments& args) {
+
+}
+static Handle<Value> GetDisplayMode(const Arguments& args) {
+
+}
+static Handle<Value> GetDisplayName(const Arguments& args) {
+
+}
+static Handle<Value> GetNumDisplayModes(const Arguments& args) {
+
+}
+static Handle<Value> GetNumVideoDisplays(const Arguments& args) {
+
+}
+static Handle<Value> GetNumVideoDrivers(const Arguments& args) {
+
+}
+static Handle<Value> GetVideoDrivers(const Arguments& args) {
+
+}
+static Handle<Value> GetWindowFromID(const Arguments& args) {
+
+}
+
+static Handle<Value> ShowMessageBox(const Arguments& args) {
+
+}
+static Handle<Value> ShowSimpleMessageBox(const Arguments& args) {
+
+}
+
+static Handle<Value> VideoInit(const Arguments& args) {
+
+}
+static Handle<Value> VideoQuit(const Arguments& args) {
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 Handle<Value> sdl::ClearError(const Arguments& args) {
   HandleScope scope;
@@ -952,4 +1197,33 @@ static Handle<Value> sdl::IMG::Load(const Arguments& args) {
   }
 
   return scope.Close(WrapSurface(image));
+}
+
+Handle<Value> sdl::GL::SetAttribute(const Arguments& args) {
+  HandleScope scope;
+
+  if (!(args.Length() == 2 && args[0]->IsNumber() && args[1]->IsNumber())) {
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected SetAttribute(Number, Number)")));
+  }
+
+  int attr = args[0]->Int32Value();
+  int value = args[1]->Int32Value();
+
+  if (SDL_GL_SetAttribute((SDL_GLattr)attr, value)) return ThrowSDLException(__func__);
+  return Undefined();
+}
+
+Handle<Value> sdl::GL::GetAttribute(const Arguments& args) {
+  HandleScope scope;
+
+  if (!(args.Length() == 1 && args[0]->IsNumber())) {
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected GetAttribute(Number)")));
+  }
+
+  int attr = args[0]->Int32Value();
+  int value;
+
+  if (SDL_GL_GetAttribute((SDL_GLattr)attr, &value)) return ThrowSDLException(__func__);
+
+  return Number::New(value);
 }
