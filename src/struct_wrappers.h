@@ -5,8 +5,14 @@
 #include <node.h>
 #include <node_buffer.h>
 
+#include "SDL.h"
+#include "SDL_ttf.h"
+#include "SDL_image.h"
+
+using namespace v8;
+
 namespace sdl {
-	void InitWrappers();
+	void InitWrappers(Handle<Object> exports);
 
 	///////////////////////////////////////////////////////////////////////////////
   	// Wrappers and Unwrappers.
@@ -16,7 +22,7 @@ namespace sdl {
 
 	///////////////////////////////////////////////////////////////////////////////
 	// SDL_Surface Wrapper/Unwrapper.
-	Handle<ObjectTemplate> MakeSurfaceTemplate();
+	Handle<Value> ConstructSurface(const Arguments& args);
 	Handle<Object> WrapSurface(SDL_Surface* surface);
 	SDL_Surface* UnwrapSurface(Handle<Object> obj);
 	// Property getters;
@@ -29,6 +35,7 @@ namespace sdl {
 
 	///////////////////////////////////////////////////////////////////////////////
 	// SDL_Rect Wrapper/Unwrapper.
+	Handle<Value> ConstructRect(const Arguments& args);
 	Handle<Object> WrapRect(SDL_Rect* rect);
 	SDL_Rect* UnwrapRect(Handle<Object> obj);
 	// Property getters.
@@ -37,14 +44,14 @@ namespace sdl {
 	Handle<Value> GetRectW(Local<String> name, const AccessorInfo& info);
 	Handle<Value> GetRectH(Local<String> name, const AccessorInfo& info);
 	// Property setters.
-	Handle<Value> SetRectX(Local<String> name, Local<Value> value, const AccessorInfo& info);
-	Handle<Value> SetRectY(Local<String> name, Local<Value> value, const AccessorInfo& info);
-	Handle<Value> SetRectW(Local<String> name, Local<Value> value, const AccessorInfo& info);
-	Handle<Value> SetRectH(Local<String> name, Local<Value> value, const AccessorInfo& info);
+	void SetRectX(Local<String> name, Local<Value> value, const AccessorInfo& info);
+	void SetRectY(Local<String> name, Local<Value> value, const AccessorInfo& info);
+	void SetRectW(Local<String> name, Local<Value> value, const AccessorInfo& info);
+	void SetRectH(Local<String> name, Local<Value> value, const AccessorInfo& info);
 
 	///////////////////////////////////////////////////////////////////////////////
 	// SDL_Color Wrapper/Unwrapper.
-	Handle<ObjectTemplate> MakeColorTemplate();
+	Handle<Value> ConstructColor(const Arguments& args);
 	Handle<Object> WrapColor(SDL_Color* color);
 	SDL_Color* UnwrapColor(Handle<Object> obj);
 	// Property getters.
@@ -53,24 +60,22 @@ namespace sdl {
 	Handle<Value> GetColorBlue(Local<String> name, const AccessorInfo& info);
 	Handle<Value> GetColorAlpha(Local<String> name, const AccessorInfo& info);
 	// Property setters.
-	Handle<Value> SetColorRed(Local<String> name, Local<Value> value, const AccessorInfo& info);
-	Handle<Value> SetColorGreen(Local<String> name, Local<Value> value, const AccessorInfo& info);
-	Handle<Value> SetColorBlue(Local<String> name, Local<Value> value, const AccessorInfo& info);
-	Handle<Value> SetColorAlpha(Local<String> name, Local<Value> value, const AccessorInfo& info);
+	void SetColorRed(Local<String> name, Local<Value> value, const AccessorInfo& info);
+	void SetColorGreen(Local<String> name, Local<Value> value, const AccessorInfo& info);
+	void SetColorBlue(Local<String> name, Local<Value> value, const AccessorInfo& info);
+	void SetColorAlpha(Local<String> name, Local<Value> value, const AccessorInfo& info);
 
 	///////////////////////////////////////////////////////////////////////////////
 	// SDL_Palette Wrapper/Unwrapper.
-	Handle<ObjectTemplate> MakePaletteTemplate();
+	Handle<Value> ConstructPalette(const Arguments& args);
 	Handle<Object> WrapPalette(SDL_Palette* palette);
 	SDL_Palette* UnwrapPalette(Handle<Object> obj);
 	// Property functions.
-	Handle<Value> GetColorRed(Local<String> name, const AccessorInfo& info);
 	Handle<Value> GetNcolors(Local<String> name, const AccessorInfo& info);
 	Handle<Value> GetColors(Local<String> name, const AccessorInfo& info);
 
 	///////////////////////////////////////////////////////////////////////////////
 	// SDL_DisplayMode Wrapper/Unwrapper.
-	Handle<ObjectTemplate> MakeDisplayModeTemplate();
 	Handle<Object> WrapDisplayMode(SDL_DisplayMode* mode);
 	SDL_DisplayMode* UnwrapDisplayMode(Handle<Value> val);
 	Handle<Value> GetDisplayModeFormat(Local<String> name, const AccessorInfo& info);
@@ -82,6 +87,15 @@ namespace sdl {
 	// SDL_PixelFormat Wrapper/Unwrapper.
 	Handle<Object> WrapPixelFormat(SDL_PixelFormat* pixelformat);
 	SDL_PixelFormat* UnwrapPixelFormat(Handle<Object> obj);
+	// Property getters.
+	Handle<Value> GetFormatFormat(Local<String> name, const AccessorInfo& info);
+	Handle<Value> GetFormatPalette(Local<String> name, const AccessorInfo& info);
+	Handle<Value> GetFormatBits(Local<String> name, const AccessorInfo& info);
+	Handle<Value> GetFormatBytes(Local<String> name, const AccessorInfo& info);
+	Handle<Value> GetFormatRmask(Local<String> name, const AccessorInfo& info);
+	Handle<Value> GetFormatGmask(Local<String> name, const AccessorInfo& info);
+	Handle<Value> GetFormatBmask(Local<String> name, const AccessorInfo& info);
+	Handle<Value> GetFormatAmask(Local<String> name, const AccessorInfo& info);
 
 	///////////////////////////////////////////////////////////////////////////////
 	// SDL_Joystick Wrapper/Unwrapper.

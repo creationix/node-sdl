@@ -2,10 +2,11 @@
   'targets': [
     {
       # have to specify 'liblib' here since gyp will remove the first one :\
-      'target_name': 'libnode-sdl',
+      'target_name': 'libnode_sdl',
       'sources': [
         'src/helpers.cc',
         'src/sdl.cc',
+        'src/struct_wrappers.cc'
       ],
       'libraries': [
         '/Library/Frameworks/SDL2.framework/SDL2',

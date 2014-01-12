@@ -8,6 +8,7 @@
 #include "struct_wrappers.h"
 #include <v8.h>
 #include <string>
+#include <iostream>
 
 using namespace v8;
 
@@ -24,7 +25,10 @@ init(Handle<Object> target)
 //   // before we can create a rendering window
 //   objc_msgSend(objc_getClass("NSApplication"), sel_getUid("sharedApplication"));
 // #endif
+  std::cout << "Starting init." << std::endl;
+
   // Initialize the SDL event type to string mappings.
+  std::cout << "Initializing SDL event type to string mappings." << std::endl;
   event_type_to_string_[SDL_DOLLARGESTURE] = "dollarGesture";
   event_type_to_string_[SDL_DROPFILE] = "dropFile";
   event_type_to_string_[SDL_FINGERMOTION] = "fingerMotion";
@@ -48,8 +52,10 @@ init(Handle<Object> target)
   event_type_to_string_[SDL_TEXTINPUT] = "textInput";
   event_type_to_string_[SDL_USEREVENT] = "userEvent";
   event_type_to_string_[SDL_WINDOWEVENT] = "windowEvent";
+  std::cout << "Finished initializing event mappings." << std::endl;
 
   // Initialize the SDL WindowEvent type to string mappings.
+  std::cout << "Initializing SDL window event type to string mappings." << std::endl;
   window_event_to_string_[SDL_WINDOWEVENT_SHOWN] = "shown";
   window_event_to_string_[SDL_WINDOWEVENT_HIDDEN] = "hidden";
   window_event_to_string_[SDL_WINDOWEVENT_EXPOSED] = "exposed";
@@ -64,9 +70,11 @@ init(Handle<Object> target)
   window_event_to_string_[SDL_WINDOWEVENT_FOCUS_GAINED] = "focusGained";
   window_event_to_string_[SDL_WINDOWEVENT_FOCUS_LOST] = "focusLost";
   window_event_to_string_[SDL_WINDOWEVENT_CLOSE] = "close";
+  std::cout << "Finished initializing window event mappings." << std::endl;
 
-  sdl::InitWrappers();
-    
+  sdl::InitWrappers(target);
+  sdl::WindowWrapper::Init(target);
+
   // Initialization and Shutdown.
   NODE_SET_METHOD(target, "init", sdl::Init);
   NODE_SET_METHOD(target, "initSubSystem", sdl::InitSubSystem);
@@ -112,6 +120,9 @@ init(Handle<Object> target)
   INIT->Set(String::New("AUDIO"), Number::New(SDL_INIT_AUDIO));
   INIT->Set(String::New("VIDEO"), Number::New(SDL_INIT_VIDEO));
   INIT->Set(String::New("JOYSTICK"), Number::New(SDL_INIT_JOYSTICK));
+  INIT->Set(String::New("HAPTIC"), Number::New(SDL_INIT_HAPTIC));
+  INIT->Set(String::New("GAMECONTROLLER"), Number::New(SDL_INIT_GAMECONTROLLER));
+  INIT->Set(String::New("EVENTS"), Number::New(SDL_INIT_EVENTS));
   INIT->Set(String::New("EVERYTHING"), Number::New(SDL_INIT_EVERYTHING));
   INIT->Set(String::New("NOPARACHUTE"), Number::New(SDL_INIT_NOPARACHUTE));
 
@@ -217,18 +228,17 @@ init(Handle<Object> target)
   HINT->Set(String::New("RENDER_VSYNC"), String::New(SDL_HINT_RENDER_VSYNC));
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////
 // Initialization and Shutdown.
 
 Handle<Value> sdl::Init(const Arguments& args) {
   HandleScope scope;
 
-  if (!(args.Length() == 1 && args[0]->IsNumber())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected Init(Number)")));
-  }
-
   SDL_SetMainReady();
-  if (SDL_Init(args[0]->Int32Value()) < 0) {
+  int init = (args[0]->IsUndefined() || !args[0]->IsNumber()) ? SDL_INIT_EVERYTHING : args[0]->Int32Value();
+  std::cout << "sdl::Init got: " << init << std::endl;
+  if (SDL_Init(init) < 0) {
     return ThrowSDLException(__func__);
   }
 
@@ -284,6 +294,8 @@ Handle<Value> sdl::WasInit(const Arguments& args) {
 ////////////////////////////////////////////////////////////////////////////////
 // Display and Window Management.
 
+Persistent<FunctionTemplate> sdl::WindowWrapper::window_wrap_template_;
+
 sdl::WindowWrapper::WindowWrapper(std::string title, int x, int y, int w, int h, uint32_t flags) {
   window_ = SDL_CreateWindow(title.c_str(), x, y, w, h, flags);
 }
@@ -302,11 +314,53 @@ void sdl::WindowWrapper::Init(Handle<Object> exports) {
   window_wrap_template_->SetClassName(String::NewSymbol("WindowWrapper"));
 
   NODE_SET_PROTOTYPE_METHOD(window_wrap_template_, "getBrightness", GetBrightness);
+  NODE_SET_PROTOTYPE_METHOD(window_wrap_template_, "getDisplayIndex", GetDisplayIndex);
+  NODE_SET_PROTOTYPE_METHOD(window_wrap_template_, "getFlags", GetFlags);
+  NODE_SET_PROTOTYPE_METHOD(window_wrap_template_, "getGammaRamp", GetGammaRamp);
+  NODE_SET_PROTOTYPE_METHOD(window_wrap_template_, "getGrab", GetGrab);
+  NODE_SET_PROTOTYPE_METHOD(window_wrap_template_, "getWindowID", GetWindowID);
+  NODE_SET_PROTOTYPE_METHOD(window_wrap_template_, "getMaximumSize", GetMaximumSize);
+  NODE_SET_PROTOTYPE_METHOD(window_wrap_template_, "getMinimumSize", GetMinimumSize);
+  NODE_SET_PROTOTYPE_METHOD(window_wrap_template_, "getPixelFormat", GetPixelFormat);
+  NODE_SET_PROTOTYPE_METHOD(window_wrap_template_, "getPosition", GetPosition);
+  NODE_SET_PROTOTYPE_METHOD(window_wrap_template_, "getSize", GetSize);
+  NODE_SET_PROTOTYPE_METHOD(window_wrap_template_, "getSurface", GetSurface);
+  NODE_SET_PROTOTYPE_METHOD(window_wrap_template_, "getTitle", GetTitle);
+
+  NODE_SET_PROTOTYPE_METHOD(window_wrap_template_, "hide", Hide);
+  NODE_SET_PROTOTYPE_METHOD(window_wrap_template_, "show", Show);
+
+  NODE_SET_PROTOTYPE_METHOD(window_wrap_template_, "minimize", Minimize);
+  NODE_SET_PROTOTYPE_METHOD(window_wrap_template_, "maximize", Maximize);
+
+  NODE_SET_PROTOTYPE_METHOD(window_wrap_template_, "raise", Raise);
+  NODE_SET_PROTOTYPE_METHOD(window_wrap_template_, "restore", Restore);
+
+  NODE_SET_PROTOTYPE_METHOD(window_wrap_template_, "setBordered", SetBordered);
+  NODE_SET_PROTOTYPE_METHOD(window_wrap_template_, "setBrightness", SetBrightness);
+  NODE_SET_PROTOTYPE_METHOD(window_wrap_template_, "setDisplayMode", SetDisplayMode);
+  NODE_SET_PROTOTYPE_METHOD(window_wrap_template_, "setFullscreen", SetFullscreen);
+  NODE_SET_PROTOTYPE_METHOD(window_wrap_template_, "setGammeRamp", SetGammaRamp);
+  NODE_SET_PROTOTYPE_METHOD(window_wrap_template_, "setGrab", SetGrab);
+  NODE_SET_PROTOTYPE_METHOD(window_wrap_template_, "setIcon", SetIcon);
+  NODE_SET_PROTOTYPE_METHOD(window_wrap_template_, "setMaximumSize", SetMaximumSize);
+  NODE_SET_PROTOTYPE_METHOD(window_wrap_template_, "setMinimumSize", SetMinimumSize);
+  NODE_SET_PROTOTYPE_METHOD(window_wrap_template_, "setPosition", SetPosition);
+  NODE_SET_PROTOTYPE_METHOD(window_wrap_template_, "setSize", SetSize);
+  NODE_SET_PROTOTYPE_METHOD(window_wrap_template_, "setTitle", SetTitle);
+
+  NODE_SET_PROTOTYPE_METHOD(window_wrap_template_, "updateWindowSurface", UpdateWindowSurface);
+  NODE_SET_PROTOTYPE_METHOD(window_wrap_template_, "updateWindowSurfaceRects", UpdateWindowSurfaceRects);
 
   exports->Set(String::NewSymbol("Window"), window_wrap_template_->GetFunction());
 }
 
 Handle<Value> sdl::WindowWrapper::New(const Arguments& args) {
+  if(!args.IsConstructCall()) {
+    return ThrowException(Exception::TypeError(
+      String::New("Use the new operator to create instances of this object.")));
+  }
+
   HandleScope scope;
 
   std::string title = args[0]->IsUndefined() ? "" : *(String::Utf8Value(args[0]));
@@ -321,6 +375,7 @@ Handle<Value> sdl::WindowWrapper::New(const Arguments& args) {
     delete obj;
     return ThrowSDLException("Window->New");
   }
+
   obj->Wrap(args.This());
   return args.This();
 }
@@ -574,6 +629,176 @@ Handle<Value> sdl::WindowWrapper::SetDisplayMode(const Arguments& args) {
     return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected SetDisplayMode(DisplayMode)")));
   }
   SDL_DisplayMode* mode = UnwrapDisplayMode(args[0]);
+  int err = SDL_SetWindowDisplayMode(obj->window_, mode);
+  return Undefined();
+}
+
+Handle<Value> sdl::WindowWrapper::SetFullscreen(const Arguments& args) {
+  HandleScope scope;
+
+  WindowWrapper* obj = ObjectWrap::Unwrap<WindowWrapper>(args.This());
+  if(args[0]->IsUndefined()) {
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected SetFullscreen(Number)")));
+  }
+  int fullscreen = args[0]->Int32Value();
+  int err = SDL_SetWindowFullscreen(obj->window_, fullscreen);
+  if(err < 0) {
+    return ThrowSDLException("Window->SetFullscreen");
+  }
+  return Undefined();
+}
+
+Handle<Value> sdl::WindowWrapper::SetGammaRamp(const Arguments& args) {
+  HandleScope scope;
+
+  WindowWrapper* obj = ObjectWrap::Unwrap<WindowWrapper>(args.This());
+  if(args.Length() < 3 ) {
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected SetGammaRamp(Array, Array, Array)")));
+  }
+  if(!args[0]->IsArray() || !args[1]->IsArray() || !args[2]->IsArray()) {
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected SetGammaRamp(Array, Array, Array)")));
+  }
+
+  Handle<Array> red = Handle<Array>::Cast(args[0]);
+  Handle<Array> green = Handle<Array>::Cast(args[1]);
+  Handle<Array> blue = Handle<Array>::Cast(args[2]);
+  uint16_t redArr[256];
+  uint16_t greenArr[256];
+  uint16_t blueArr[256];
+  for(int i = 0; i < 256; i++) {
+    redArr[i] = red->CloneElementAt(i)->Int32Value();
+    greenArr[i] = green->CloneElementAt(i)->Int32Value();
+    blueArr[i] = blue->CloneElementAt(i)->Int32Value();
+  }
+  int err = SDL_SetWindowGammaRamp(obj->window_, redArr, greenArr, blueArr);
+  if(err < 0) {
+    return ThrowSDLException("Window->SetGammaRamp");
+  }
+
+  return Undefined();
+}
+
+Handle<Value> sdl::WindowWrapper::SetGrab(const Arguments& args) {
+  HandleScope scope;
+
+  WindowWrapper* obj = ObjectWrap::Unwrap<WindowWrapper>(args.This());
+  if(args.Length() < 1) {
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected SetGrab(Boolean)")));
+  }
+  bool grab = args[0]->ToBoolean()->BooleanValue();
+  SDL_SetWindowGrab(obj->window_, grab ? SDL_TRUE : SDL_FALSE);
+  return Undefined();
+}
+
+Handle<Value> sdl::WindowWrapper::SetIcon(const Arguments& args) {
+  HandleScope scope;
+
+  WindowWrapper* obj = ObjectWrap::Unwrap<WindowWrapper>(args.This());
+  if(args.Length() < 1) {
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected SetIcon(Surface)")));
+  }
+  SDL_Surface* surface = UnwrapSurface(Handle<Object>::Cast(args[0]));
+  SDL_SetWindowIcon(obj->window_, surface);
+
+  return Undefined();
+}
+
+Handle<Value> sdl::WindowWrapper::SetMaximumSize(const Arguments& args) {
+  HandleScope scope;
+
+  WindowWrapper* obj = ObjectWrap::Unwrap<WindowWrapper>(args.This());
+  if(args.Length() < 2) {
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected SetMaximumSize(Number, Number)")));
+  }
+  int max_w = args[0]->Int32Value();
+  int max_h = args[0]->Int32Value();
+  SDL_SetWindowMaximumSize(obj->window_, max_w, max_h);
+  return Undefined();
+}
+
+Handle<Value> sdl::WindowWrapper::SetMinimumSize(const Arguments& args) {
+  HandleScope scope;
+
+  WindowWrapper* obj = ObjectWrap::Unwrap<WindowWrapper>(args.This());
+  if(args.Length() < 2) {
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected SetMinimumSize(Number, Number)")));
+  }
+  int min_w = args[0]->Int32Value();
+  int min_h = args[0]->Int32Value();
+  SDL_SetWindowMinimumSize(obj->window_, min_w, min_h);
+  return Undefined();
+}
+
+Handle<Value> sdl::WindowWrapper::SetPosition(const Arguments& args) {
+  HandleScope scope;
+
+  WindowWrapper* obj = ObjectWrap::Unwrap<WindowWrapper>(args.This());
+  if(args.Length() < 2) {
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected SetPosition(Number, Number)")));
+  }
+  int x = args[0]->Int32Value();
+  int y = args[0]->Int32Value();
+  SDL_SetWindowPosition(obj->window_, x, y);
+  return Undefined();
+}
+
+Handle<Value> sdl::WindowWrapper::SetSize(const Arguments& args) {
+  HandleScope scope;
+
+  WindowWrapper* obj = ObjectWrap::Unwrap<WindowWrapper>(args.This());
+  if(args.Length() < 2) {
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected SetSize(Number, Number)")));
+  }
+  int w = args[0]->Int32Value();
+  int h = args[0]->Int32Value();
+  SDL_SetWindowSize(obj->window_, w, h);
+  return Undefined();
+}
+
+Handle<Value> sdl::WindowWrapper::SetTitle(const Arguments& args) {
+  HandleScope scope;
+
+  WindowWrapper* obj = ObjectWrap::Unwrap<WindowWrapper>(args.This());
+  if(args.Length() < 1) {
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected SetTitle(String)")));
+  }
+  String::Utf8Value title(args[0]);
+  SDL_SetWindowTitle(obj->window_, *title);
+  return Undefined();
+}
+
+Handle<Value> sdl::WindowWrapper::UpdateWindowSurface(const Arguments& args) {
+  HandleScope scope;
+
+  WindowWrapper* obj = ObjectWrap::Unwrap<WindowWrapper>(args.This());
+  int err = SDL_UpdateWindowSurface(obj->window_);
+  if(err < 0) {
+    return ThrowSDLException("Window->SetTitle");
+  }
+  return Undefined();
+}
+
+Handle<Value> sdl::WindowWrapper::UpdateWindowSurfaceRects(const Arguments& args) {
+  HandleScope scope;
+
+  WindowWrapper* obj = ObjectWrap::Unwrap<WindowWrapper>(args.This());
+  if(args.Length() < 1) {
+    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected UpdateWindowSurfaceRects(Array)")));
+  }
+
+  Handle<Array> arr = Handle<Array>::Cast(args[0]);
+  int len = arr->Length();
+  SDL_Rect* rects = new SDL_Rect[len];
+  for(int i = 0; i < len; i++) {
+    rects[i] = *UnwrapRect(arr->CloneElementAt(i));
+  }
+
+  int err = SDL_UpdateWindowSurfaceRects(obj->window_, rects, len);
+  delete rects;
+  if(err < 0) {
+    return ThrowSDLException("Window->SetTitle");
+  }
+  return Undefined();
 }
 
 static Handle<Value> CreateWindow(const Arguments& args) {
@@ -1227,3 +1452,5 @@ Handle<Value> sdl::GL::GetAttribute(const Arguments& args) {
 
   return Number::New(value);
 }
+
+NODE_MODULE(node_sdl, init)
