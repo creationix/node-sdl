@@ -5,8 +5,11 @@
       'target_name': 'libnode_sdl',
       'sources': [
         'src/helpers.cc',
-        'src/sdl.cc',
-        'src/struct_wrappers.cc'
+        'src/node_sdl.cc',
+        'src/struct_wrappers.cc',
+        'src/render.cc',
+        'src/texture.cc',
+        'src/window.cc'
       ],
       'libraries': [
         '/Library/Frameworks/SDL2.framework/SDL2',

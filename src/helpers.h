@@ -5,23 +5,20 @@
 #include <node.h>
 #include <node_buffer.h>
 
-using namespace node;
-using namespace v8;
-
 namespace sdl {
 
   // Error reporting helpers
-  Handle<Value> ThrowSDLException(const char* name);
-  Local<Value> MakeSDLException(const char* name);
+  v8::Handle<v8::Value> ThrowSDLException(const char* name);
+  v8::Local<v8::Value> MakeSDLException(const char* name);
   
   // Helpers to work with buffers
-  char* BufferData(Buffer *b);
-  size_t BufferLength(Buffer *b);
-  char* BufferData(Local<Object> buf_obj);
-  size_t BufferLength(Local<Object> buf_obj);
+  char* BufferData(node::Buffer *b);
+  size_t BufferLength(node::Buffer *b);
+  char* BufferData(v8::Local<v8::Object> buf_obj);
+  size_t BufferLength(v8::Local<v8::Object> buf_obj);
 
-  static Local<Object> SDLEventToJavascriptObject(const SDL_Event& event);
-  static Local<Object> SDLDisplayModeToJavascriptObject(const SDL_DisplayMode& mode);
+  v8::Local<v8::Object> SDLEventToJavascriptObject(const SDL_Event& event);
+  v8::Local<v8::Object> SDLDisplayModeToJavascriptObject(const SDL_DisplayMode& mode);
 
 } // sdl
 
