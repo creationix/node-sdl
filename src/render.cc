@@ -2,6 +2,7 @@
 #include "SDL.h"
 #include "helpers.h"
 #include "texture.h"
+#include "surface.h"
 #include "struct_wrappers.h"
 #include "window.h"
 
@@ -22,7 +23,7 @@ sdl::RendererWrapper::~RendererWrapper() {
 }
 
 void sdl::RendererWrapper::Init(Handle<Object> exports) {
-  // Setup hardware renderer construction.
+  	// Setup hardware renderer construction.
 	Local<FunctionTemplate> tpl = FunctionTemplate::New(New);
 	render_wrap_template_ = Persistent<FunctionTemplate>::New(tpl);
 
@@ -113,8 +114,8 @@ Handle<Value> sdl::RendererWrapper::NewSoftware(const Arguments& args) {
 		return ThrowException(Exception::TypeError(String::New("Invalid Arguments: Expected: new SoftwareRenderer(sdl.Surface)")));
 	}
 
-	SDL_Surface* surface = UnwrapSurface(Handle<Object>::Cast(args[0]));
-	SDL_Renderer* renderer = SDL_CreateSoftwareRenderer(surface);
+	SurfaceWrapper* wrap = ObjectWrap::Unwrap<SurfaceWrapper>(Handle<Object>::Cast(args[0]));
+	SDL_Renderer* renderer = SDL_CreateSoftwareRenderer(wrap->surface_);
 	if(NULL == renderer) {
 		return ThrowSDLException(__func__);
 	}

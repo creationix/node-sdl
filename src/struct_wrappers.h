@@ -19,19 +19,6 @@ namespace sdl {
   	// or is just plain unused)
 
 	///////////////////////////////////////////////////////////////////////////////
-	// SDL_Surface Wrapper/Unwrapper.
-	v8::Handle<v8::Value> ConstructSurface(const v8::Arguments& args);
-	v8::Handle<v8::Object> WrapSurface(SDL_Surface* surface);
-	SDL_Surface* UnwrapSurface(v8::Handle<v8::Object> obj);
-	// Property getters;
-	v8::Handle<v8::Value> GetSurfaceFlags(v8::Local<v8::String> name, const v8::AccessorInfo& info);
-	v8::Handle<v8::Value> GetSurfaceFormat(v8::Local<v8::String> name, const v8::AccessorInfo& info);
-	v8::Handle<v8::Value> GetSurfaceWidth(v8::Local<v8::String> name, const v8::AccessorInfo& info);
-	v8::Handle<v8::Value> GetSurfaceHeight(v8::Local<v8::String> name, const v8::AccessorInfo& info);
-	v8::Handle<v8::Value> GetSurfacePitch(v8::Local<v8::String> name, const v8::AccessorInfo& info);
-	v8::Handle<v8::Value> GetSurfaceRect(v8::Local<v8::String> name, const v8::AccessorInfo& info);
-
-	///////////////////////////////////////////////////////////////////////////////
 	// SDL_Rect Wrapper/Unwrapper.
 	v8::Handle<v8::Value> ConstructRect(const v8::Arguments& args);
 	v8::Handle<v8::Object> WrapRect(SDL_Rect* rect);

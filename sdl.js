@@ -7,11 +7,11 @@ console.log("About to load node_sdl.node");
 var SDL = module.exports = require('./build/Release/node_sdl.node');
 console.log("Finished loading node_sdl.node");
 
-// console.log("Showing all keys for base SDL namespace:");
-// for(key in SDL) {
-//   console.log("SDLKEY: " + key + ", SDLVAL: " + SDL[key]);
-// }
-// console.log()
+console.log("Showing all keys for base SDL namespace:");
+for(key in SDL) {
+  console.log("SDLKEY: " + key + ", SDLVAL: " + SDL[key]);
+}
+console.log()
 
 // console.log("Showing all keys for SDL.INIT:");
 // for(key in SDL.INIT) {
@@ -24,7 +24,21 @@ SDL.init("FOO");
 console.log("About to create a window.")
 var window = new SDL.Window("Foo title")
 console.log("Finished creating window.")
+
+console.log("Creating a renderer.");
 var render = new SDL.Renderer(window);
+
+console.log("Creating a surface.");
+var surface = new SDL.Surface(40, 40);
+surface.fillRect(0xffffffff);
+console.log("Surface has: w:" + surface.getWidth() + ", h:" + surface.getHeight());
+
+console.log("Creating a texture.");
+var texture = new SDL.Texture(render, surface);
+
+render.clear();
+render.copy(texture, undefined, SDL.Rect(10, 10, 100, 100));
+render.present();
 // for(key in window) {
 //   console.log("WINDOWKEY: " + key + ", " + "WINDOWVAL: " + window[key]);
 //   if(isFunction(window[key])) {

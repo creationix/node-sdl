@@ -8,6 +8,7 @@
 #include "struct_wrappers.h"
 #include "window.h"
 #include "texture.h"
+#include "surface.h"
 #include <v8.h>
 #include <string>
 #include <iostream>
@@ -78,6 +79,7 @@ init(Handle<Object> target)
   sdl::WindowWrapper::Init(target);
   sdl::RendererWrapper::Init(target);
   sdl::TextureWrapper::Init(target);
+  sdl::SurfaceWrapper::Init(target);
 
   // Initialization and Shutdown.
   NODE_SET_METHOD(target, "init", sdl::Init);
@@ -107,17 +109,10 @@ init(Handle<Object> target)
   NODE_SET_METHOD(target, "joystickUpdate", sdl::JoystickUpdate);
   NODE_SET_METHOD(target, "joystickEventState", sdl::JoystickEventState);
 
-  NODE_SET_METHOD(target, "fillRect", sdl::FillRect);
-  NODE_SET_METHOD(target, "createRGBSurface", sdl::CreateRGBSurface);
-  NODE_SET_METHOD(target, "blitSurface", sdl::BlitSurface);
-  NODE_SET_METHOD(target, "freeSurface", sdl::FreeSurface);
-  NODE_SET_METHOD(target, "setColorKey", sdl::SetColorKey);
-
   NODE_SET_METHOD(target, "mapRGB", sdl::MapRGB);
   NODE_SET_METHOD(target, "mapRGBA", sdl::MapRGBA);
   NODE_SET_METHOD(target, "getRGB", sdl::GetRGB);
   NODE_SET_METHOD(target, "getRGBA", sdl::GetRGBA);
-  NODE_SET_METHOD(target, "setClipRect",sdl::SetClipRect);
 
   Local<Object> INIT = Object::New();
   target->Set(String::New("INIT"), INIT);
@@ -751,156 +746,6 @@ Handle<Value> sdl::JoystickEventState(const Arguments& args) {
   return Boolean::New(SDL_JoystickEventState(state));
 }
 
-Handle<Value> sdl::FillRect(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 3
-      && args[0]->IsObject()
-      && (args[1]->IsObject() || args[1]->IsNull())
-      && args[2]->IsNumber()
-  )) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected FillRect(Surface, Rect, Number)")));
-  }
-
-  SDL_Surface* surface = UnwrapSurface(args[0]->ToObject());
-  SDL_Rect* rect;
-  if (args[1]->IsNull()) {
-    rect = NULL;
-  } else if (args[1]->IsArray()) {
-    SDL_Rect r;
-    Handle<Object> arr = args[1]->ToObject();
-    r.x = arr->Get(String::New("0"))->Int32Value();
-    r.y = arr->Get(String::New("1"))->Int32Value();
-    r.w = arr->Get(String::New("2"))->Int32Value();
-    r.h = arr->Get(String::New("3"))->Int32Value();
-    rect = &r;
-  } else {
-    rect = UnwrapRect(args[1]->ToObject());
-  }
-  int color = args[2]->Int32Value();
-
-  if (SDL_FillRect (surface, rect, color) < 0) return ThrowSDLException(__func__);
-
-  return Undefined();
-}
-
-Handle<Value> sdl::CreateRGBSurface(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 3 && args[0]->IsNumber() && args[1]->IsNumber() && args[2]->IsNumber())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected CreateRGBSurface(Number, Number, Number)")));
-  }
-
-  int flags = args[0]->Int32Value();
-  int width = args[1]->Int32Value();
-  int height = args[2]->Int32Value();
-
-  SDL_Surface *surface;
-  int rmask, gmask, bmask, amask;
-
-  /* SDL interprets each pixel as a 32-bit number, so our masks must depend
-     on the endianness (byte order) of the machine */
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-  rmask = 0xff000000;
-  gmask = 0x00ff0000;
-  bmask = 0x0000ff00;
-  amask = 0x000000ff;
-#else
-  rmask = 0x000000ff;
-  gmask = 0x0000ff00;
-  bmask = 0x00ff0000;
-  amask = 0xff000000;
-#endif
-
-  surface = SDL_CreateRGBSurface(flags, width, height, 32, rmask, gmask, bmask, amask);
-  if (surface == NULL) return ThrowSDLException(__func__);
-  return scope.Close(WrapSurface(surface));
-}
-
-Handle<Value> sdl::BlitSurface(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 4
-        && args[0]->IsObject()
-        && (args[1]->IsObject() || args[1]->IsNull())
-        && args[2]->IsObject()
-        && (args[3]->IsObject() || args[3]->IsNull())
-  )) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected BlitSurface(Surface, Rect, Surface, Rect)")));
-  }
-
-  SDL_Surface* src = UnwrapSurface(args[0]->ToObject());
-  SDL_Surface* dst = UnwrapSurface(args[2]->ToObject());
-
-  SDL_Rect* srcrect;
-  if (args[1]->IsNull()) {
-    srcrect = NULL;
-  } else if (args[1]->IsArray()) {
-    Handle<Object> arr1 = args[1]->ToObject();
-    srcrect = new SDL_Rect();
-    srcrect->x = arr1->Get(String::New("0"))->Int32Value();
-    srcrect->y = arr1->Get(String::New("1"))->Int32Value();
-    srcrect->w = arr1->Get(String::New("2"))->Int32Value();
-    srcrect->h = arr1->Get(String::New("3"))->Int32Value();
-  } else {
-    srcrect = UnwrapRect(args[1]->ToObject());
-  }
-
-  SDL_Rect* dstrect;
-  if (args[3]->IsNull()) {
-    dstrect = NULL;
-  } else if (args[3]->IsArray()) {
-    Handle<Object> arr2 = args[3]->ToObject();
-    dstrect = new SDL_Rect();
-    dstrect->x = arr2->Get(String::New("0"))->Int32Value();
-    dstrect->y = arr2->Get(String::New("1"))->Int32Value();
-    dstrect->w = arr2->Get(String::New("2"))->Int32Value();
-    dstrect->h = arr2->Get(String::New("3"))->Int32Value();
-  } else {
-    dstrect = UnwrapRect(args[3]->ToObject());
-  }
-
-//  if (srcrect) printf("srcrect = {x: %d, y: %d, w: %d, h: %d}\n", srcrect->x, srcrect->y, srcrect->w, srcrect->h);
-//  else printf("srcrect = null\n");
-//  if (dstrect) printf("dstrect = {x: %d, y: %d, w: %d, h: %d}\n", dstrect->x, dstrect->y, dstrect->w, dstrect->h);
-//  else printf("dstrect = null\n");
-
-
-  if (SDL_BlitSurface(src, srcrect, dst, dstrect) < 0) return ThrowSDLException(__func__);
-  return Undefined();
-}
-
-Handle<Value> sdl::FreeSurface(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 1 && args[0]->IsObject())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected FreeSurface(Surface)")));
-  }
-
-  // TODO: find a way to do this automatically by using GC hooks.  This is dangerous in JS land
-  SDL_FreeSurface(UnwrapSurface(args[0]->ToObject()));
-  args[0]->ToObject()->Set(String::New("DEAD"), Boolean::New(true));
-
-  return Undefined();
-}
-
-Handle<Value> sdl::SetColorKey(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 3 && args[0]->IsObject() && args[1]->IsNumber() && args[2]->IsNumber())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected SetColorKey(Surface, Number, Number)")));
-  }
-
-  SDL_Surface* surface = UnwrapSurface(args[0]->ToObject());
-  int flag = args[1]->Int32Value();
-  int key = args[2]->Int32Value();
-
-  if (SDL_SetColorKey(surface, flag, key) < 0) return ThrowSDLException(__func__);
-
-  return Undefined();
-
-}
-
 Handle<Value> sdl::MapRGB(const Arguments& args) {
   HandleScope scope;
 
@@ -973,34 +818,6 @@ Handle<Value> sdl::GetRGBA(const Arguments& args) {
   rgba->Set(String::New("a"), Number::New(a));
 
   return scope.Close(rgba);
-}
-
-
-Handle<Value> sdl::SetClipRect(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 2 && args[0]->IsObject())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected SetClipRect(SDL_Surface, SDL_Rect)")));
-  }    
-  
-  SDL_Surface* surface = UnwrapSurface(args[0]->ToObject());
-  SDL_Rect* rect;
-  if (args[1]->IsNull()) {
-    rect = NULL;
-  } else if (args[1]->IsArray()) {
-    SDL_Rect r;
-    Handle<Object> arr = args[1]->ToObject();
-    r.x = arr->Get(String::New("0"))->Int32Value();
-    r.y = arr->Get(String::New("1"))->Int32Value();
-    r.w = arr->Get(String::New("2"))->Int32Value();
-    r.h = arr->Get(String::New("3"))->Int32Value();
-    rect = &r;
-  } else {
-    rect = UnwrapRect(args[1]->ToObject());
-  }
-  if (SDL_SetClipRect (surface, rect ) < 0) return ThrowSDLException(__func__);
-
-  return Undefined();
 }
 
 Handle<Value> sdl::TTF::Init(const Arguments& args) {
@@ -1091,7 +908,10 @@ Handle<Value> sdl::IMG::Load(const Arguments& args) {
     )));
   }
 
-  return scope.Close(WrapSurface(image));
+  Handle<Object> ret = Object::New();
+  SurfaceWrapper* wrap = new SurfaceWrapper(ret);
+  wrap->surface_ = image;
+  return scope.Close(ret);
 }
 
 Handle<Value> sdl::GL::SetAttribute(const Arguments& args) {

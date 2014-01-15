@@ -3,6 +3,7 @@
 #include "window.h"
 #include "helpers.h"
 #include "struct_wrappers.h"
+#include "surface.h"
 
 using namespace v8;
 
@@ -252,7 +253,11 @@ Handle<Value> sdl::WindowWrapper::GetSurface(const Arguments& args) {
 	if(NULL == surf) {
 		return ThrowSDLException("Window->GetSurface");
 	}
-	return scope.Close(WrapSurface(surf));
+
+	Handle<Object> ret = Object::New();
+	SurfaceWrapper* wrap = new SurfaceWrapper(ret);
+	wrap->surface_ = surf;
+	return scope.Close(ret);
 }
 
 Handle<Value> sdl::WindowWrapper::GetTitle(const Arguments& args) {
@@ -414,8 +419,8 @@ Handle<Value> sdl::WindowWrapper::SetIcon(const Arguments& args) {
 	if(args.Length() < 1) {
 		return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected SetIcon(Surface)")));
 	}
-	SDL_Surface* surface = UnwrapSurface(Handle<Object>::Cast(args[0]));
-	SDL_SetWindowIcon(obj->window_, surface);
+	SurfaceWrapper* wrap = ObjectWrap::Unwrap<SurfaceWrapper>(Handle<Object>::Cast(args[0]));
+	SDL_SetWindowIcon(obj->window_, wrap->surface_);
 
 	return Undefined();
 }

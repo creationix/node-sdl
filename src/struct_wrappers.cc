@@ -15,7 +15,6 @@ namespace sdl {
 	static Persistent<ObjectTemplate> rect_template_;
 	static Persistent<ObjectTemplate> point_template_;
 	static Persistent<ObjectTemplate> color_template_;
-	static Persistent<ObjectTemplate> surface_template_;
 	static Persistent<ObjectTemplate> palette_template_;
 	static Persistent<ObjectTemplate> pixelformat_template_;
 	static Persistent<ObjectTemplate> rendererinfo_template_;
@@ -29,13 +28,6 @@ namespace sdl {
 		std::cout << "About to initialize SDL struct wrappers." << std::endl;
 		HandleScope scope;
 		std::cout << "Created scope for struct wrapper initialization." << std::endl;
-
-		std::cout << "Putting together information for surface wrapper..." << std::endl;
-		const int numSurface = 6;
-		std::string surfaceSymbols[] = {"flags", "format", "w", "h", "pitch", "clip_rect"};
-		AccessorGetter surfaceGetters[] = {GetSurfaceFlags, GetSurfaceFormat, GetSurfaceWidth,
-													  GetSurfaceHeight, GetSurfacePitch, GetSurfaceRect};
-		AccessorSetter surfaceSetters[] = {0, 0, 0, 0, 0, 0};
 
 		std::cout << "Putting together information for rect wrapper..." << std::endl;
 		const int numRect = 4;
@@ -82,21 +74,21 @@ namespace sdl {
 		AccessorSetter rendererInfoSetters[] = {0, 0, 0, 0, 0, 0};
 
 		std::cout << "Putting together meta information for creating wrapping bindings..." << std::endl;
-		const int numberTemplates = 7;
-		Handle<ObjectTemplate> *templates[] = {&surface_template_, &rect_template_, &color_template_,
+		const int numberTemplates = 6;
+		Handle<ObjectTemplate> *templates[] = {&rect_template_, &color_template_,
 											   &palette_template_, &displaymode_template_,
 											   &pixelformat_template_, &rendererinfo_template_};
-		int numberSymbols[] = {numSurface, numRect, numColor, numberPalette, numberDisplayMode,
+		int numberSymbols[] = {numRect, numColor, numberPalette, numberDisplayMode,
 							   numberPixelFormat, numberRendererInfo};
-		std::string *allSymbols[] = {surfaceSymbols, rectSymbols, colorSymbols, paletteSymbols,
+		std::string *allSymbols[] = {rectSymbols, colorSymbols, paletteSymbols,
 									 displayModeSymbols, pixelFormatSymbols, rendererInfoSymbols};
-		AccessorGetter *allGetters[] = {surfaceGetters, rectGetters, colorGetters, paletteGetters,
+		AccessorGetter *allGetters[] = {rectGetters, colorGetters, paletteGetters,
 										displayModeGetters, pixelFormatGetters, rendererInfoGetters};
-		AccessorSetter *allSetters[] = {surfaceSetters, rectSetters, colorSetters, paletteSetters,
+		AccessorSetter *allSetters[] = {rectSetters, colorSetters, paletteSetters,
 										displayModeSetters, pixelFormatSetters, rendererInfoSetters};
-		InvocationCallback allConstructors[] = {ConstructSurface, ConstructRect, ConstructColor,
+		InvocationCallback allConstructors[] = {ConstructRect, ConstructColor,
 											    ConstructPalette, 0, 0, 0};
-		std::string constructorNames[] = {"Surface", "Rect", "Color", "Palette",
+		std::string constructorNames[] = {"Rect", "Color", "Palette",
 										  "DisplayMode", "PixelFormat", "RendererInfo"};
 
 		std::cout << std::endl << "About to begin loop to create wrapping bindings..." << std::endl;
@@ -131,96 +123,6 @@ namespace sdl {
 		std::cout << "Finished initializing wrappers." << std::endl;
 		// TODO: Joystick and Font.
 	}
-
-	///////////////////////////////////////////////////////////////////////////////
-	// SDL_Surface Wrapper/Unwrapper.
-	Handle<Value> ConstructSurface(const Arguments& args) {
-		HandleScope scope;
-
-		if(args.Length() < 0) {
-			return ThrowException(Exception::TypeError(String::New("Invalid call. Expected: ConstructSurface(width, height)")));
-		}
-
-		int width = args[0]->Int32Value();
-		int height = args[1]->Int32Value();
-		int rmask, gmask, bmask, amask;
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-	    rmask = 0xff000000;
-	    gmask = 0x00ff0000;
-	    bmask = 0x0000ff00;
-	    amask = 0x000000ff;
-#else
-	    rmask = 0x000000ff;
-	    gmask = 0x0000ff00;
-	    bmask = 0x00ff0000;
-	    amask = 0xff000000;
-#endif
-		SDL_Surface* surface = SDL_CreateRGBSurface(0, width, height, 32,
-			rmask, gmask, bmask, amask);
-		if(NULL == surface) {
-			return ThrowSDLException("ConstructSurface");
-		}
-
-		return scope.Close(WrapSurface(surface));
-	}
-
-	Handle<Object> WrapSurface(SDL_Surface* surface) {
-  		// Handle scope for temporary handles.
-		HandleScope handle_scope;
-
-		Handle<ObjectTemplate> templ = surface_template_;
-
-  		// Create an empty http request wrapper.
-		Handle<Object> result = templ->NewInstance();
-
-  		// Wrap the raw C++ pointer in an External so it can be referenced
-  		// from within JavaScript.
-		Handle<External> request_ptr = External::New(surface);
-
-  		// Store the request pointer in the JavaScript wrapper.
-		result->SetInternalField(0, request_ptr);
-
-  		// Return the result through the current handle scope.  Since each
-  		// of these handles will go away when the handle scope is deleted
-  		// we need to call Close to let one, the result, escape into the
-  		// outer handle scope.
-		return handle_scope.Close(result);
-	}
-
-	SDL_Surface* UnwrapSurface(Handle<Object> obj) {
-		Handle<External> field = Handle<External>::Cast(obj->GetInternalField(0));
-		void* ptr = field->Value();
-		return static_cast<SDL_Surface*>(ptr);
-	}
-
-	// Property getters.
-	Handle<Value> GetSurfaceFlags(Local<String> name, const AccessorInfo& info) {
-		SDL_Surface* surface = UnwrapSurface(info.Holder());
-		return Number::New(surface->flags);
-	}
-	Handle<Value> GetSurfaceFormat(Local<String> name, const AccessorInfo& info) {
-		HandleScope scope;
-		SDL_Surface* surface = UnwrapSurface(info.Holder());
-		return scope.Close(WrapPixelFormat(surface->format));
-	}
-	Handle<Value> GetSurfaceWidth(Local<String> name, const AccessorInfo& info) {
-		SDL_Surface* surface = UnwrapSurface(info.Holder());
-		return Number::New(surface->w);
-	}
-	Handle<Value> GetSurfaceHeight(Local<String> name, const AccessorInfo& info) {
-		SDL_Surface* surface = UnwrapSurface(info.Holder());
-		return Number::New(surface->h);
-	}
-	Handle<Value> GetSurfacePitch(Local<String> name, const AccessorInfo& info) {
-		SDL_Surface* surface = UnwrapSurface(info.Holder());
-		return Number::New(surface->pitch);
-	}
-	Handle<Value> GetSurfaceRect(Local<String> name, const AccessorInfo& info) {
-		HandleScope scope;
-		SDL_Surface* surface = UnwrapSurface(info.Holder());
-		return scope.Close(WrapRect(&surface->clip_rect));
-	}
-	// Property setters.
 
 	///////////////////////////////////////////////////////////////////////////////
 	// SDL_Rect Wrapper/Unwrapper.

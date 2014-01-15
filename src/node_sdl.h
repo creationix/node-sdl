@@ -68,17 +68,10 @@ namespace sdl {
   v8::Handle<v8::Value> JoystickUpdate(const v8::Arguments& args);
   v8::Handle<v8::Value> JoystickEventState(const v8::Arguments& args);
 
-  v8::Handle<v8::Value> FillRect(const v8::Arguments& args);
-  v8::Handle<v8::Value> CreateRGBSurface(const v8::Arguments& args);
-  v8::Handle<v8::Value> BlitSurface(const v8::Arguments& args);
-  v8::Handle<v8::Value> FreeSurface(const v8::Arguments& args);
-  v8::Handle<v8::Value> SetColorKey(const v8::Arguments& args);
-
   v8::Handle<v8::Value> MapRGB(const v8::Arguments& args);
   v8::Handle<v8::Value> MapRGBA(const v8::Arguments& args);
   v8::Handle<v8::Value> GetRGB(const v8::Arguments& args);
   v8::Handle<v8::Value> GetRGBA(const v8::Arguments& args);
-  v8::Handle<v8::Value> SetClipRect(const v8::Arguments& args);
 
   namespace TTF {
     v8::Handle<v8::Value> Init(const v8::Arguments& args);

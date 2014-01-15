@@ -9,7 +9,8 @@
         'src/struct_wrappers.cc',
         'src/render.cc',
         'src/texture.cc',
-        'src/window.cc'
+        'src/window.cc',
+        'src/surface.cc'
       ],
       'libraries': [
         '/Library/Frameworks/SDL2.framework/SDL2',
