@@ -3,15 +3,17 @@ function isFunction(functionToCheck) {
  return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
 }
 
-console.log("About to load node_sdl.node");
 var SDL = module.exports = require('./build/Release/node_sdl.node');
-console.log("Finished loading node_sdl.node");
+SDL.Color.White = new SDL.Color(255, 255, 255);
+SDL.Color.Red = new SDL.Color(255, 0, 0);
+SDL.Color.Green = new SDL.Color(0, 255, 0);
+SDL.Color.Blue = new SDL.Color(0, 0, 255);
 
-console.log("Showing all keys for base SDL namespace:");
-for(key in SDL) {
-  console.log("SDLKEY: " + key + ", SDLVAL: " + SDL[key]);
-}
-console.log()
+// console.log("Showing all keys for base SDL namespace:");
+// for(key in SDL) {
+//   console.log("SDLKEY: " + key + ", SDLVAL: " + SDL[key]);
+// }
+// console.log()
 
 // console.log("Showing all keys for SDL.INIT:");
 // for(key in SDL.INIT) {
@@ -20,6 +22,9 @@ console.log()
 
 console.log("About to init SDL. (no args, default to EVERYTHING)");
 SDL.init("FOO");
+
+console.log("COLOR: " + new SDL.Color(100, 100, 100, 255).toString());
+console.log(SDL.Color.White.toString());
 
 console.log("About to create a window.")
 var window = new SDL.Window("Foo title")
@@ -30,7 +35,8 @@ var render = new SDL.Renderer(window);
 
 console.log("Creating a surface.");
 var surface = new SDL.Surface(40, 40);
-surface.fillRect(0xffffffff);
+console.log("Filling white rect to window.");
+surface.fillRect(SDL.Color.White.getColor(surface.getPixelFormat()));
 console.log("Surface has: w:" + surface.getWidth() + ", h:" + surface.getHeight());
 
 console.log("Creating a texture.");

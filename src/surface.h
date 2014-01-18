@@ -42,6 +42,7 @@ namespace sdl {
 	    static v8::Handle<v8::Value> GetWidth(const v8::Arguments& args);
 	    static v8::Handle<v8::Value> GetHeight(const v8::Arguments& args);
 	    static v8::Handle<v8::Value> GetPitch(const v8::Arguments& args);
+	    static v8::Handle<v8::Value> GetPixelFormat(const v8::Arguments& args);
 
 	    static v8::Handle<v8::Value> SetClipRect(const v8::Arguments& args);
 	    static v8::Handle<v8::Value> SetColorKey(const v8::Arguments& args);

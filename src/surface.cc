@@ -1,6 +1,7 @@
 #include "surface.h"
 #include "helpers.h"
 #include "struct_wrappers.h"
+#include <iostream>
 
 using namespace v8;
 using namespace node;
@@ -41,6 +42,7 @@ void sdl::SurfaceWrapper::Init(Handle<Object> exports) {
 	NODE_SET_PROTOTYPE_METHOD(wrap_template_, "getWidth", GetWidth);
 	NODE_SET_PROTOTYPE_METHOD(wrap_template_, "getHeight", GetHeight);
 	NODE_SET_PROTOTYPE_METHOD(wrap_template_, "getPitch", GetPitch);
+	NODE_SET_PROTOTYPE_METHOD(wrap_template_, "getPixelFormat", GetPixelFormat);
 
 	NODE_SET_PROTOTYPE_METHOD(wrap_template_, "fillRect", FillRect);
 	NODE_SET_PROTOTYPE_METHOD(wrap_template_, "fillRects", FillRects);
@@ -280,7 +282,8 @@ Handle<Value> sdl::SurfaceWrapper::FillRect(const Arguments& args) {
 			String::New("Invalid arguments: expected fillRect(Number[, Rect])")));
 	}
 
-	SurfaceWrapper* self = ObjectWrap::Unwrap<SurfaceWrapper>(Handle<Object>::Cast(args.This()));
+	Handle<Object> handleObj = Handle<Object>::Cast(args.This());
+	SurfaceWrapper* self = ObjectWrap::Unwrap<SurfaceWrapper>(handleObj);
 	int color = args[0]->Int32Value();
 	SDL_Rect* rect = args[1]->IsUndefined() ? NULL : UnwrapRect(Handle<Object>::Cast(args[1]));
 	int err = SDL_FillRect(self->surface_, rect, color);
@@ -391,6 +394,11 @@ Handle<Value> sdl::SurfaceWrapper::GetPitch(const Arguments& args) {
 	HandleScope scope;
 	SurfaceWrapper* self = ObjectWrap::Unwrap<SurfaceWrapper>(Handle<Object>::Cast(args.This()));
 	return scope.Close(Number::New(self->surface_->pitch));
+}
+Handle<Value> sdl::SurfaceWrapper::GetPixelFormat(const Arguments& args) {
+	HandleScope scope;
+	SurfaceWrapper* self = ObjectWrap::Unwrap<SurfaceWrapper>(Handle<Object>::Cast(args.This()));
+	return scope.Close(WrapPixelFormat(self->surface_->format));
 }
 
 Handle<Value> sdl::SurfaceWrapper::SetClipRect(const Arguments& args) {
