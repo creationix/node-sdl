@@ -9,6 +9,7 @@
 #include "window.h"
 #include "texture.h"
 #include "surface.h"
+#include "container.h"
 #include <v8.h>
 #include <string>
 #include <iostream>
@@ -80,6 +81,7 @@ init(Handle<Object> target)
   sdl::RendererWrapper::Init(target);
   sdl::TextureWrapper::Init(target);
   sdl::SurfaceWrapper::Init(target);
+  sdl::ColorWrapper::Init(target);
 
   // Initialization and Shutdown.
   NODE_SET_METHOD(target, "init", sdl::Init);

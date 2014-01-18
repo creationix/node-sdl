@@ -10,7 +10,8 @@
         'src/render.cc',
         'src/texture.cc',
         'src/window.cc',
-        'src/surface.cc'
+        'src/surface.cc',
+        'src/container.cc'
       ],
       'libraries': [
         '/Library/Frameworks/SDL2.framework/SDL2',
