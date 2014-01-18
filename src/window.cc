@@ -14,6 +14,10 @@ Persistent<FunctionTemplate> sdl::WindowWrapper::window_wrap_template_;
 sdl::WindowWrapper::WindowWrapper() {
 }
 
+sdl::WindowWrapper::WindowWrapper(Handle<Object> obj) {
+	Wrap(obj);
+}
+
 sdl::WindowWrapper::~WindowWrapper() {
 	if(NULL != window_) {
 		SDL_DestroyWindow(window_);
@@ -520,5 +524,13 @@ Handle<Value> sdl::WindowWrapper::UpdateWindowSurfaceRects(const Arguments& args
 	if(err < 0) {
 		return ThrowSDLException("Window->SetTitle");
 	}
+	return Undefined();
+}
+
+Handle<Value> sdl::WindowWrapper::Swap(const Arguments& args) {
+	HandleScope scope;
+
+	WindowWrapper* obj = ObjectWrap::Unwrap<WindowWrapper>(args.This());
+	SDL_GL_SwapWindow(obj->window_);
 	return Undefined();
 }

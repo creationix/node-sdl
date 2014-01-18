@@ -73,6 +73,22 @@ namespace sdl {
   v8::Handle<v8::Value> GetRGB(const v8::Arguments& args);
   v8::Handle<v8::Value> GetRGBA(const v8::Arguments& args);
 
+  v8::Handle<v8::Value> AddHintCallback(const v8::Arguments& args);
+  // v8::Handle<v8::Value> ClearHints(const v8::Arguments& args);
+  v8::Handle<v8::Value> GetHint(const v8::Arguments& args);
+  v8::Handle<v8::Value> SetHint(const v8::Arguments& args);
+  v8::Handle<v8::Value> SetHintWithPriority(const v8::Arguments& args);
+
+  v8::Handle<v8::Value> CompiledVersion(const v8::Arguments& args);
+  v8::Handle<v8::Value> CompiledRevision(const v8::Arguments& args);
+  v8::Handle<v8::Value> GetRevision(const v8::Arguments& args);
+  v8::Handle<v8::Value> GetRevisionNumber(const v8::Arguments& args);
+  v8::Handle<v8::Value> GetVersion(const v8::Arguments& args);
+
+  v8::Handle<v8::Value> GetClipboardText(const v8::Arguments& args);
+  v8::Handle<v8::Value> HasClipboardText(const v8::Arguments& args);
+  v8::Handle<v8::Value> SetClipboardText(const v8::Arguments& args);
+
   namespace TTF {
     v8::Handle<v8::Value> Init(const v8::Arguments& args);
     v8::Handle<v8::Value> OpenFont(const v8::Arguments& args);
@@ -85,12 +101,6 @@ namespace sdl {
 
   namespace WM {
   }
-
-  namespace GL {
-    v8::Handle<v8::Value> SetAttribute (const v8::Arguments& args);
-    v8::Handle<v8::Value> GetAttribute (const v8::Arguments& args);
-  }
-
 }
 
 #endif

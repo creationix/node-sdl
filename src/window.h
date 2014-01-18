@@ -10,6 +10,7 @@ namespace sdl {
 	class WindowWrapper : public node::ObjectWrap {
 	public:
 		WindowWrapper();
+		WindowWrapper(v8::Handle<v8::Object> obj);
 		~WindowWrapper();
 
 		static v8::Persistent<v8::FunctionTemplate> window_wrap_template_;
@@ -61,6 +62,8 @@ namespace sdl {
 
 		static v8::Handle<v8::Value> UpdateWindowSurface(const v8::Arguments& args);
 		static v8::Handle<v8::Value> UpdateWindowSurfaceRects(const v8::Arguments& args);
+
+		static v8::Handle<v8::Value> Swap(const v8::Arguments& args);
 
 		SDL_Window* window_;
 	};

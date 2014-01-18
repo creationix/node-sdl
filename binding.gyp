@@ -11,7 +11,9 @@
         'src/texture.cc',
         'src/window.cc',
         'src/surface.cc',
-        'src/container.cc'
+        'src/container.cc',
+        'src/sdl_gl.cc',
+        'src/event.cc'
       ],
       'libraries': [
         '/Library/Frameworks/SDL2.framework/SDL2',

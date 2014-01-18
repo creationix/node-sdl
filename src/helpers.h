@@ -17,7 +17,6 @@ namespace sdl {
   char* BufferData(v8::Local<v8::Object> buf_obj);
   size_t BufferLength(v8::Local<v8::Object> buf_obj);
 
-  v8::Local<v8::Object> SDLEventToJavascriptObject(const SDL_Event& event);
   v8::Local<v8::Object> SDLDisplayModeToJavascriptObject(const SDL_DisplayMode& mode);
 
 } // sdl

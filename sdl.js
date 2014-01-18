@@ -23,6 +23,7 @@ SDL.Color.Blue = new SDL.Color(0, 0, 255);
 console.log("About to init SDL. (no args, default to EVERYTHING)");
 SDL.init("FOO");
 
+console.log(SDL.Renderer.SOFTWARE);
 console.log("COLOR: " + new SDL.Color(100, 100, 100, 255).toString());
 console.log(SDL.Color.White.toString());
 
