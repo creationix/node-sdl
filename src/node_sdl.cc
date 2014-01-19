@@ -13,6 +13,7 @@
 #include "container.h"
 #include "sdl_gl.h"
 #include "event.h"
+#include "key.h"
 #include <v8.h>
 #include <string>
 #include <iostream>
@@ -87,6 +88,7 @@ init(Handle<Object> target)
   sdl::ColorWrapper::Init(target);
   sdl::gl::Init(target);
   sdl::event::Init(target);
+  sdl::key::Init(target);
 
   // Initialization and Shutdown.
   NODE_SET_METHOD(target, "init", sdl::Init);
