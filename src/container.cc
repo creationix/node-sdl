@@ -140,3 +140,93 @@ Handle<Value> sdl::ColorWrapper::ToString(const Arguments& args) {
 	ss << "{r:" << (int)c->r << ", g:" << (int)c->g << ", b:" << (int)c->b << ", a:" << (int)c->a << "}";
 	return scope.Close(String::New(ss.str().c_str()));
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// FingerWrapper Class Definition.
+v8::Persistent<v8::FunctionTemplate> sdl::FingerWrapper::wrap_template_;
+
+sdl::FingerWrapper::FingerWrapper() {
+}
+sdl::FingerWrapper::FingerWrapper(Handle<Object> toWrap) {
+	Wrap(toWrap);
+}
+sdl::FingerWrapper::~FingerWrapper() {
+	if(NULL != finger_) {
+		delete finger_;
+	}
+}
+
+void sdl::FingerWrapper::Init(v8::Handle<v8::Object> exports) {
+	Local<FunctionTemplate> tpl = FunctionTemplate::New(New);
+	wrap_template_ = Persistent<FunctionTemplate>::New(tpl);
+
+	wrap_template_->InstanceTemplate()->SetInternalFieldCount(1);
+	wrap_template_->SetClassName(String::NewSymbol("FingerWrapper"));
+
+	Local<ObjectTemplate> templ = wrap_template_->PrototypeTemplate();
+	templ->SetAccessor(String::NewSymbol("fingerID"), GetFingerID);
+	templ->SetAccessor(String::NewSymbol("x"), GetX);
+	templ->SetAccessor(String::NewSymbol("y"), GetY);
+	templ->SetAccessor(String::NewSymbol("pressure"), GetPressure);
+
+	exports->Set(String::NewSymbol("Finger"), wrap_template_->GetFunction());
+}
+Handle<Value> sdl::FingerWrapper::New(const Arguments& args) {
+	if(!args.IsConstructCall()) {
+		return ThrowException(Exception::TypeError(
+			String::New("Can only construct a FingerWrapper with the new operator.")));
+	}
+
+	HandleScope scope;
+
+	if(args.Length() < 4) {
+		return ThrowException(Exception::TypeError(
+			String::New("Invalid arguments: Expected new sdl.Finger(Number, Number, Number, Number)")));
+	}
+
+	SDL_FingerID id = static_cast<SDL_FingerID>(args[0]->IntegerValue());
+	float x = static_cast<float>(args[1]->NumberValue());
+	float y = static_cast<float>(args[2]->NumberValue());
+	float pressure = static_cast<float>(args[3]->NumberValue());
+
+	SDL_Finger* finger = new SDL_Finger;
+	finger->id = id;
+	finger->x = x;
+	finger->y = y;
+	finger->pressure = pressure;
+
+	FingerWrapper* obj = new FingerWrapper();
+	obj->finger_ = finger;
+	obj->Wrap(args.This());
+
+	return args.This();
+}
+
+Handle<Value> sdl::FingerWrapper::GetFingerID(Local<String> name, const AccessorInfo& info) {
+	HandleScope scope;
+
+	FingerWrapper* obj = ObjectWrap::Unwrap<FingerWrapper>(info.This());
+
+	return scope.Close(Number::New(obj->finger_->id));
+}
+Handle<Value> sdl::FingerWrapper::GetX(Local<String> name, const AccessorInfo& info) {
+	HandleScope scope;
+
+	FingerWrapper* obj = ObjectWrap::Unwrap<FingerWrapper>(info.This());
+
+	return scope.Close(Number::New(obj->finger_->x));
+}
+Handle<Value> sdl::FingerWrapper::GetY(Local<String> name, const AccessorInfo& info) {
+	HandleScope scope;
+
+	FingerWrapper* obj = ObjectWrap::Unwrap<FingerWrapper>(info.This());
+
+	return scope.Close(Number::New(obj->finger_->y));
+}
+Handle<Value> sdl::FingerWrapper::GetPressure(Local<String> name, const AccessorInfo& info) {
+	HandleScope scope;
+
+	FingerWrapper* obj = ObjectWrap::Unwrap<FingerWrapper>(info.This());
+
+	return scope.Close(Number::New(obj->finger_->pressure));
+}

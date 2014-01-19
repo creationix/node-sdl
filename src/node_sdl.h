@@ -53,10 +53,6 @@ namespace sdl {
   v8::Handle<v8::Value> GetError(const v8::Arguments& args);
   v8::Handle<v8::Value> SetError(const v8::Arguments& args);
 
-  v8::Handle<v8::Value> WaitEvent(const v8::Arguments& args);
-  v8::Handle<v8::Value> WaitEventTimeout(const v8::Arguments& args);
-  v8::Handle<v8::Value> PollEvent(const v8::Arguments& args);
-
   v8::Handle<v8::Value> NumJoysticks(const v8::Arguments& args);
   v8::Handle<v8::Value> JoystickOpen(const v8::Arguments& args);
   v8::Handle<v8::Value> JoystickName(const v8::Arguments& args);

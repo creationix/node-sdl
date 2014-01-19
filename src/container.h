@@ -33,6 +33,25 @@ namespace sdl {
 
 		SDL_Color* color_;
 	};
+
+	class FingerWrapper : public node::ObjectWrap {
+	public:
+		static v8::Persistent<v8::FunctionTemplate> wrap_template_;
+
+		FingerWrapper();
+		FingerWrapper(v8::Handle<v8::Object> toWrap);
+		~FingerWrapper();
+
+		static void Init(v8::Handle<v8::Object> exports);
+		static v8::Handle<v8::Value> New(const v8::Arguments& args);
+
+		static v8::Handle<v8::Value> GetFingerID(v8::Local<v8::String> name, const v8::AccessorInfo& info);
+		static v8::Handle<v8::Value> GetX(v8::Local<v8::String> name, const v8::AccessorInfo& info);
+		static v8::Handle<v8::Value> GetY(v8::Local<v8::String> name, const v8::AccessorInfo& info);
+		static v8::Handle<v8::Value> GetPressure(v8::Local<v8::String> name, const v8::AccessorInfo& info);
+
+		SDL_Finger* finger_;
+	};
 }
 
 #endif

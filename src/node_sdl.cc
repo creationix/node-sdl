@@ -86,6 +86,7 @@ init(Handle<Object> target)
   sdl::SurfaceWrapper::Init(target);
   sdl::ColorWrapper::Init(target);
   sdl::gl::Init(target);
+  sdl::event::Init(target);
 
   // Initialization and Shutdown.
   NODE_SET_METHOD(target, "init", sdl::Init);
@@ -99,10 +100,6 @@ init(Handle<Object> target)
   NODE_SET_METHOD(target, "clearError", sdl::ClearError);
   NODE_SET_METHOD(target, "getError", sdl::GetError);
   NODE_SET_METHOD(target, "setError", sdl::SetError);
-
-  NODE_SET_METHOD(target, "waitEvent", sdl::WaitEvent);
-  NODE_SET_METHOD(target, "waitEventTimeout", sdl::WaitEventTimeout);
-  NODE_SET_METHOD(target, "pollEvent", sdl::PollEvent);
 
   NODE_SET_METHOD(target, "numJoysticks", sdl::NumJoysticks);
   NODE_SET_METHOD(target, "joystickOpen", sdl::JoystickOpen);
@@ -559,63 +556,6 @@ Handle<Value> sdl::SetError(const Arguments& args) {
   SDL_SetError(*message);
 
   return Undefined();
-}
-
-Handle<Value> sdl::WaitEvent(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 1 && args[0]->IsFunction())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected WaitEvent(Function)")));
-  }
-
-  SDL_Event e;
-  int err = SDL_WaitEvent(&e);
-  if(0 == err) {
-    std::string err = "WaitEvent failed: ";
-    err += SDL_GetError();
-    return ThrowException(MakeSDLException(err.c_str()));
-  }
-  Handle<Value> argv[1];
-  argv[0] = sdl::SDLEventToJavascriptObject(e);
-  Handle<Function>::Cast(args[0])->Call(Context::GetCurrent()->Global(), 1, argv);
-  return Undefined();
-}
-
-Handle<Value> sdl::WaitEventTimeout(const Arguments& args) {
-  HandleScope scope;
-
-  if(!(args.Length() == 2 && args[0]->IsFunction() && args[1]->IsNumber())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected WaitEventTimeout(Function, Number)")));
-  }
-
-  SDL_Event e;
-  int timeout = args[1]->Int32Value();
-  int err = SDL_WaitEventTimeout(&e, timeout);
-  if(0 == err) {
-    std::string err = "WaitEventTimeout failed: ";
-    err += SDL_GetError();
-    return ThrowException(MakeSDLException(err.c_str()));
-  }
-  Handle<Value> argv[1];
-  argv[0] = sdl::SDLEventToJavascriptObject(e);
-  Handle<Function>::Cast(args[0])->Call(Context::GetCurrent()->Global(), 1, argv);
-  return Undefined();
-}
-
-Handle<Value> sdl::PollEvent(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 0)) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected PollEvent()")));
-  }
-
-  SDL_Event event;
-  if (!SDL_PollEvent(&event)) {
-    return Undefined();
-  }
-
-  Local<Object> evt = SDLEventToJavascriptObject(event);
-  return scope.Close(evt);
 }
 
 Handle<Value> sdl::NumJoysticks(const Arguments& args) {
