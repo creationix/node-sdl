@@ -14,6 +14,7 @@
 #include "sdl_gl.h"
 #include "event.h"
 #include "key.h"
+#include "mouse.h"
 #include <v8.h>
 #include <string>
 #include <iostream>
@@ -89,6 +90,7 @@ init(Handle<Object> target)
   sdl::gl::Init(target);
   sdl::event::Init(target);
   sdl::key::Init(target);
+  sdl::mouse::Init(target);
 
   // Initialization and Shutdown.
   NODE_SET_METHOD(target, "init", sdl::Init);

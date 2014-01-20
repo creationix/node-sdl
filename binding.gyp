@@ -14,7 +14,8 @@
         'src/container.cc',
         'src/sdl_gl.cc',
         'src/event.cc',
-        'src/key.cc'
+        'src/key.cc',
+        'src/mouse.cc'
       ],
       'libraries': [
         '/Library/Frameworks/SDL2.framework/SDL2',

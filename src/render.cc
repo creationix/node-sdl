@@ -67,6 +67,34 @@ void sdl::RendererWrapper::Init(Handle<Object> exports) {
 	software_render_wrap_template_->InstanceTemplate()->SetInternalFieldCount(1);
 	software_render_wrap_template_->SetClassName(String::NewSymbol("SoftwareRendererWrapper"));
 
+	NODE_SET_PROTOTYPE_METHOD(software_render_wrap_template_, "getDrawBlendMode", GetDrawBlendMode);
+	NODE_SET_PROTOTYPE_METHOD(software_render_wrap_template_, "getDrawColor", GetDrawColor);
+	NODE_SET_PROTOTYPE_METHOD(software_render_wrap_template_, "getOutputSize", GetOutputSize);
+	NODE_SET_PROTOTYPE_METHOD(software_render_wrap_template_, "getTarget", GetTarget);
+	NODE_SET_PROTOTYPE_METHOD(software_render_wrap_template_, "getInfo", GetInfo);
+	NODE_SET_PROTOTYPE_METHOD(software_render_wrap_template_, "getClipRect", GetClipRect);
+	NODE_SET_PROTOTYPE_METHOD(software_render_wrap_template_, "getLogicalSize", GetLogicalSize);
+	NODE_SET_PROTOTYPE_METHOD(software_render_wrap_template_, "getScale", GetScale);
+	NODE_SET_PROTOTYPE_METHOD(software_render_wrap_template_, "getViewport", GetViewport);
+	NODE_SET_PROTOTYPE_METHOD(software_render_wrap_template_, "targetSupported", TargetSupported);
+
+	NODE_SET_PROTOTYPE_METHOD(software_render_wrap_template_, "setClipRect", SetClipRect);
+	NODE_SET_PROTOTYPE_METHOD(software_render_wrap_template_, "setLogicalSize", SetLogicalSize);
+	NODE_SET_PROTOTYPE_METHOD(software_render_wrap_template_, "setScale", SetScale);
+	NODE_SET_PROTOTYPE_METHOD(software_render_wrap_template_, "setViewport", SetViewport);
+	NODE_SET_PROTOTYPE_METHOD(software_render_wrap_template_, "setDrawBlendMode", SetDrawBlendMode);
+	NODE_SET_PROTOTYPE_METHOD(software_render_wrap_template_, "setDrawColor", SetDrawColor);
+	NODE_SET_PROTOTYPE_METHOD(software_render_wrap_template_, "setTarget", SetTarget);
+
+	NODE_SET_PROTOTYPE_METHOD(software_render_wrap_template_, "clear", Clear);
+	NODE_SET_PROTOTYPE_METHOD(software_render_wrap_template_, "present", Present);
+	NODE_SET_PROTOTYPE_METHOD(software_render_wrap_template_, "copy", Copy);
+	NODE_SET_PROTOTYPE_METHOD(software_render_wrap_template_, "drawLine", DrawLine);
+	NODE_SET_PROTOTYPE_METHOD(software_render_wrap_template_, "drawLines", DrawLine);
+	NODE_SET_PROTOTYPE_METHOD(software_render_wrap_template_, "drawPoint", DrawPoint);
+	NODE_SET_PROTOTYPE_METHOD(software_render_wrap_template_, "drawRect", DrawRect);
+	NODE_SET_PROTOTYPE_METHOD(software_render_wrap_template_, "fillRect", FillRect);
+
 	exports->Set(String::NewSymbol("SoftwareRenderer"), software_render_wrap_template_->GetFunction());
 }
 
