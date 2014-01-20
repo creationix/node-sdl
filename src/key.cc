@@ -1,4 +1,6 @@
 #include "key.h"
+#include "window.h"
+#include "struct_wrappers.h"
 
 using namespace v8;
 using namespace node;
@@ -495,4 +497,230 @@ void sdl::key::Init(Handle<Object> exports) {
 	SCANCODE->Set(String::NewSymbol("KBDILLUMUP"), Number::New(SDL_SCANCODE_KBDILLUMUP));
 	SCANCODE->Set(String::NewSymbol("EJECT"), Number::New(SDL_SCANCODE_EJECT));
 	SCANCODE->Set(String::NewSymbol("SLEEP"), Number::New(SDL_SCANCODE_SLEEP));
+
+	Handle<Object> KMOD = Object::New();
+	exports->Set(String::NewSymbol("KMOD"), KMOD);
+	KMOD->Set(String::NewSymbol("NONE"), Number::New(KMOD_NONE));
+	KMOD->Set(String::NewSymbol("LSHIFT"), Number::New(KMOD_LSHIFT));
+	KMOD->Set(String::NewSymbol("RSHIFT"), Number::New(KMOD_RSHIFT));
+	KMOD->Set(String::NewSymbol("LCTRL"), Number::New(KMOD_LCTRL));
+	KMOD->Set(String::NewSymbol("RCTRL"), Number::New(KMOD_RCTRL));
+	KMOD->Set(String::NewSymbol("LALT"), Number::New(KMOD_LALT));
+	KMOD->Set(String::NewSymbol("RALT"), Number::New(KMOD_RALT));
+	KMOD->Set(String::NewSymbol("LGUI"), Number::New(KMOD_LGUI));
+	KMOD->Set(String::NewSymbol("RGUI"), Number::New(KMOD_RGUI));
+	KMOD->Set(String::NewSymbol("NUM"), Number::New(KMOD_NUM));
+	KMOD->Set(String::NewSymbol("CAPS"), Number::New(KMOD_CAPS));
+	KMOD->Set(String::NewSymbol("MODE"), Number::New(KMOD_MODE));
+	KMOD->Set(String::NewSymbol("CTRL"), Number::New(KMOD_CTRL));
+	KMOD->Set(String::NewSymbol("SHIFT"), Number::New(KMOD_SHIFT));
+	KMOD->Set(String::NewSymbol("ALT"), Number::New(KMOD_ALT));
+	KMOD->Set(String::NewSymbol("GUI"), Number::New(KMOD_GUI));
+
+	NODE_SET_METHOD(exports, "getKeyFromName", GetKeyFromName);
+	NODE_SET_METHOD(exports, "getKeyFromScancode", GetKeyFromScancode);
+	NODE_SET_METHOD(exports, "getKeyName", GetKeyName);
+
+	NODE_SET_METHOD(exports, "getScancodeFromKey", GetScancodeFromKey);
+	NODE_SET_METHOD(exports, "getScancodeFromName", GetScancodeFromName);
+	NODE_SET_METHOD(exports, "getScancodeName", GetScancodeName);
+
+	NODE_SET_METHOD(exports, "hasScreenKeyboardSupport", HasScreenKeyboardSupport);
+	NODE_SET_METHOD(exports, "isScreenKeyboardShown", IsScreenKeyboardShown);
+
+	NODE_SET_METHOD(exports, "getKeyboardFocus", GetKeyboardFocus);
+	NODE_SET_METHOD(exports, "getKeyboardState", GetKeyboardState);
+	NODE_SET_METHOD(exports, "getModState", GetModState);
+	NODE_SET_METHOD(exports, "setModState", SetModState);
+
+	NODE_SET_METHOD(exports, "isTextInputActive", IsTextInputActive);
+	NODE_SET_METHOD(exports, "setTextInputRect", SetTextInputRect);
+	NODE_SET_METHOD(exports, "startTextInput", StartTextInput);
+	NODE_SET_METHOD(exports, "stopTextInput", StopTextInput);
+}
+
+Handle<Value> sdl::GetKeyFromName(const Arguments& args) {
+	HandleScope scope;
+
+	if(args.Length() < 1) {
+		return ThrowException(Exception::TypeError(
+			String::New("Invalid arguments: Expected GetKeyFromName(String)")));
+	}
+
+	String::Utf8Value name(args[0]);
+	SDL_Keycode code = SDL_GetKeyFromName(*name);
+
+	return scope.Close(Number::New(code));
+}
+Handle<Value> sdl::GetKeyFromScancode(const Arguments& args) {
+	HandleScope scope;
+
+	if(args.Length() < 1) {
+		return ThrowException(Exception::TypeError(
+			String::New("Invalid arguments: Expected GetKeyFromScancode(Number)")));
+	}
+
+	SDL_Scancode scan = static_cast<SDL_Scancode>(args[0]->Int32Value());
+	SDL_Keycode key = SDL_GetKeyFromScancode(scan);
+
+	return scope.Close(Number::New(key));
+}
+Handle<Value> sdl::GetKeyName(const Arguments& args) {
+	HandleScope scope;
+
+	if(args.Length() < 1) {
+		return ThrowException(Exception::TypeError(
+			String::New("Invalid arguments: Expected GetKeyName(Number)")));
+	}
+
+	SDL_Keycode key = static_cast<SDL_Keycode>(args[0]->Int32Value());
+	const char *name = SDL_GetKeyName(key);
+
+	return scope.Close(String::New(name));
+}
+
+Handle<Value> sdl::GetScancodeFromKey(const Arguments& args) {
+	HandleScope scope;
+
+	if(args.Length() < 1) {
+		return ThrowException(Exception::TypeError(
+			String::New("Invalid arguments: Expected GetScancodeFromKey(Number)")));
+	}
+
+	SDL_Keycode key = static_cast<SDL_Keycode>(args[0]->Int32Value());
+	SDL_Scancode scan = SDL_GetScancodeFromKey(key);
+
+	return scope.Close(Number::New(scan));
+}
+Handle<Value> sdl::GetScancodeFromName(const Arguments& args) {
+	HandleScope scope;
+
+	if(args.Length() < 1) {
+		return ThrowException(Exception::TypeError(
+			String::New("Invalid arguments: Expected GetScancodeFromName(String)")));
+	}
+
+	String::Utf8Value name(args[0]);
+	SDL_Scancode scan = SDL_GetScancodeFromName(*name);
+
+	return scope.Close(Number::New(scan));
+}
+Handle<Value> sdl::GetScancodeName(const Arguments& args) {
+	HandleScope scope;
+
+	if(args.Length() < 1) {
+		return ThrowException(Exception::TypeError(
+			String::New("Invalid arguments: Expected GetScancodeName(Number)")));
+	}
+
+	SDL_Scancode scan = static_cast<SDL_Scancode>(args[0]->Int32Value());
+	const char *name = SDL_GetScancodeName(scan);
+
+	return scope.Close(String::New(name));
+}
+
+Handle<Value> sdl::HasScreenKeyboardSupport(const Arguments& args) {
+	HandleScope scope;
+
+	SDL_bool ret = SDL_HasScreenKeyboardSupport();
+
+	return scope.Close(Boolean::New(ret ? true : false));
+}
+Handle<Value> sdl::IsScreenKeyboardShown(const Arguments& args) {
+	HandleScope scope;
+
+	if(args.Length() < 1) {
+		return ThrowException(Exception::TypeError(
+			String::New("Invalid arguments: Expected IsScreenKeyboardShown(Window)")));
+	}
+
+	WindowWrapper* wrap = ObjectWrap::Unwrap<WindowWrapper>(Handle<Object>::Cast(args[0]));
+	SDL_bool ret = SDL_IsScreenKeyboardShown(wrap->window_);
+
+	return scope.Close(Boolean::New(ret ? true : false));
+}
+
+Handle<Value> sdl::GetKeyboardFocus(const Arguments& args) {
+	HandleScope scope;
+
+	SDL_Window* window = SDL_GetKeyboardFocus();
+	Handle<Object> ret = Object::New();
+	WindowWrapper* wrap = new WindowWrapper(ret);
+	wrap->window_ = window;
+
+	return scope.Close(ret);
+}
+Handle<Value> sdl::GetKeyboardState(const Arguments& args) {
+	HandleScope scope;
+
+	int size;
+	const Uint8 *state = SDL_GetKeyboardState(&size);
+
+	// Copy the state of every key into a native Javascript array. The state returned
+	// by SDL is to internal memory, therefore we don't want to manage it at all inside
+	// of Javscript due to it possibly being freed at some point.
+	//
+	// SDL uses the value 1 and 0 to indicate pressed or not. This is translated to true
+	// or false Javascript boolean values instead.
+	Handle<Array> jsState = Array::New(size);
+	for(int i = 0; i < size; i++) {
+		jsState->Set(i, Boolean::New(state[i] == 1 ? true : false));
+	}
+
+	return scope.Close(jsState);
+}
+Handle<Value> sdl::GetModState(const Arguments& args) {
+	HandleScope scope;
+
+	SDL_Keymod mod = SDL_GetModState();
+
+	return scope.Close(Number::New(mod));
+}
+Handle<Value> sdl::SetModState(const Arguments& args) {
+	HandleScope scope;
+
+	if(args.Length() < 1) {
+		return ThrowException(Exception::TypeError(
+			String::New("Invalid arguments: Expected SetModState(Number)")));
+	}
+
+	SDL_Keymod mod = static_cast<SDL_Keymod>(args[0]->Int32Value());
+	SDL_SetModState(mod);
+
+	return Undefined();
+}
+
+Handle<Value> sdl::IsTextInputActive(const Arguments& args) {
+	HandleScope scope;
+
+	SDL_bool ret = SDL_IsTextInputActive();
+
+	return scope.Close(Boolean::New(ret));
+}
+Handle<Value> sdl::SetTextInputRect(const Arguments& args) {
+	HandleScope scope;
+
+	if(args.Length() < 1) {
+		return ThrowException(Exception::TypeError(
+			String::New("Invalid arguments: Expected SetTextInputRect(Rect)")));
+	}
+
+	SDL_Rect* rect = UnwrapRect(Handle<Object>::Cast(args[0]));
+	SDL_SetTextInputRect(rect);
+
+	return Undefined();
+}
+Handle<Value> sdl::StartTextInput(const Arguments& args) {
+	HandleScope scope;
+
+	SDL_StartTextInput();
+
+	return Undefined();
+}
+Handle<Value> sdl::StopTextInput(const Arguments& args) {
+	HandleScope scope;
+
+	SDL_StopTextInput();
+
+	return Undefined();
 }
