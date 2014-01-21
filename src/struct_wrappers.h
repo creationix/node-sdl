@@ -18,21 +18,6 @@ namespace sdl {
   	// as defined in the SDL documentation. (excluding anything SDL uses internally
   	// or is just plain unused)
 
-	///////////////////////////////////////////////////////////////////////////////
-	// SDL_Rect Wrapper/Unwrapper.
-	v8::Handle<v8::Value> ConstructRect(const v8::Arguments& args);
-	v8::Handle<v8::Object> WrapRect(SDL_Rect* rect);
-	SDL_Rect* UnwrapRect(v8::Handle<v8::Object> obj);
-	// Property getters.
-	v8::Handle<v8::Value> GetRectX(v8::Local<v8::String> name, const v8::AccessorInfo& info);
-	v8::Handle<v8::Value> GetRectY(v8::Local<v8::String> name, const v8::AccessorInfo& info);
-	v8::Handle<v8::Value> GetRectW(v8::Local<v8::String> name, const v8::AccessorInfo& info);
-	v8::Handle<v8::Value> GetRectH(v8::Local<v8::String> name, const v8::AccessorInfo& info);
-	// Property setters.
-	void SetRectX(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info);
-	void SetRectY(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info);
-	void SetRectW(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info);
-	void SetRectH(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info);
 
 	///////////////////////////////////////////////////////////////////////////////
 	// SDL_Point Wrapper/Unwrapper.

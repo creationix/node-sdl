@@ -1,6 +1,7 @@
 #include "key.h"
 #include "window.h"
 #include "struct_wrappers.h"
+#include "container.h"
 
 using namespace v8;
 using namespace node;
@@ -705,8 +706,8 @@ Handle<Value> sdl::SetTextInputRect(const Arguments& args) {
 			String::New("Invalid arguments: Expected SetTextInputRect(Rect)")));
 	}
 
-	SDL_Rect* rect = UnwrapRect(Handle<Object>::Cast(args[0]));
-	SDL_SetTextInputRect(rect);
+	RectWrapper* rect = ObjectWrap::Unwrap<RectWrapper>(Handle<Object>::Cast(args[0]));
+	SDL_SetTextInputRect(rect->rect_);
 
 	return Undefined();
 }

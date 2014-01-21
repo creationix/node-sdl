@@ -50,6 +50,7 @@ namespace sdl {
         evt->Set(String::New("scancode"), Number::New(event.key.keysym.scancode));
         evt->Set(String::New("sym"), Number::New(event.key.keysym.sym));
         evt->Set(String::New("mod"), Number::New(event.key.keysym.mod));
+        evt->Set(String::New("repeat"), Boolean::New(event.key.repeat > 0 ? true : false));
       break;
       case SDL_MOUSEMOTION:
         evt->Set(String::New("type"), String::New("MOUSEMOTION"));

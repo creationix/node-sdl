@@ -1,9 +1,11 @@
 #include <string>
+#include <iostream>
 
 #include "window.h"
 #include "helpers.h"
 #include "struct_wrappers.h"
 #include "surface.h"
+#include "container.h"
 
 using namespace v8;
 
@@ -19,7 +21,9 @@ sdl::WindowWrapper::WindowWrapper(Handle<Object> obj) {
 }
 
 sdl::WindowWrapper::~WindowWrapper() {
+	std::cout << "WindowWrapper destructor running." << std::endl;
 	if(NULL != window_) {
+		std::cout << "Destroying contained window." << std::endl;
 		SDL_DestroyWindow(window_);
 	}
 }
@@ -96,7 +100,7 @@ Handle<Value> sdl::WindowWrapper::New(const Arguments& args) {
 	}
 
 	obj->Wrap(args.This());
-	return args.This();
+	return scope.Close(args.This());
 }
 
 Handle<Value> sdl::WindowWrapper::GetBrightness(const Arguments& args) {
@@ -516,7 +520,8 @@ Handle<Value> sdl::WindowWrapper::UpdateWindowSurfaceRects(const Arguments& args
 	int len = arr->Length();
 	SDL_Rect* rects = new SDL_Rect[len];
 	for(int i = 0; i < len; i++) {
-		rects[i] = *UnwrapRect(arr->CloneElementAt(i));
+		RectWrapper* wrap = ObjectWrap::Unwrap<RectWrapper>(Handle<Object>::Cast(arr->Get(i)));
+		rects[i] = *wrap->rect_;
 	}
 
 	int err = SDL_UpdateWindowSurfaceRects(obj->window_, rects, len);

@@ -1,6 +1,7 @@
 #include "surface.h"
 #include "helpers.h"
 #include "struct_wrappers.h"
+#include "container.h"
 #include <iostream>
 
 using namespace v8;
@@ -165,9 +166,12 @@ Handle<Value> sdl::SurfaceWrapper::BlitScaled(const Arguments& args) {
 
 	SurfaceWrapper* obj = ObjectWrap::Unwrap<SurfaceWrapper>(Handle<Object>::Cast(args.This()));
 	SurfaceWrapper* other = ObjectWrap::Unwrap<SurfaceWrapper>(Handle<Object>::Cast(args[0]));
-	SDL_Rect* dst = args[1]->IsUndefined() ? NULL : UnwrapRect(Handle<Object>::Cast(args[1]));
-	SDL_Rect* src = args[2]->IsUndefined() ? NULL : UnwrapRect(Handle<Object>::Cast(args[2]));
-	int err = SDL_BlitScaled(obj->surface_, src, other->surface_, dst);
+	RectWrapper* dst = args[1]->IsUndefined() ? NULL : ObjectWrap::Unwrap<RectWrapper>(Handle<Object>::Cast(args[1]));
+	RectWrapper* src = args[2]->IsUndefined() ? NULL : ObjectWrap::Unwrap<RectWrapper>(Handle<Object>::Cast(args[2]));
+	int err = SDL_BlitScaled(obj->surface_,
+		src == NULL ? NULL : src->rect_,
+		other->surface_,
+		dst == NULL ? NULL : dst->rect_);
 	if(err < 0) {
 		return ThrowSDLException(__func__);
 	}
@@ -184,9 +188,9 @@ Handle<Value> sdl::SurfaceWrapper::BlitSurface(const Arguments& args) {
 
 	SurfaceWrapper* obj = ObjectWrap::Unwrap<SurfaceWrapper>(Handle<Object>::Cast(args.This()));
 	SurfaceWrapper* other = ObjectWrap::Unwrap<SurfaceWrapper>(Handle<Object>::Cast(args[0]));
-	SDL_Rect* dst = UnwrapRect(Handle<Object>::Cast(args[1]));
-	SDL_Rect* src = args[2]->IsUndefined() ? NULL : UnwrapRect(Handle<Object>::Cast(args[2]));
-	int err = SDL_BlitSurface(obj->surface_, src, other->surface_, dst);
+	RectWrapper* dst = ObjectWrap::Unwrap<RectWrapper>(Handle<Object>::Cast(args[1]));
+	RectWrapper* src = args[2]->IsUndefined() ? NULL : ObjectWrap::Unwrap<RectWrapper>(Handle<Object>::Cast(args[2]));
+	int err = SDL_BlitSurface(obj->surface_, src->rect_, other->surface_, dst == NULL ? NULL : dst->rect_);
 	if(err < 0) {
 		return ThrowSDLException(__func__);
 	}
@@ -203,9 +207,9 @@ Handle<Value> sdl::SurfaceWrapper::LowerBlit(const Arguments& args) {
 
 	SurfaceWrapper* obj = ObjectWrap::Unwrap<SurfaceWrapper>(Handle<Object>::Cast(args.This()));
 	SurfaceWrapper* other = ObjectWrap::Unwrap<SurfaceWrapper>(Handle<Object>::Cast(args[0]));
-	SDL_Rect* dst = UnwrapRect(Handle<Object>::Cast(args[1]));
-	SDL_Rect* src = args[2]->IsUndefined() ? NULL : UnwrapRect(Handle<Object>::Cast(args[2]));
-	int err = SDL_LowerBlit(obj->surface_, src, other->surface_, dst);
+	RectWrapper* dst = ObjectWrap::Unwrap<RectWrapper>(Handle<Object>::Cast(args[1]));
+	RectWrapper* src = args[2]->IsUndefined() ? NULL : ObjectWrap::Unwrap<RectWrapper>(Handle<Object>::Cast(args[2]));
+	int err = SDL_LowerBlit(obj->surface_, src->rect_, other->surface_, dst == NULL ? NULL : dst->rect_);
 	if(err < 0) {
 		return ThrowSDLException(__func__);
 	}
@@ -222,9 +226,12 @@ Handle<Value> sdl::SurfaceWrapper::LowerBlitScaled(const Arguments& args) {
 
 	SurfaceWrapper* obj = ObjectWrap::Unwrap<SurfaceWrapper>(Handle<Object>::Cast(args.This()));
 	SurfaceWrapper* other = ObjectWrap::Unwrap<SurfaceWrapper>(Handle<Object>::Cast(args[0]));
-	SDL_Rect* dst = args[1]->IsUndefined() ? NULL : UnwrapRect(Handle<Object>::Cast(args[1]));
-	SDL_Rect* src = args[2]->IsUndefined() ? NULL : UnwrapRect(Handle<Object>::Cast(args[2]));
-	int err = SDL_LowerBlitScaled(obj->surface_, src, other->surface_, dst);
+	RectWrapper* dst = args[1]->IsUndefined() ? NULL : ObjectWrap::Unwrap<RectWrapper>(Handle<Object>::Cast(args[1]));
+	RectWrapper* src = args[2]->IsUndefined() ? NULL : ObjectWrap::Unwrap<RectWrapper>(Handle<Object>::Cast(args[2]));
+	int err = SDL_LowerBlitScaled(obj->surface_,
+		src == NULL ? NULL : src->rect_,
+		other->surface_,
+		dst == NULL ? NULL : dst->rect_);
 	if(err < 0) {
 		return ThrowSDLException(__func__);
 	}
@@ -285,8 +292,8 @@ Handle<Value> sdl::SurfaceWrapper::FillRect(const Arguments& args) {
 	Handle<Object> handleObj = Handle<Object>::Cast(args.This());
 	SurfaceWrapper* self = ObjectWrap::Unwrap<SurfaceWrapper>(handleObj);
 	int color = args[0]->Int32Value();
-	SDL_Rect* rect = args[1]->IsUndefined() ? NULL : UnwrapRect(Handle<Object>::Cast(args[1]));
-	int err = SDL_FillRect(self->surface_, rect, color);
+	RectWrapper* rect = args[1]->IsUndefined() ? NULL : ObjectWrap::Unwrap<RectWrapper>(Handle<Object>::Cast(args[1]));
+	int err = SDL_FillRect(self->surface_, rect == NULL ? NULL : rect->rect_, color);
 	if(err < 0) {
 		return ThrowSDLException(__func__);
 	}
@@ -307,8 +314,8 @@ Handle<Value> sdl::SurfaceWrapper::FillRects(const Arguments& args) {
 	int numRects = arr->Length();
 	SDL_Rect* rects = new SDL_Rect[numRects];
 	for(int i = 0; i < numRects; i++) {
-		SDL_Rect* rect = UnwrapRect(Handle<Object>::Cast(arr->Get(i)));
-		rects[i] = *rect;
+		RectWrapper* rect = ObjectWrap::Unwrap<RectWrapper>(Handle<Object>::Cast(arr->Get(i)));
+		rects[i] = *rect->rect_;
 	}
 	int err = SDL_FillRects(self->surface_, rects, numRects, color);
 	delete rects;
@@ -326,7 +333,11 @@ Handle<Value> sdl::SurfaceWrapper::GetClipRect(const Arguments& args) {
 	SDL_Rect* rect = new SDL_Rect;
 	SDL_GetClipRect(self->surface_, rect);
 
-	return scope.Close(WrapRect(rect));
+	Handle<Object> ret = Object::New();
+	RectWrapper* wrap = new RectWrapper(ret);
+	wrap->rect_ = rect;
+
+	return scope.Close(ret);
 }
 Handle<Value> sdl::SurfaceWrapper::GetColorKey(const Arguments& args) {
 	HandleScope scope;
@@ -409,8 +420,8 @@ Handle<Value> sdl::SurfaceWrapper::SetClipRect(const Arguments& args) {
 			String::New("Invalid arguments: expected setClipRect(Rect)")));
 	}
 	SurfaceWrapper* self = ObjectWrap::Unwrap<SurfaceWrapper>(Handle<Object>::Cast(args.This()));
-	SDL_Rect* clip = UnwrapRect(Handle<Object>::Cast(args[0]));
-	SDL_bool ret = SDL_SetClipRect(self->surface_, clip);
+	RectWrapper* clip = ObjectWrap::Unwrap<RectWrapper>(Handle<Object>::Cast(args[0]));
+	SDL_bool ret = SDL_SetClipRect(self->surface_, clip->rect_);
 
 	return scope.Close(Boolean::New(ret));
 }

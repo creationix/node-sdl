@@ -6,6 +6,122 @@
 
 using namespace v8;
 
+Persistent<FunctionTemplate> sdl::RectWrapper::wrap_template_;
+
+sdl::RectWrapper::RectWrapper() {
+}
+sdl::RectWrapper::RectWrapper(Handle<Object> toWrap) {
+	Wrap(toWrap);
+}
+sdl::RectWrapper::~RectWrapper() {
+	if(NULL != rect_) {
+		delete rect_;
+	}
+}
+
+void sdl::RectWrapper::Init(Handle<Object> exports) {
+	Handle<FunctionTemplate> tpl = FunctionTemplate::New(New);
+	wrap_template_ = Persistent<FunctionTemplate>::New(tpl);
+
+	wrap_template_->InstanceTemplate()->SetInternalFieldCount(1);
+	wrap_template_->SetClassName(String::New("RectWrapper"));
+
+	Local<ObjectTemplate> templ = wrap_template_->PrototypeTemplate();
+	templ->SetAccessor(String::NewSymbol("x"), GetX, SetX);
+	templ->SetAccessor(String::NewSymbol("y"), GetY, SetY);
+	templ->SetAccessor(String::NewSymbol("w"), GetW, SetW);
+	templ->SetAccessor(String::NewSymbol("h"), GetH, SetH);
+
+	exports->Set(String::NewSymbol("Rect"), wrap_template_->GetFunction());
+}
+Handle<Value> sdl::RectWrapper::New(const Arguments& args) {
+	if(!args.IsConstructCall()) {
+		return ThrowException(Exception::TypeError(
+			String::New("Cannot construct a Rect without using the new operator.")));
+	}
+
+	HandleScope scope;
+
+	if(args.Length() < 4) {
+		return ThrowException(Exception::TypeError(
+			String::New("Invalid arguments: Expected new sdl.Rect(Number, Number, Number, Number)")));
+	}
+
+	int x = args[0]->Int32Value();
+	int y = args[1]->Int32Value();
+	int w = args[2]->Int32Value();
+	int h = args[3]->Int32Value();
+	SDL_Rect* rect = new SDL_Rect;
+	rect->x = x;
+	rect->y = y;
+	rect->w = w;
+	rect->h = h;
+
+	RectWrapper* wrap = new RectWrapper();
+	wrap->rect_ = rect;
+	wrap->Wrap(args.This());
+
+	return args.This();
+}
+
+Handle<Value> sdl::RectWrapper::GetX(Local<String> name, const AccessorInfo& info) {
+	HandleScope scope;
+
+	RectWrapper* wrap = ObjectWrap::Unwrap<RectWrapper>(info.This());
+
+	return scope.Close(Number::New(wrap->rect_->x));
+}
+Handle<Value> sdl::RectWrapper::GetY(Local<String> name, const AccessorInfo& info) {
+	HandleScope scope;
+
+	RectWrapper* wrap = ObjectWrap::Unwrap<RectWrapper>(info.This());
+
+	return scope.Close(Number::New(wrap->rect_->y));
+}
+Handle<Value> sdl::RectWrapper::GetW(Local<String> name, const AccessorInfo& info) {
+	HandleScope scope;
+
+	RectWrapper* wrap = ObjectWrap::Unwrap<RectWrapper>(info.This());
+
+	return scope.Close(Number::New(wrap->rect_->w));
+}
+Handle<Value> sdl::RectWrapper::GetH(Local<String> name, const AccessorInfo& info) {
+	HandleScope scope;
+
+	RectWrapper* wrap = ObjectWrap::Unwrap<RectWrapper>(info.This());
+
+	return scope.Close(Number::New(wrap->rect_->h));
+}
+
+void sdl::RectWrapper::SetX(Local<String> name, Local<Value> value, const AccessorInfo& info) {
+	HandleScope scope;
+
+	int x = value->Int32Value();
+	RectWrapper* wrap = ObjectWrap::Unwrap<RectWrapper>(Handle<Object>::Cast(info.This()));
+	wrap->rect_->x = x;
+}
+void sdl::RectWrapper::SetY(Local<String> name, Local<Value> value, const AccessorInfo& info) {
+	HandleScope scope;
+
+	int y = value->Int32Value();
+	RectWrapper* wrap = ObjectWrap::Unwrap<RectWrapper>(Handle<Object>::Cast(info.This()));
+	wrap->rect_->y = y;
+}
+void sdl::RectWrapper::SetW(Local<String> name, Local<Value> value, const AccessorInfo& info) {
+	HandleScope scope;
+
+	int w = value->Int32Value();
+	RectWrapper* wrap = ObjectWrap::Unwrap<RectWrapper>(Handle<Object>::Cast(info.This()));
+	wrap->rect_->w = w;
+}
+void sdl::RectWrapper::SetH(Local<String> name, Local<Value> value, const AccessorInfo& info) {
+	HandleScope scope;
+
+	int h = value->Int32Value();
+	RectWrapper* wrap = ObjectWrap::Unwrap<RectWrapper>(Handle<Object>::Cast(info.This()));
+	wrap->rect_->h = h;
+}
+
 Persistent<FunctionTemplate> sdl::ColorWrapper::wrap_template_;
 
 sdl::ColorWrapper::ColorWrapper() {
@@ -151,6 +267,7 @@ sdl::FingerWrapper::FingerWrapper(Handle<Object> toWrap) {
 	Wrap(toWrap);
 }
 sdl::FingerWrapper::~FingerWrapper() {
+	std::cout << "FingerWrapper destructor running." << std::endl;
 	if(NULL != finger_) {
 		delete finger_;
 	}

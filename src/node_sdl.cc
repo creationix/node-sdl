@@ -34,10 +34,10 @@ init(Handle<Object> target)
 //   // before we can create a rendering window
 //   objc_msgSend(objc_getClass("NSApplication"), sel_getUid("sharedApplication"));
 // #endif
-  std::cout << "Starting init." << std::endl;
+  // std::cout << "Starting init." << std::endl;
 
   // Initialize the SDL event type to string mappings.
-  std::cout << "Initializing SDL event type to string mappings." << std::endl;
+  // std::cout << "Initializing SDL event type to string mappings." << std::endl;
   event_type_to_string_[SDL_DOLLARGESTURE] = "dollarGesture";
   event_type_to_string_[SDL_DROPFILE] = "dropFile";
   event_type_to_string_[SDL_FINGERMOTION] = "fingerMotion";
@@ -61,10 +61,10 @@ init(Handle<Object> target)
   event_type_to_string_[SDL_TEXTINPUT] = "textInput";
   event_type_to_string_[SDL_USEREVENT] = "userEvent";
   event_type_to_string_[SDL_WINDOWEVENT] = "windowEvent";
-  std::cout << "Finished initializing event mappings." << std::endl;
+  // std::cout << "Finished initializing event mappings." << std::endl;
 
   // Initialize the SDL WindowEvent type to string mappings.
-  std::cout << "Initializing SDL window event type to string mappings." << std::endl;
+  // std::cout << "Initializing SDL window event type to string mappings." << std::endl;
   window_event_to_string_[SDL_WINDOWEVENT_SHOWN] = "shown";
   window_event_to_string_[SDL_WINDOWEVENT_HIDDEN] = "hidden";
   window_event_to_string_[SDL_WINDOWEVENT_EXPOSED] = "exposed";
@@ -79,7 +79,7 @@ init(Handle<Object> target)
   window_event_to_string_[SDL_WINDOWEVENT_FOCUS_GAINED] = "focusGained";
   window_event_to_string_[SDL_WINDOWEVENT_FOCUS_LOST] = "focusLost";
   window_event_to_string_[SDL_WINDOWEVENT_CLOSE] = "close";
-  std::cout << "Finished initializing window event mappings." << std::endl;
+  // std::cout << "Finished initializing window event mappings." << std::endl;
 
   sdl::InitWrappers(target);
   sdl::WindowWrapper::Init(target);
@@ -87,6 +87,7 @@ init(Handle<Object> target)
   sdl::TextureWrapper::Init(target);
   sdl::SurfaceWrapper::Init(target);
   sdl::ColorWrapper::Init(target);
+  sdl::RectWrapper::Init(target);
   sdl::gl::Init(target);
   sdl::event::Init(target);
   sdl::key::Init(target);
@@ -233,6 +234,11 @@ init(Handle<Object> target)
   FLIP->Set(String::New("NONE"), Number::New(SDL_FLIP_NONE));
   FLIP->Set(String::New("HORIZONTAL"), Number::New(SDL_FLIP_HORIZONTAL));
   FLIP->Set(String::New("VERTICAL"), Number::New(SDL_FLIP_VERTICAL));
+
+  Local<Object> WINDOWPOS = Object::New();
+  target->Set(String::New("WINDOWPOS"), WINDOWPOS);
+  WINDOWPOS->Set(String::NewSymbol("CENTERED"), Number::New(SDL_WINDOWPOS_CENTERED));
+  WINDOWPOS->Set(String::NewSymbol("UNDEFINED"), Number::New(SDL_WINDOWPOS_UNDEFINED));
 }
 
 
@@ -394,7 +400,11 @@ Handle<Value> sdl::GetDisplayBounds(const Arguments& args) {
     return ThrowSDLException(__func__);
   }
 
-  return scope.Close(WrapRect(bounds));
+  Handle<Object> ret = Object::New();
+  RectWrapper* wrap = new RectWrapper(ret);
+  wrap->rect_ = bounds;
+
+  return scope.Close(ret);
 }
 Handle<Value> sdl::GetDisplayMode(const Arguments& args) {
   HandleScope scope;

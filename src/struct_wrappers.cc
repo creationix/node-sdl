@@ -25,36 +25,30 @@ namespace sdl {
 	///////////////////////////////////////////////////////////////////////////////
 	// Initialize everything we need to use the wrappers.
 	void InitWrappers(Handle<Object> exports) {
-		std::cout << "About to initialize SDL struct wrappers." << std::endl;
+		// std::cout << "About to initialize SDL struct wrappers." << std::endl;
 		HandleScope scope;
-		std::cout << "Created scope for struct wrapper initialization." << std::endl;
+		// std::cout << "Created scope for struct wrapper initialization." << std::endl;
 
-		std::cout << "Putting together information for rect wrapper..." << std::endl;
-		const int numRect = 4;
-		std::string rectSymbols[] = {"x", "y", "w", "h"};
-		AccessorGetter rectGetters[] = {GetRectX, GetRectY, GetRectW, GetRectH};
-		AccessorSetter rectSetters[] = {SetRectX, SetRectY, SetRectW, SetRectH};
-
-		std::cout << "Putting together information for color wrapper..." << std::endl;
+		// std::cout << "Putting together information for color wrapper..." << std::endl;
 		const int numColor = 4;
 		std::string colorSymbols[] = {"r", "g", "b", "a"};
 		AccessorGetter colorGetters[] = {GetColorRed, GetColorGreen, GetColorBlue, GetColorAlpha};
 		AccessorSetter colorSetters[] = {SetColorRed, SetColorGreen, SetColorBlue, SetColorAlpha};
 
-		std::cout << "Putting together information for palette wrapper..." << std::endl;
+		// std::cout << "Putting together information for palette wrapper..." << std::endl;
 		const int numberPalette = 2;
 		std::string paletteSymbols[] = {"ncolors", "colors"};
 		AccessorGetter paletteGetters[] = {GetNcolors, GetColors};
 		AccessorSetter paletteSetters[] = {0, 0};
 
-		std::cout << "Putting together information for display mode wrapper..." << std::endl;
+		// std::cout << "Putting together information for display mode wrapper..." << std::endl;
 		const int numberDisplayMode = 4;
 		std::string displayModeSymbols[] = {"format", "w", "h", "refreshRate"};
 		AccessorGetter displayModeGetters[] = {GetDisplayModeFormat, GetDisplayModeWidth,
 											   GetDisplayModeHeight, GetDisplayModeRefreshRate};
 		AccessorSetter displayModeSetters[] = {0, 0, 0, 0};
 
-		std::cout << "Putting together information for pixel format wrapper..." << std::endl;
+		// std::cout << "Putting together information for pixel format wrapper..." << std::endl;
 		const int numberPixelFormat = 8;
 		std::string pixelFormatSymbols[] = {"format", "palette", "bitsPerPixel", "bytesPerPixel",
 											"rmask", "gmask", "bmask", "amask"};
@@ -73,145 +67,55 @@ namespace sdl {
 												GetRendererInfoMaxTextureHeight};
 		AccessorSetter rendererInfoSetters[] = {0, 0, 0, 0, 0, 0};
 
-		std::cout << "Putting together meta information for creating wrapping bindings..." << std::endl;
-		const int numberTemplates = 6;
-		Handle<ObjectTemplate> *templates[] = {&rect_template_, &color_template_,
+		// std::cout << "Putting together meta information for creating wrapping bindings..." << std::endl;
+		const int numberTemplates = 5;
+		Handle<ObjectTemplate> *templates[] = {&color_template_,
 											   &palette_template_, &displaymode_template_,
 											   &pixelformat_template_, &rendererinfo_template_};
-		int numberSymbols[] = {numRect, numColor, numberPalette, numberDisplayMode,
+		int numberSymbols[] = {numColor, numberPalette, numberDisplayMode,
 							   numberPixelFormat, numberRendererInfo};
-		std::string *allSymbols[] = {rectSymbols, colorSymbols, paletteSymbols,
+		std::string *allSymbols[] = {colorSymbols, paletteSymbols,
 									 displayModeSymbols, pixelFormatSymbols, rendererInfoSymbols};
-		AccessorGetter *allGetters[] = {rectGetters, colorGetters, paletteGetters,
+		AccessorGetter *allGetters[] = {colorGetters, paletteGetters,
 										displayModeGetters, pixelFormatGetters, rendererInfoGetters};
-		AccessorSetter *allSetters[] = {rectSetters, colorSetters, paletteSetters,
+		AccessorSetter *allSetters[] = {colorSetters, paletteSetters,
 										displayModeSetters, pixelFormatSetters, rendererInfoSetters};
-		InvocationCallback allConstructors[] = {ConstructRect, ConstructColor,
+		InvocationCallback allConstructors[] = {ConstructColor,
 											    ConstructPalette, 0, 0, 0};
-		std::string constructorNames[] = {"Rect", "Color", "Palette",
+		std::string constructorNames[] = {"Color", "Palette",
 										  "DisplayMode", "PixelFormat", "RendererInfo"};
 
-		std::cout << std::endl << "About to begin loop to create wrapping bindings..." << std::endl;
+		// std::cout << std::endl << "About to begin loop to create wrapping bindings..." << std::endl;
 		for(int i = 0; i < numberTemplates; i++) {
-			std::cout << "Creating new ObjectTemplate." << std::endl;
+			// std::cout << "Creating new ObjectTemplate." << std::endl;
 			Handle<ObjectTemplate> raw_template = ObjectTemplate::New();
-			std::cout << "Setting internal field count for ObjectTemplate to 1." << std::endl;
+			// std::cout << "Setting internal field count for ObjectTemplate to 1." << std::endl;
 			raw_template->SetInternalFieldCount(1);
 
 			const int symbols = numberSymbols[i];
-			std::cout << "There are " << symbols << " symbols to create." << std::endl;
+			// std::cout << "There are " << symbols << " symbols to create." << std::endl;
 			std::string *symbolNames = allSymbols[i];
 			AccessorGetter *getters = allGetters[i];
 			AccessorSetter *setters = allSetters[i];
 			for(int j = 0; j < symbols; j++) {
-				std::cout << "Creating symbol: " << symbolNames[j] << std::endl;
-				std::cout << "This symbol " << (setters[j] != 0 ? "has" : "does not have") << " a setter." << std::endl;
+				// std::cout << "Creating symbol: " << symbolNames[j] << std::endl;
+				// std::cout << "This symbol " << (setters[j] != 0 ? "has" : "does not have") << " a setter." << std::endl;
 				raw_template->SetAccessor(String::NewSymbol(symbolNames[j].c_str()), getters[j], setters[j] == 0 ? 0 : setters[j]);
 			}
 
-			std::cout << "Directly setting the ObjectTemplate with the template that has the accessors." << std::endl;
+			// std::cout << "Directly setting the ObjectTemplate with the template that has the accessors." << std::endl;
 			*(templates[i]) = Persistent<ObjectTemplate>::New(raw_template);
 
 			if(allConstructors[i] != 0) {
-				std::cout << "Creating constructor with name: " << constructorNames[i] << "." << std::endl;
+				// std::cout << "Creating constructor with name: " << constructorNames[i] << "." << std::endl;
 				NODE_SET_METHOD(exports, constructorNames[i].c_str(), allConstructors[i]);
 			}
-			std::cout << std::endl;
+			// std::cout << std::endl;
 		}
 
 		PointWrapper::Init(exports);
-		std::cout << "Finished initializing wrappers." << std::endl;
+		// std::cout << "Finished initializing wrappers." << std::endl;
 		// TODO: Joystick and Font.
-	}
-
-	///////////////////////////////////////////////////////////////////////////////
-	// SDL_Rect Wrapper/Unwrapper.
-	Handle<Value> ConstructRect(const Arguments& args) {
-		HandleScope scope;
-
-		if(args.Length() < 4) {
-			return ThrowException(Exception::TypeError(String::New("Invalid call. Excpected: ConstructRect(x, y, width, height")));
-		}
-
-		SDL_Rect *rect = new SDL_Rect;
-		rect->x = args[0]->Int32Value();
-		rect->y = args[1]->Int32Value();
-		rect->w = args[2]->Int32Value();
-		rect->h = args[3]->Int32Value();
-
-		return scope.Close(WrapRect(rect));
-	}
-
-	Handle<Object> WrapRect(SDL_Rect* rect) {
-	  	// Handle scope for temporary handles.
-		HandleScope handle_scope;
-
-		Handle<ObjectTemplate> templ = rect_template_;
-
-	  	// Create an empty http request wrapper.
-		Handle<Object> result = templ->NewInstance();
-
-	  	// Wrap the raw C++ pointer in an External so it can be referenced
-	  	// from within JavaScript.
-		Handle<External> request_ptr = External::New(rect);
-
-	  	// Store the request pointer in the JavaScript wrapper.
-		result->SetInternalField(0, request_ptr);
-
-	  	// Return the result through the current handle scope.  Since each
-	  	// of these handles will go away when the handle scope is deleted
-	  	// we need to call Close to let one, the result, escape into the
-	  	// outer handle scope.
-		return handle_scope.Close(result);
-	}
-
-	SDL_Rect* UnwrapRect(Handle<Object> obj) {
-	  Handle<External> field = Handle<External>::Cast(obj->GetInternalField(0));
-	  void* ptr = field->Value();
-	  return static_cast<SDL_Rect*>(ptr);
-	}
-
-	// Property getters.
-	Handle<Value> GetRectX(Local<String> name, const AccessorInfo& info) {
-		SDL_Rect* rect = UnwrapRect(info.Holder());
-		return Number::New(rect->x);
-	}
-	Handle<Value> GetRectY(Local<String> name, const AccessorInfo& info) {
-		SDL_Rect* rect = UnwrapRect(info.Holder());
-		return Number::New(rect->y);
-	}
-	Handle<Value> GetRectW(Local<String> name, const AccessorInfo& info) {
-		SDL_Rect* rect = UnwrapRect(info.Holder());
-		return Number::New(rect->w);
-	}
-	Handle<Value> GetRectH(Local<String> name, const AccessorInfo& info) {
-		SDL_Rect* rect = UnwrapRect(info.Holder());
-		return Number::New(rect->h);
-	}
-	// Property setters.
-	void  SetRectX(Local<String> name, Local<Value> value, const AccessorInfo& info) {
-		if(!value->IsUndefined()) {
-			SDL_Rect* rect = UnwrapRect(info.Holder());
-			rect->x = value->Int32Value();
-		}
-	}
-	void SetRectY(Local<String> name, Local<Value> value, const AccessorInfo& info) {
-		if(!value->IsUndefined()) {
-			SDL_Rect* rect = UnwrapRect(info.Holder());
-			rect->y = value->Int32Value();
-		}
-	}
-	void SetRectW(Local<String> name, Local<Value> value, const AccessorInfo& info) {
-		if(!value->IsUndefined()) {
-			SDL_Rect* rect = UnwrapRect(info.Holder());
-			rect->w = value->Int32Value();
-		}
-	}
-	void SetRectH(Local<String> name, Local<Value> value, const AccessorInfo& info) {
-		if(!value->IsUndefined()) {
-			SDL_Rect* rect = UnwrapRect(info.Holder());
-			rect->h = value->Int32Value();
-		}
 	}
 
 	///////////////////////////////////////////////////////////////////////////////

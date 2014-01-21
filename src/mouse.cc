@@ -53,6 +53,9 @@ void sdl::mouse::Init(Handle<Object> exports) {
 	BUTTON->Set(String::NewSymbol("X2MASK"), Number::New(SDL_BUTTON_X2MASK));
 }
 
+Persistent<FunctionTemplate> sdl::CursorWrapper::wrap_template_;
+Persistent<FunctionTemplate> sdl::CursorWrapper::wrap_template_system_;
+
 sdl::CursorWrapper::CursorWrapper() {
 }
 sdl::CursorWrapper::CursorWrapper(Handle<Object> toWrap) {
