@@ -36,6 +36,7 @@ void sdl::WindowWrapper::Init(Handle<Object> exports) {
 	window_wrap_template_->SetClassName(String::NewSymbol("WindowWrapper"));
 
 	NODE_SET_PROTOTYPE_METHOD(window_wrap_template_, "getBrightness", GetBrightness);
+	NODE_SET_PROTOTYPE_METHOD(window_wrap_template_, "getDisplayMode", GetDisplayMode);
 	NODE_SET_PROTOTYPE_METHOD(window_wrap_template_, "getDisplayIndex", GetDisplayIndex);
 	NODE_SET_PROTOTYPE_METHOD(window_wrap_template_, "getFlags", GetFlags);
 	NODE_SET_PROTOTYPE_METHOD(window_wrap_template_, "getGammaRamp", GetGammaRamp);
@@ -130,7 +131,11 @@ Handle<Value> sdl::WindowWrapper::GetDisplayMode(const Arguments& args) {
 
 	WindowWrapper* obj = ObjectWrap::Unwrap<WindowWrapper>(args.This());
 	SDL_DisplayMode mode;
-	int err = SDL_GetWindowDisplayMode(obj->window_, &mode);
+	int err = SDL_GetWindowDisplayIndex(obj->window_);
+	if(err < 0) {
+		return ThrowSDLException(__func__);
+	}
+	err = SDL_GetCurrentDisplayMode(err, &mode);
   // SDL documentation says that 0 is success, and less than 0 is when an error
   // occurred.
 	if(err < 0) {
