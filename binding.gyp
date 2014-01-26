@@ -15,17 +15,16 @@
         'src/sdl_gl.cc',
         'src/event.cc',
         'src/key.cc',
-        'src/mouse.cc'
+        'src/mouse.cc',
+        "src/font.cc"
       ],
       'libraries': [
-        '/Library/Frameworks/SDL2.framework/SDL2',
-        '/Library/Frameworks/SDL2_ttf.framework/SDL2_ttf',
-        '/Library/Frameworks/SDL2_image.framework/SDL2_image',
+        '/usr/local/lib/libSDL2.dylib',
+        '/usr/local/lib/libSDL2_ttf.dylib',
+        '/usr/local/lib/libSDL2_image.dylib',
       ],
       'include_dirs': [
-        "/Library/Frameworks/SDL2.framework/Headers",
-        "/Library/Frameworks/SDL2_ttf.framework/Headers",
-        "/Library/Frameworks/SDL2_image.framework/Headers",
+        "/usr/local/include/SDL2"
       ],
       'cflags': [
         "-D_THREAD_SAFE"

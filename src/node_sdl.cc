@@ -15,6 +15,7 @@
 #include "event.h"
 #include "key.h"
 #include "mouse.h"
+#include "font.h"
 #include <v8.h>
 #include <string>
 #include <iostream>
@@ -92,6 +93,7 @@ init(Handle<Object> target)
   sdl::event::Init(target);
   sdl::key::Init(target);
   sdl::mouse::Init(target);
+  sdl::TTF::Initialize(target);
 
   // Initialization and Shutdown.
   NODE_SET_METHOD(target, "init", sdl::Init);
@@ -188,12 +190,6 @@ init(Handle<Object> target)
   TEXTUREACCESS->Set(String::New("STATIC"), Number::New(SDL_TEXTUREACCESS_STATIC));
   TEXTUREACCESS->Set(String::New("STREAMING"), Number::New(SDL_TEXTUREACCESS_STREAMING));
 
-  Local<Object> TTF = Object::New();
-  target->Set(String::New("TTF"), TTF);
-  NODE_SET_METHOD(TTF, "init", sdl::TTF::Init);
-  NODE_SET_METHOD(TTF, "openFont", sdl::TTF::OpenFont);
-  // NODE_SET_METHOD(TTF, "renderTextBlended", sdl::TTF::RenderTextBlended);
-
   Local<Object> IMG = Object::New();
   target->Set(String::New("IMG"), IMG);
 
@@ -239,6 +235,19 @@ init(Handle<Object> target)
   target->Set(String::New("WINDOWPOS"), WINDOWPOS);
   WINDOWPOS->Set(String::NewSymbol("CENTERED"), Number::New(SDL_WINDOWPOS_CENTERED));
   WINDOWPOS->Set(String::NewSymbol("UNDEFINED"), Number::New(SDL_WINDOWPOS_UNDEFINED));
+
+  Local<Object> WINDOW = Object::New();
+  target->Set(String::New("WINDOW"), WINDOW);
+  WINDOW->Set(String::New("FULLSCREEN"), Number::New(SDL_WINDOW_FULLSCREEN));
+  WINDOW->Set(String::New("FULLSCREEN_DESKTOP"), Number::New(SDL_WINDOW_FULLSCREEN_DESKTOP));
+  WINDOW->Set(String::New("OPENGL"), Number::New(SDL_WINDOW_OPENGL));
+  WINDOW->Set(String::New("HIDDEN"), Number::New(SDL_WINDOW_HIDDEN));
+  WINDOW->Set(String::New("BORDERLESS"), Number::New(SDL_WINDOW_BORDERLESS));
+  WINDOW->Set(String::New("RESIZABLE"), Number::New(SDL_WINDOW_RESIZABLE));
+  WINDOW->Set(String::New("MINIMIZED"), Number::New(SDL_WINDOW_MINIMIZED));
+  WINDOW->Set(String::New("MAXIMIZED"), Number::New(SDL_WINDOW_MAXIMIZED));
+  WINDOW->Set(String::New("INPUT_GRABBED"), Number::New(SDL_WINDOW_INPUT_GRABBED));
+  WINDOW->Set(String::New("ALLOW_HIGHDPI"), Number::New(SDL_WINDOW_ALLOW_HIGHDPI));
 }
 
 
@@ -935,74 +944,6 @@ Handle<Value> sdl::SetClipboardText(const Arguments& args) {
   return Undefined();
 }
 
-Handle<Value> sdl::TTF::Init(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 0)) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected TTF::Init()")));
-  }
-
-  if (TTF_Init() < 0) {
-    return ThrowException(Exception::Error(String::Concat(
-      String::New("TTF::Init: "),
-      String::New(TTF_GetError())
-    )));
-  }
-
-  return Undefined();
-}
-
-Handle<Value> sdl::TTF::OpenFont(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 2 && args[0]->IsString() && args[1]->IsNumber())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected TTF::OpenFont(String, Number)")));
-  }
-
-  String::Utf8Value file(args[0]);
-  int ptsize = (args[1]->Int32Value());
-
-  TTF_Font* font = TTF_OpenFont(*file, ptsize);
-  if (font == NULL) {
-    return ThrowException(Exception::Error(String::Concat(
-      String::New("TTF::OpenFont: "),
-      String::New(TTF_GetError())
-    )));
-  }
-  return scope.Close(WrapFont(font));
-}
-
-// TODO: Rewrite for SDL2.
-// static Handle<Value> sdl::TTF::RenderTextBlended(const Arguments& args) {
-//   HandleScope scope;
-
-//   if (!(args.Length() == 3 && args[0]->IsObject() && args[1]->IsString() && args[2]->IsNumber())) {
-//     return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected TTF::RenderTextBlended(Font, String, Number)")));
-//   }
-
-//   SDL_PixelFormat* vfmt = SDL_GetVideoInfo()->vfmt;
-//   TTF_Font* font = UnwrapFont(args[0]->ToObject());
-//   String::Utf8Value text(args[1]);
-//   int colorCode = args[2]->Int32Value();
-
-//   Uint8 r, g, b;
-//   SDL_GetRGB(colorCode, vfmt, &r, &g, &b);
-
-//   SDL_Color color;
-//   color.r = r;
-//   color.g = g;
-//   color.b = b;
-
-//   SDL_Surface *resulting_text;
-//   resulting_text = TTF_RenderText_Blended(font, *text, color);
-//   if (!resulting_text) {
-//     return ThrowException(Exception::Error(String::Concat(
-//       String::New("TTF::RenderTextBlended: "),
-//       String::New(TTF_GetError())
-//     )));
-//   }
-//   return scope.Close(WrapSurface(resulting_text));
-// }
 
 // TODO: make an async version so this can be used in loops or parallel load images
 Handle<Value> sdl::IMG::Load(const Arguments& args) {

@@ -75,36 +75,44 @@ Handle<Value> sdl::SurfaceWrapper::New(const Arguments& args) {
 	}
 
 	HandleScope scope;
-	if(args.Length() < 2) {
-		return ThrowException(Exception::TypeError(
-			String::New("Invalid arguments: expected new sdl.Surface(Number, Number)")));
+	if(args[0]->IsExternal()) {
+		SurfaceWrapper* obj = new SurfaceWrapper();
+		obj->surface_ = static_cast<SDL_Surface*>(Handle<External>::Cast(args[0])->Value());
+		obj->Wrap(args.This());
+		return args.This();
 	}
+	else {
+		if(args.Length() < 2) {
+			return ThrowException(Exception::TypeError(
+				String::New("Invalid arguments: expected new sdl.Surface(Number, Number)")));
+		}
 
-	int flags = 0;
-	int width = args[0]->Int32Value();
-	int height = args[1]->Int32Value();
-	int depth = args[2]->IsUndefined() ? 32 : args[2]->Int32Value();
-	int rmask, gmask, bmask, amask;
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-    rmask = 0xff000000;
-    gmask = 0x00ff0000;
-    bmask = 0x0000ff00;
-    amask = 0x000000ff;
-#else
-    rmask = 0x000000ff;
-    gmask = 0x0000ff00;
-    bmask = 0x00ff0000;
-    amask = 0xff000000;
-#endif
-    SDL_Surface* surface = SDL_CreateRGBSurface(flags, width, height, depth, rmask, gmask, bmask, amask);
-    if(NULL == surface) {
-    	return ThrowSDLException(__func__);
-    }
+		int flags = 0;
+		int width = args[0]->Int32Value();
+		int height = args[1]->Int32Value();
+		int depth = args[2]->IsUndefined() ? 32 : args[2]->Int32Value();
+		int rmask, gmask, bmask, amask;
+	#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+	    rmask = 0xff000000;
+	    gmask = 0x00ff0000;
+	    bmask = 0x0000ff00;
+	    amask = 0x000000ff;
+	#else
+	    rmask = 0x000000ff;
+	    gmask = 0x0000ff00;
+	    bmask = 0x00ff0000;
+	    amask = 0xff000000;
+	#endif
+	    SDL_Surface* surface = SDL_CreateRGBSurface(flags, width, height, depth, rmask, gmask, bmask, amask);
+	    if(NULL == surface) {
+	    	return ThrowSDLException(__func__);
+	    }
 
-    SurfaceWrapper* obj = new SurfaceWrapper();
-    obj->surface_ = surface;
-    obj->Wrap(args.This());
-    return args.This();
+	    SurfaceWrapper* obj = new SurfaceWrapper();
+	    obj->surface_ = surface;
+	    obj->Wrap(args.This());
+	    return args.This();
+	}
 }
 
 Handle<Value> sdl::SurfaceWrapper::LoadBMP(const Arguments& args) {
