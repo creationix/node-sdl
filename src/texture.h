@@ -19,6 +19,8 @@ namespace sdl {
 		static void Init(v8::Handle<v8::Object> exports);
 		static v8::Handle<v8::Value> New(const v8::Arguments& args);
 
+		static v8::Handle<v8::Value> Update(const v8::Arguments& args);
+
 		SDL_Texture* texture_;
 	};
 }

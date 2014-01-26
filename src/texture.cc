@@ -5,6 +5,7 @@
 #include "helpers.h"
 #include "struct_wrappers.h"
 #include "render.h"
+#include "container.h"
 
 #include "SDL.h"
 
@@ -34,6 +35,8 @@ void sdl::TextureWrapper::Init(Handle<Object> exports) {
 
 	texture_wrap_template_->InstanceTemplate()->SetInternalFieldCount(1);
 	texture_wrap_template_->SetClassName(String::NewSymbol("TextureWrapper"));
+
+	NODE_SET_PROTOTYPE_METHOD(texture_wrap_template_, "update", Update);
 
 	exports->Set(String::NewSymbol("Texture"), texture_wrap_template_->GetFunction());
 }
@@ -85,4 +88,31 @@ Handle<Value> sdl::TextureWrapper::New(const Arguments& args) {
 
 	// std::cout << "Texture::New - Returning args.This()." << std::endl;
 	return args.This();
+}
+
+Handle<Value> sdl::TextureWrapper::Update(const Arguments& args) {
+	HandleScope scope;
+
+	if(!args[0]->IsObject()) {
+		return ThrowException(Exception::TypeError(
+			String::New("Invalid arguments: First argument to texture.update must be an Object.")));
+	}
+
+	TextureWrapper* texture = ObjectWrap::Unwrap<TextureWrapper>(Handle<Object>::Cast(args.This()));
+	if(NULL == texture) {
+		return ThrowException(Exception::TypeError(
+			String::New("Invalid arguments: Failed to unwrap this argument to a SurfaceWrapper. (is this not an sdl.Texture?)")));
+	}
+	SurfaceWrapper* surface = ObjectWrap::Unwrap<SurfaceWrapper>(Handle<Object>::Cast(args[0]));
+	if(NULL == surface) {
+		return ThrowException(Exception::TypeError(
+			String::New("Invalid arguments: Failed to unwrap first argument to a SurfaceWrapper. (did you not pass in an sdl.Surface?)")));
+	}
+	RectWrapper* rect = args[1]->IsUndefined() ? NULL : ObjectWrap::Unwrap<RectWrapper>(Handle<Object>::Cast(args[1]));
+	int err = SDL_UpdateTexture(texture->texture_, rect == NULL ? NULL : rect->rect_, surface->surface_->pixels, surface->surface_->pitch);
+	if(err < 0) {
+		return ThrowSDLException(__func__);
+	}
+
+	return Undefined();
 }
