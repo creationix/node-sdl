@@ -85,9 +85,7 @@ Handle<Value> sdl::TTF::FontWrapper::RenderTextSolid(const Arguments& args) {
 	HandleScope scope;
 	Context::Scope context_scope(Context::GetCurrent());
 
-	std::cout << "Unwrapping this into FontWrapper." << std::endl;
 	FontWrapper* font = ObjectWrap::Unwrap<FontWrapper>(args.This());
-	std::cout << "Checking arguments." << std::endl;
 	if(NULL == font) {
 		return ThrowException(Exception::TypeError(
 			String::New("Could not unwrap 'this' for some reason. (did you not use a Font object?)")));
@@ -101,32 +99,21 @@ Handle<Value> sdl::TTF::FontWrapper::RenderTextSolid(const Arguments& args) {
 			String::New("Invalid arguments: Second argument to renderTextSolid must be an sdl.Color.")));
 	}
 
-	std::cout << "Creating Utf8Value from arg 0." << std::endl;
 	String::Utf8Value text(args[0]);
-	std::cout << "Unwrapping arg 1 to ColorWrapper." << std::endl;
 	ColorWrapper* color = ObjectWrap::Unwrap<ColorWrapper>(Handle<Object>::Cast(args[1]));
 	if(NULL == color) {
 		return ThrowException(Exception::TypeError(
 			String::New("Could not unwrap second argument to renderTextSolid for some reason. (is it not an sdl.Color?)")));
 	}
 
-	std::cout << "Rendering text." << std::endl;
 	SDL_Surface* surface = TTF_RenderText_Solid(font->font_, *text, *color->color_);
-	std::cout << "Done rendering text." << std::endl;
 	if(NULL == surface) {
 		return ThrowSDLException(__func__);
 	}
 
-	std::cout << "Creating new Javascript object to carry the surface wrapper." << std::endl;
 	Handle<Value> arg = External::New(surface);
 	Handle<Value> argv[] = {arg};
 	Handle<Object> ret = SurfaceWrapper::wrap_template_->GetFunction()->NewInstance(1, argv);
-	// std::cout << "Internal field count: " << ret->InternalFieldCount() << std::endl;
-	// std::cout << "Creating a surface wrapper, which will wrap the previous object." << std::endl;
-	// SurfaceWrapper* wrap = new SurfaceWrapper(ret);
-	// std::cout << "Setting the wrapper internal surface to the rendered text." << std::endl;
-	// wrap->surface_ = surface;
-	// std::cout << "Returning the Javascript surface." << std::endl;
 	return scope.Close(ret);
 }
 Handle<Value> sdl::TTF::FontWrapper::RenderUTF8Solid(const Arguments& args) {
@@ -158,9 +145,9 @@ Handle<Value> sdl::TTF::FontWrapper::RenderUTF8Solid(const Arguments& args) {
 		return ThrowSDLException(__func__);
 	}
 
-	Handle<Object> ret = Object::New();
-	SurfaceWrapper* wrap = new SurfaceWrapper(ret);
-	wrap->surface_ = surface;
+	Handle<Value> arg = External::New(surface);
+	Handle<Value> argv[] = {arg};
+	Handle<Object> ret = SurfaceWrapper::wrap_template_->GetFunction()->NewInstance(1, argv);
 	return scope.Close(ret);
 }
 Handle<Value> sdl::TTF::FontWrapper::RenderUnicodeSolid(const Arguments& args) {
@@ -188,9 +175,9 @@ Handle<Value> sdl::TTF::FontWrapper::RenderUnicodeSolid(const Arguments& args) {
 		return ThrowSDLException(__func__);
 	}
 
-	Handle<Object> ret = Object::New();
-	SurfaceWrapper* wrap = new SurfaceWrapper(ret);
-	wrap->surface_ = surface;
+	Handle<Value> arg = External::New(surface);
+	Handle<Value> argv[] = {arg};
+	Handle<Object> ret = SurfaceWrapper::wrap_template_->GetFunction()->NewInstance(1, argv);
 	return scope.Close(ret);
 }
 Handle<Value> sdl::TTF::FontWrapper::RenderGlyphSolid(const Arguments& args) {
@@ -222,9 +209,9 @@ Handle<Value> sdl::TTF::FontWrapper::RenderGlyphSolid(const Arguments& args) {
 		return ThrowSDLException(__func__);
 	}
 
-	Handle<Object> ret = Object::New();
-	SurfaceWrapper* wrap = new SurfaceWrapper(ret);
-	wrap->surface_ = surface;
+	Handle<Value> arg = External::New(surface);
+	Handle<Value> argv[] = {arg};
+	Handle<Object> ret = SurfaceWrapper::wrap_template_->GetFunction()->NewInstance(1, argv);
 	return scope.Close(ret);
 }
 
@@ -266,9 +253,9 @@ Handle<Value> sdl::TTF::FontWrapper::RenderTextShaded(const Arguments& args) {
 		return ThrowSDLException(__func__);
 	}
 
-	Handle<Object> ret = Object::New();
-	SurfaceWrapper* wrap = new SurfaceWrapper(ret);
-	wrap->surface_ = surface;
+	Handle<Value> arg = External::New(surface);
+	Handle<Value> argv[] = {arg};
+	Handle<Object> ret = SurfaceWrapper::wrap_template_->GetFunction()->NewInstance(1, argv);
 	return scope.Close(ret);
 }
 Handle<Value> sdl::TTF::FontWrapper::RenderUTF8Shaded(const Arguments& args) {
@@ -309,9 +296,9 @@ Handle<Value> sdl::TTF::FontWrapper::RenderUTF8Shaded(const Arguments& args) {
 		return ThrowSDLException(__func__);
 	}
 
-	Handle<Object> ret = Object::New();
-	SurfaceWrapper* wrap = new SurfaceWrapper(ret);
-	wrap->surface_ = surface;
+	Handle<Value> arg = External::New(surface);
+	Handle<Value> argv[] = {arg};
+	Handle<Object> ret = SurfaceWrapper::wrap_template_->GetFunction()->NewInstance(1, argv);
 	return scope.Close(ret);
 }
 Handle<Value> sdl::TTF::FontWrapper::RenderUnicodeShaded(const Arguments& args) {
@@ -352,9 +339,9 @@ Handle<Value> sdl::TTF::FontWrapper::RenderUnicodeShaded(const Arguments& args) 
 		return ThrowSDLException(__func__);
 	}
 
-	Handle<Object> ret = Object::New();
-	SurfaceWrapper* wrap = new SurfaceWrapper(ret);
-	wrap->surface_ = surface;
+	Handle<Value> arg = External::New(surface);
+	Handle<Value> argv[] = {arg};
+	Handle<Object> ret = SurfaceWrapper::wrap_template_->GetFunction()->NewInstance(1, argv);
 	return scope.Close(ret);
 }
 Handle<Value> sdl::TTF::FontWrapper::RenderGlyphShaded(const Arguments& args) {
@@ -399,9 +386,9 @@ Handle<Value> sdl::TTF::FontWrapper::RenderGlyphShaded(const Arguments& args) {
 		return ThrowSDLException(__func__);
 	}
 
-	Handle<Object> ret = Object::New();
-	SurfaceWrapper* wrap = new SurfaceWrapper(ret);
-	wrap->surface_ = surface;
+	Handle<Value> arg = External::New(surface);
+	Handle<Value> argv[] = {arg};
+	Handle<Object> ret = SurfaceWrapper::wrap_template_->GetFunction()->NewInstance(1, argv);
 	return scope.Close(ret);
 }
 
@@ -434,9 +421,9 @@ Handle<Value> sdl::TTF::FontWrapper::RenderTextBlended(const Arguments& args) {
 		return ThrowSDLException(__func__);
 	}
 
-	Handle<Object> ret = Object::New();
-	SurfaceWrapper* wrap = new SurfaceWrapper(ret);
-	wrap->surface_ = surface;
+	Handle<Value> arg = External::New(surface);
+	Handle<Value> argv[] = {arg};
+	Handle<Object> ret = SurfaceWrapper::wrap_template_->GetFunction()->NewInstance(1, argv);
 	return scope.Close(ret);
 }
 Handle<Value> sdl::TTF::FontWrapper::RenderUTF8Blended(const Arguments& args) {
@@ -468,9 +455,9 @@ Handle<Value> sdl::TTF::FontWrapper::RenderUTF8Blended(const Arguments& args) {
 		return ThrowSDLException(__func__);
 	}
 
-	Handle<Object> ret = Object::New();
-	SurfaceWrapper* wrap = new SurfaceWrapper(ret);
-	wrap->surface_ = surface;
+	Handle<Value> arg = External::New(surface);
+	Handle<Value> argv[] = {arg};
+	Handle<Object> ret = SurfaceWrapper::wrap_template_->GetFunction()->NewInstance(1, argv);
 	return scope.Close(ret);
 }
 Handle<Value> sdl::TTF::FontWrapper::RenderUnicodeBlended(const Arguments& args) {
@@ -498,9 +485,9 @@ Handle<Value> sdl::TTF::FontWrapper::RenderUnicodeBlended(const Arguments& args)
 		return ThrowSDLException(__func__);
 	}
 
-	Handle<Object> ret = Object::New();
-	SurfaceWrapper* wrap = new SurfaceWrapper(ret);
-	wrap->surface_ = surface;
+	Handle<Value> arg = External::New(surface);
+	Handle<Value> argv[] = {arg};
+	Handle<Object> ret = SurfaceWrapper::wrap_template_->GetFunction()->NewInstance(1, argv);
 	return scope.Close(ret);
 }
 Handle<Value> sdl::TTF::FontWrapper::RenderGlyphBlended(const Arguments& args) {
@@ -532,9 +519,9 @@ Handle<Value> sdl::TTF::FontWrapper::RenderGlyphBlended(const Arguments& args) {
 		return ThrowSDLException(__func__);
 	}
 
-	Handle<Object> ret = Object::New();
-	SurfaceWrapper* wrap = new SurfaceWrapper(ret);
-	wrap->surface_ = surface;
+	Handle<Value> arg = External::New(surface);
+	Handle<Value> argv[] = {arg};
+	Handle<Object> ret = SurfaceWrapper::wrap_template_->GetFunction()->NewInstance(1, argv);
 	return scope.Close(ret);
 }
 
