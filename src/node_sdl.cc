@@ -16,6 +16,7 @@
 #include "key.h"
 #include "mouse.h"
 #include "font.h"
+#include "joystick.h"
 #include <v8.h>
 #include <string>
 #include <iostream>
@@ -94,6 +95,7 @@ init(Handle<Object> target)
   sdl::key::Init(target);
   sdl::mouse::Init(target);
   sdl::TTF::Initialize(target);
+  sdl::joystick::Init(target);
 
   // Initialization and Shutdown.
   NODE_SET_METHOD(target, "init", sdl::Init);
@@ -107,17 +109,6 @@ init(Handle<Object> target)
   NODE_SET_METHOD(target, "clearError", sdl::ClearError);
   NODE_SET_METHOD(target, "getError", sdl::GetError);
   NODE_SET_METHOD(target, "setError", sdl::SetError);
-
-  NODE_SET_METHOD(target, "numJoysticks", sdl::NumJoysticks);
-  NODE_SET_METHOD(target, "joystickOpen", sdl::JoystickOpen);
-  NODE_SET_METHOD(target, "joystickName", sdl::JoystickName);
-  NODE_SET_METHOD(target, "joystickNumAxes", sdl::JoystickNumAxes);
-  NODE_SET_METHOD(target, "joystickNumButtons", sdl::JoystickNumButtons);
-  NODE_SET_METHOD(target, "joystickNumBalls", sdl::JoystickNumBalls);
-  NODE_SET_METHOD(target, "joystickNumHats", sdl::JoystickNumHats);
-  NODE_SET_METHOD(target, "joystickClose", sdl::JoystickClose);
-  NODE_SET_METHOD(target, "joystickUpdate", sdl::JoystickUpdate);
-  NODE_SET_METHOD(target, "joystickEventState", sdl::JoystickEventState);
 
   NODE_SET_METHOD(target, "mapRGB", sdl::MapRGB);
   NODE_SET_METHOD(target, "mapRGBA", sdl::MapRGBA);
@@ -579,117 +570,6 @@ Handle<Value> sdl::SetError(const Arguments& args) {
   SDL_SetError(*message);
 
   return Undefined();
-}
-
-Handle<Value> sdl::NumJoysticks(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 0)) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected NumJoysticks()")));
-  }
-
-  return Number::New(SDL_NumJoysticks());
-}
-
-Handle<Value> sdl::JoystickOpen(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 1 && args[0]->IsNumber())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected JoystickOpen(Number)")));
-  }
-
-  SDL_Joystick* joystick = SDL_JoystickOpen(args[0]->Int32Value());
-  if (!joystick) return ThrowSDLException(__func__);
-  return scope.Close(WrapJoystick(joystick));
-}
-
-Handle<Value> sdl::JoystickName(const Arguments& args) {
-  return Undefined();
-  // HandleScope scope;
-
-  // if (!(args.Length() == 1 && args[0]->IsNumber())) {
-  //   return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected JoystickName(Number)")));
-  // }
-
-  // return String::New(SDL_JoystickName(UnwrapJoystick(args[0])));
-}
-
-Handle<Value> sdl::JoystickNumAxes(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 1 && args[0]->IsObject())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected JoystickNumAxes(Joystick)")));
-  }
-
-  return Number::New(SDL_JoystickNumAxes(UnwrapJoystick(args[0]->ToObject())));
-}
-
-Handle<Value> sdl::JoystickNumButtons(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 1 && args[0]->IsObject())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected JoystickNumButtons(Joystick)")));
-  }
-
-  return Number::New(SDL_JoystickNumButtons(UnwrapJoystick(args[0]->ToObject())));
-}
-
-Handle<Value> sdl::JoystickNumBalls(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 1 && args[0]->IsObject())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected JoystickNumBalls(Joystick)")));
-  }
-
-  return Number::New(SDL_JoystickNumBalls(UnwrapJoystick(args[0]->ToObject())));
-}
-
-Handle<Value> sdl::JoystickNumHats(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 1 && args[0]->IsObject())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected JoystickNumHats(Joystick)")));
-  }
-
-  return Number::New(SDL_JoystickNumHats(UnwrapJoystick(args[0]->ToObject())));
-}
-
-Handle<Value> sdl::JoystickClose(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 1 && args[0]->IsObject())) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected JoystickClose(Joystick)")));
-  }
-
-  SDL_JoystickClose(UnwrapJoystick(args[0]->ToObject()));
-
-  return Undefined();
-}
-
-Handle<Value> sdl::JoystickUpdate(const Arguments& args) {
-  HandleScope scope;
-
-  if (!(args.Length() == 0)) {
-    return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected JoystickUpdate()")));
-  }
-
-  SDL_JoystickUpdate();
-  return Undefined();
-}
-
-Handle<Value> sdl::JoystickEventState(const Arguments& args) {
-  HandleScope scope;
-
-  int state;
-  if (args.Length() == 0) {
-    state = SDL_QUERY;
-  } else {
-    if (!(args.Length() == 1 && args[0]->IsBoolean())) {
-      return ThrowException(Exception::TypeError(String::New("Invalid arguments: Expected JoystickEventState([Boolean])")));
-    }
-    state = args[0]->BooleanValue() ? SDL_ENABLE : SDL_IGNORE;
-  }
-  return Boolean::New(SDL_JoystickEventState(state));
 }
 
 Handle<Value> sdl::MapRGB(const Arguments& args) {

@@ -1,6 +1,24 @@
 #ifndef NODE_SDL_H_
 #define NODE_SDL_H_
 
+// Various defines to modify how the bindings operate somewhat when compiled. This can include
+// things such as disabling runtime argument checks, including various logging, etc.
+//
+// NOTE: None of these flags are actually used yet. I am only putting them in here as a note to
+// myself as to what features I will want to be optionally disabled in the future. Otherwise I
+// will forget :)
+
+// WARNING: The only time you should disable arg checking is after thoroughly testing your application
+// and you don't see any exceptions being thrown. You WILL get segfaults if you aren't careful about
+// what types you pass to some functions without having them checked. (such as passing an SDL_Color
+// when something want an SDL_Texture, or vise versa) And there will be no stacktrace or anything
+// pointing to a location where the problem happened.
+#define ENABLE_ARG_CHECKING
+// If this is not defined, the entire SDL_image wrapper will not be included in the build.
+#define ENABLE_IMAGE
+// If this is not defined, the entire SDL_ttf wrapper will not be included in the build.
+#define ENABLE_TTF
+
 #include <node.h>
 #include <v8.h>
 #include <map>
@@ -52,17 +70,6 @@ namespace sdl {
   v8::Handle<v8::Value> ClearError(const v8::Arguments& args);
   v8::Handle<v8::Value> GetError(const v8::Arguments& args);
   v8::Handle<v8::Value> SetError(const v8::Arguments& args);
-
-  v8::Handle<v8::Value> NumJoysticks(const v8::Arguments& args);
-  v8::Handle<v8::Value> JoystickOpen(const v8::Arguments& args);
-  v8::Handle<v8::Value> JoystickName(const v8::Arguments& args);
-  v8::Handle<v8::Value> JoystickNumAxes(const v8::Arguments& args);
-  v8::Handle<v8::Value> JoystickNumButtons(const v8::Arguments& args);
-  v8::Handle<v8::Value> JoystickNumBalls(const v8::Arguments& args);
-  v8::Handle<v8::Value> JoystickNumHats(const v8::Arguments& args);
-  v8::Handle<v8::Value> JoystickClose(const v8::Arguments& args);
-  v8::Handle<v8::Value> JoystickUpdate(const v8::Arguments& args);
-  v8::Handle<v8::Value> JoystickEventState(const v8::Arguments& args);
 
   v8::Handle<v8::Value> MapRGB(const v8::Arguments& args);
   v8::Handle<v8::Value> MapRGBA(const v8::Arguments& args);

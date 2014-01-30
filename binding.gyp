@@ -16,7 +16,8 @@
         'src/event.cc',
         'src/key.cc',
         'src/mouse.cc',
-        "src/font.cc"
+        "src/font.cc",
+        "src/joystick.cc"
       ],
       'libraries': [
         '/usr/local/lib/libSDL2.dylib',
