@@ -5,37 +5,19 @@
 #include <node.h>
 #include <node_buffer.h>
 
-using namespace node;
-using namespace v8;
-
 namespace sdl {
 
   // Error reporting helpers
-  Handle<Value> ThrowSDLException(const char* name);
-  Local<Value> MakeSDLException(const char* name);
-
-  // Wrapper and Unwrappers
-  Handle<Object> WrapSurface(SDL_Surface* surface);
-  SDL_Surface* UnwrapSurface(Handle<Object> obj);
-
-  Handle<Object> WrapRect(SDL_Rect* rect);
-  SDL_Rect* UnwrapRect(Handle<Object> obj);
-
-  Handle<Object> WrapPixelFormat(SDL_PixelFormat* pixelformat);
-  SDL_PixelFormat* UnwrapPixelFormat(Handle<Object> obj);
-
-  Handle<Object> WrapJoystick(SDL_Joystick* joystick);
-  SDL_Joystick* UnwrapJoystick(Handle<Object> obj);
-
-  Handle<Object> WrapFont(TTF_Font* font);
-  TTF_Font* UnwrapFont(Handle<Object> obj);
-
+  v8::Handle<v8::Value> ThrowSDLException(const char* name);
+  v8::Local<v8::Value> MakeSDLException(const char* name);
   
   // Helpers to work with buffers
-  char* BufferData(Buffer *b);
-  size_t BufferLength(Buffer *b);
-  char* BufferData(Local<Object> buf_obj);
-  size_t BufferLength(Local<Object> buf_obj);
+  char* BufferData(node::Buffer *b);
+  size_t BufferLength(node::Buffer *b);
+  char* BufferData(v8::Local<v8::Object> buf_obj);
+  size_t BufferLength(v8::Local<v8::Object> buf_obj);
+
+  v8::Local<v8::Object> SDLDisplayModeToJavascriptObject(const SDL_DisplayMode& mode);
 
 } // sdl
 
