@@ -17,6 +17,7 @@
 #include "mouse.h"
 #include "font.h"
 #include "joystick.h"
+#include "controller.h"
 #include <v8.h>
 #include <string>
 #include <iostream>
@@ -96,6 +97,7 @@ init(Handle<Object> target)
   sdl::mouse::Init(target);
   sdl::TTF::Initialize(target);
   sdl::joystick::Init(target);
+  sdl::controller::Init(target);
 
   // Initialization and Shutdown.
   NODE_SET_METHOD(target, "init", sdl::Init);

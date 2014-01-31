@@ -17,6 +17,7 @@ namespace sdl {
 		static v8::Persistent<v8::FunctionTemplate> wrap_template_;
 
 		JoystickWrapper();
+		JoystickWrapper(bool owned);
 		~JoystickWrapper();
 
 		static void Init(v8::Handle<v8::Object> exports);
@@ -35,6 +36,7 @@ namespace sdl {
 		static v8::Handle<v8::Value> GetNumHats(const v8::Arguments& args);
 
 		SDL_Joystick* joystick_;
+		bool owned_;
 	};
 
 	v8::Handle<v8::Value> NumJoysticks(const v8::Arguments& args);

@@ -25,8 +25,11 @@ Persistent<FunctionTemplate> sdl::JoystickWrapper::wrap_template_;
 
 sdl::JoystickWrapper::JoystickWrapper() {
 }
+sdl::JoystickWrapper::JoystickWrapper(bool owned) {
+	owned_ = owned;
+}
 sdl::JoystickWrapper::~JoystickWrapper() {
-	if(NULL != joystick_) {
+	if(NULL != joystick_ && !owned_) {
 		SDL_JoystickClose(joystick_);
 	}
 }
@@ -65,15 +68,28 @@ Handle<Value> sdl::JoystickWrapper::New(const Arguments& args) {
 			String::New("Invalid arguments: Expected new sdl.Joystick(Number)")));
 	}
 
-	int index = args[0]->Int32Value();
-	SDL_Joystick* joystick = SDL_JoystickOpen(index);
-	if(NULL == joystick) {
-		return ThrowSDLException(__func__);
+	if(args[0]->IsExternal()) {
+		JoystickWrapper* wrap;
+		if(args.Length() > 1) {
+			wrap = new JoystickWrapper(args[1]->BooleanValue());
+		}
+		else {
+			wrap = new JoystickWrapper();
+		}
+		wrap->joystick_ = static_cast<SDL_Joystick*>(Handle<External>::Cast(args[0])->Value());
+		wrap->Wrap(args.This());
 	}
+	else {
+		int index = args[0]->Int32Value();
+		SDL_Joystick* joystick = SDL_JoystickOpen(index);
+		if(NULL == joystick) {
+			return ThrowSDLException(__func__);
+		}
 
-	JoystickWrapper* wrap = new JoystickWrapper();
-	wrap->joystick_ = joystick;
-	wrap->Wrap(args.This());
+		JoystickWrapper* wrap = new JoystickWrapper();
+		wrap->joystick_ = joystick;
+		wrap->Wrap(args.This());
+	}
 
 	return args.This();
 }
