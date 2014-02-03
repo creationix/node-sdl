@@ -127,7 +127,7 @@ Persistent<FunctionTemplate> sdl::ColorWrapper::wrap_template_;
 sdl::ColorWrapper::ColorWrapper() {
 }
 sdl::ColorWrapper::~ColorWrapper() {
-	std::cout << "ColorWrapper destructor running." << std::endl;
+	// std::cout << "ColorWrapper destructor running." << std::endl;
 	if(NULL != color_) {
 		delete color_;
 	}
