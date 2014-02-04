@@ -5,6 +5,7 @@
 #include <node.h>
 
 #include "SDL.h"
+#include "helpers.h"
 
 
 namespace sdl {
@@ -12,7 +13,8 @@ namespace sdl {
 		void Init(v8::Handle<v8::Object> exports);
 	}
 
-	v8::Handle<v8::Value> GetKeyFromName(const v8::Arguments& args);
+	// v8::Handle<v8::Value> GetKeyFromName(const v8::Arguments& args);
+	FUNCTION_DEF(GetKeyFromName);
 	v8::Handle<v8::Value> GetKeyFromScancode(const v8::Arguments& args);
 	v8::Handle<v8::Value> GetKeyName(const v8::Arguments& args);
 	

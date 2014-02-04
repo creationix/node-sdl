@@ -540,32 +540,42 @@ void sdl::key::Init(Handle<Object> exports) {
 	NODE_SET_METHOD(exports, "stopTextInput", StopTextInput);
 }
 
-Handle<Value> sdl::GetKeyFromName(const Arguments& args) {
-	HandleScope scope;
+// Handle<Value> sdl::GetKeyFromName(const Arguments& args) {
+// 	HandleScope scope;
 
-	if(args.Length() < 1) {
-		return ThrowException(Exception::TypeError(
-			String::New("Invalid arguments: Expected GetKeyFromName(String)")));
-	}
+// 	if(args.Length() < 1) {
+// 		return ThrowException(Exception::TypeError(
+// 			String::New("Invalid arguments: Expected GetKeyFromName(String)")));
+// 	}
 
-	String::Utf8Value name(args[0]);
+// 	String::Utf8Value name(args[0]);
+// 	SDL_Keycode code = SDL_GetKeyFromName(*name);
+
+// 	return scope.Close(Number::New(code));
+// }
+FUNCTION_BEGINP(sdl, GetKeyFromName, 1)
+	EXTRACT_STRING(name, 0);
 	SDL_Keycode code = SDL_GetKeyFromName(*name);
+FUNCTION_END(Number::New(code))
 
-	return scope.Close(Number::New(code));
-}
-Handle<Value> sdl::GetKeyFromScancode(const Arguments& args) {
-	HandleScope scope;
+// Handle<Value> sdl::GetKeyFromScancode(const Arguments& args) {
+// 	HandleScope scope;
 
-	if(args.Length() < 1) {
-		return ThrowException(Exception::TypeError(
-			String::New("Invalid arguments: Expected GetKeyFromScancode(Number)")));
-	}
+// 	if(args.Length() < 1) {
+// 		return ThrowException(Exception::TypeError(
+// 			String::New("Invalid arguments: Expected GetKeyFromScancode(Number)")));
+// 	}
 
-	SDL_Scancode scan = static_cast<SDL_Scancode>(args[0]->Int32Value());
-	SDL_Keycode key = SDL_GetKeyFromScancode(scan);
+// 	SDL_Scancode scan = static_cast<SDL_Scancode>(args[0]->Int32Value());
+// 	SDL_Keycode key = SDL_GetKeyFromScancode(scan);
 
-	return scope.Close(Number::New(key));
-}
+// 	return scope.Close(Number::New(key));
+// }
+FUNCTION_BEGINP(sdl, GetKeyFromScancode, 1)
+	EXTRACT_INT32(scan, 0);
+	SDL_Keycode key = SDL_GetKeyFromScancode(static_cast<SDL_Scancode>(scan));
+FUNCTION_END(Number::New(key))
+
 Handle<Value> sdl::GetKeyName(const Arguments& args) {
 	HandleScope scope;
 
