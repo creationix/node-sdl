@@ -31,7 +31,10 @@
         "/usr/local/include/SDL2"
       ],
       "defines": [
-        "_THREAD_SAFE"
+        "_THREAD_SAFE",
+        "ENABLE_ARG_CHECKING",
+        "ENABLE_IMAGE",
+        "ENABLE_TTF"
       ]
     }
   ]

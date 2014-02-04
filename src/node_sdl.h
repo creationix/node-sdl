@@ -8,16 +8,17 @@
 // myself as to what features I will want to be optionally disabled in the future. Otherwise I
 // will forget :)
 
+// NOTE: All of these defines are actually put into binding.gyp
 // WARNING: The only time you should disable arg checking is after thoroughly testing your application
 // and you don't see any exceptions being thrown. You WILL get segfaults if you aren't careful about
 // what types you pass to some functions without having them checked. (such as passing an SDL_Color
 // when something want an SDL_Texture, or vise versa) And there will be no stacktrace or anything
 // pointing to a location where the problem happened.
-#define ENABLE_ARG_CHECKING
+// #define ENABLE_ARG_CHECKING
 // If this is not defined, the entire SDL_image wrapper will not be included in the build.
-#define ENABLE_IMAGE
+// #define ENABLE_IMAGE
 // If this is not defined, the entire SDL_ttf wrapper will not be included in the build.
-#define ENABLE_TTF
+// #define ENABLE_TTF
 
 #include <node.h>
 #include <v8.h>
