@@ -142,5 +142,6 @@ if __name__ == "__main__":
 	else:
 		if verbose:
 			print("Could not find sdl-config. Looking for libraries/include dirs directly.")
+		# UNTESTED BRANCH
 		found = find_in(path, library_name)
 		print(found)
