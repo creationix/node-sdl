@@ -18,6 +18,7 @@
 #include "font.h"
 #include "joystick.h"
 #include "controller.h"
+#include "helpers.h"
 #include <v8.h>
 #include <string>
 #include <iostream>
@@ -402,9 +403,12 @@ Handle<Value> sdl::GetDisplayBounds(const Arguments& args) {
     return ThrowSDLException(__func__);
   }
 
-  Handle<Object> ret = Object::New();
-  RectWrapper* wrap = new RectWrapper(ret);
-  wrap->rect_ = bounds;
+  NEW_WRAPPED(bounds, RectWrapper, ret);
+//   Handle<Value> argv[] = {External::New(bounds)};
+//   Handle<Object> ret = RectWrapper::wrap_template_->GetFunction()->NewInstance(1, argv);
+//   Handle<Object> ret = Object::New();
+//   RectWrapper* wrap = new RectWrapper(ret);
+//   wrap->wrapped = bounds;
 
   return scope.Close(ret);
 }

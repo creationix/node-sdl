@@ -717,7 +717,7 @@ Handle<Value> sdl::SetTextInputRect(const Arguments& args) {
 	}
 
 	RectWrapper* rect = ObjectWrap::Unwrap<RectWrapper>(Handle<Object>::Cast(args[0]));
-	SDL_SetTextInputRect(rect->rect_);
+	SDL_SetTextInputRect(rect->wrapped);
 
 	return Undefined();
 }

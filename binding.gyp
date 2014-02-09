@@ -4,7 +4,6 @@
       # have to specify "liblib" here since gyp will remove the first one :\
       # Is the above still true?
       "target_name": "libnode_sdl",
-      "type": "<(library)",
       "sources": [
         "src/helpers.cc",
         "src/node_sdl.cc",

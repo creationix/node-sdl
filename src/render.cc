@@ -248,9 +248,7 @@ Handle<Value> sdl::RendererWrapper::GetClipRect(const Arguments& args) {
 	SDL_Rect* rect = new SDL_Rect;
 	SDL_RenderGetClipRect(obj->renderer_, rect);
 
-	Handle<Object> ret = Object::New();
-	RectWrapper* wrap = new RectWrapper(ret);
-	wrap->rect_ = rect;
+  NEW_WRAPPED(rect, RectWrapper, ret)
 
 	return scope.Close(ret);
 }
@@ -286,9 +284,7 @@ Handle<Value> sdl::RendererWrapper::GetViewport(const Arguments& args) {
 	SDL_Rect* rect = new SDL_Rect;
 	SDL_RenderGetViewport(obj->renderer_, rect);
 
-	Handle<Object> ret = Object::New();
-	RectWrapper* wrap = new RectWrapper(ret);
-	wrap->rect_ = rect;
+  NEW_WRAPPED(rect, RectWrapper, ret)
 
 	return scope.Close(ret);
 }
@@ -316,7 +312,7 @@ Handle<Value> sdl::RendererWrapper::SetClipRect(const Arguments& args) {
 	}
 	else {
 		RectWrapper* clip = ObjectWrap::Unwrap<RectWrapper>(Handle<Object>::Cast(args[0]));
-		err = SDL_RenderSetClipRect(obj->renderer_, clip->rect_);
+		err = SDL_RenderSetClipRect(obj->renderer_, clip->wrapped);
 	}
 	if(err < 0) {
 		return ThrowSDLException(__func__);
@@ -366,7 +362,7 @@ Handle<Value> sdl::RendererWrapper::SetViewport(const Arguments& args) {
 	}
 	else {
 		RectWrapper* wrap = ObjectWrap::Unwrap<RectWrapper>(Handle<Object>::Cast(args[0]));
-		err = SDL_RenderSetViewport(obj->renderer_, wrap->rect_);
+		err = SDL_RenderSetViewport(obj->renderer_, wrap->wrapped);
 	}
 	if(err < 0) {
 		return ThrowSDLException(__func__);
@@ -450,8 +446,8 @@ Handle<Value> sdl::RendererWrapper::Copy(const Arguments& args) {
 		PointWrapper* point = args[4]->IsUndefined() ? NULL : ObjectWrap::Unwrap<PointWrapper>(Handle<Object>::Cast(args[4]));
 		SDL_RendererFlip flip = args[5]->IsUndefined() ? SDL_FLIP_NONE : static_cast<SDL_RendererFlip>(args[5]->Int32Value());
 		int err = SDL_RenderCopyEx(obj->renderer_, texture->texture_,
-			src == NULL ? NULL : src->rect_,
-			dst == NULL ? NULL : dst->rect_,
+			src == NULL ? NULL : src->wrapped,
+			dst == NULL ? NULL : dst->wrapped,
 			angle,
 			point == NULL ? NULL : point->point_,
 			flip);
@@ -464,8 +460,8 @@ Handle<Value> sdl::RendererWrapper::Copy(const Arguments& args) {
 		RectWrapper* src = args[1]->IsUndefined() ? NULL : ObjectWrap::Unwrap<RectWrapper>(Handle<Object>::Cast(args[1]));
 		RectWrapper* dst = args[2]->IsUndefined() ? NULL : ObjectWrap::Unwrap<RectWrapper>(Handle<Object>::Cast(args[2]));
 		int err = SDL_RenderCopy(obj->renderer_, texture->texture_,
-			src == NULL ? NULL : src->rect_,
-			dst == NULL ? NULL : dst->rect_);
+			src == NULL ? NULL : src->wrapped,
+			dst == NULL ? NULL : dst->wrapped);
 		if(err < 0) {
 			return ThrowSDLException(__func__);
 		}
@@ -564,7 +560,7 @@ Handle<Value> sdl::RendererWrapper::DrawRect(const Arguments& args) {
 	}
 
 	RectWrapper* rect = ObjectWrap::Unwrap<RectWrapper>(Handle<Object>::Cast(args[0]));
-	int err = SDL_RenderDrawRect(obj->renderer_, rect->rect_);
+	int err = SDL_RenderDrawRect(obj->renderer_, rect->wrapped);
 	if(err < 0) {
 		return ThrowSDLException(__func__);
 	}
@@ -584,7 +580,7 @@ Handle<Value> sdl::RendererWrapper::DrawRects(const Arguments& args) {
 	SDL_Rect* rects = new SDL_Rect[numRects];
 	for(int i = 0; i < numRects; i++) {
 		RectWrapper* rect = ObjectWrap::Unwrap<RectWrapper>(Handle<Object>::Cast(arr->Get(i)));
-		rects[i] = *rect->rect_;
+		rects[i] = *rect->wrapped;
 	}
 	int err = SDL_RenderDrawRects(obj->renderer_, rects, numRects);
 	delete rects;
@@ -603,7 +599,7 @@ Handle<Value> sdl::RendererWrapper::FillRect(const Arguments& args) {
 	}
 
 	RectWrapper* rect = ObjectWrap::Unwrap<RectWrapper>(Handle<Object>::Cast(args[0]));
-	int err = SDL_RenderFillRect(obj->renderer_, rect->rect_);
+	int err = SDL_RenderFillRect(obj->renderer_, rect->wrapped);
 	if(err < 0) {
 		return ThrowSDLException(__func__);
 	}
@@ -623,7 +619,7 @@ Handle<Value> sdl::RendererWrapper::FillRects(const Arguments& args) {
 	SDL_Rect* rects = new SDL_Rect[numRects];
 	for(int i = 0; i < numRects; i++) {
 		RectWrapper* rect = ObjectWrap::Unwrap<RectWrapper>(Handle<Object>::Cast(arr->Get(i)));
-		rects[i] = *rect->rect_;
+		rects[i] = *rect->wrapped;
 	}
 	int err = SDL_RenderFillRects(obj->renderer_, rects, numRects);
 	delete rects;

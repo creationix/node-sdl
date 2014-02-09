@@ -5,38 +5,49 @@
 #include <v8.h>
 
 #include "SDL.h"
+#include "helpers.h"
 
 
 namespace sdl {
-	class RectWrapper : public node::ObjectWrap {
-	public:
-		static v8::Persistent<v8::FunctionTemplate> wrap_template_;
+	OPEN_OBJECTWRAP(RectWrapper)
+		static GETTER_DEF(GetX);
+		static GETTER_DEF(GetY);
+		static GETTER_DEF(GetW);
+		static GETTER_DEF(GetH);
 
-		RectWrapper();
-		RectWrapper(v8::Handle<v8::Object> toWrap);
-		~RectWrapper();
+		static SETTER_DEF(SetX);
+		static SETTER_DEF(SetY);
+		static SETTER_DEF(SetW);
+		static SETTER_DEF(SetH);
+	CLOSE_OBJECTWRAP(SDL_Rect)
+	// class RectWrapper : public node::ObjectWrap {
+	// public:
+	// 	static v8::Persistent<v8::FunctionTemplate> wrap_template_;
 
-		static void Init(v8::Handle<v8::Object> exports);
-		static v8::Handle<v8::Value> New(const v8::Arguments& args);
+	// 	RectWrapper();
+	// 	RectWrapper(v8::Handle<v8::Object> toWrap);
+	// 	~RectWrapper();
 
-		static v8::Handle<v8::Value> GetX(v8::Local<v8::String> name, const v8::AccessorInfo& info);
-		static v8::Handle<v8::Value> GetY(v8::Local<v8::String> name, const v8::AccessorInfo& info);
-		static v8::Handle<v8::Value> GetW(v8::Local<v8::String> name, const v8::AccessorInfo& info);
-		static v8::Handle<v8::Value> GetH(v8::Local<v8::String> name, const v8::AccessorInfo& info);
+	// 	static void Init(v8::Handle<v8::Object> exports);
+	// 	static v8::Handle<v8::Value> New(const v8::Arguments& args);
 
-		static void SetX(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info);
-		static void SetY(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info);
-		static void SetW(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info);
-		static void SetH(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info);
+	// 	static GETTER_DEF(GetX);
+	// 	static GETTER_DEF(GetY);
+	// 	static GETTER_DEF(GetW);
+	// 	static GETTER_DEF(GetH);
 
-		SDL_Rect* rect_;
-	};
+	// 	static void SetX(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info);
+	// 	static void SetY(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info);
+	// 	static void SetW(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info);
+	// 	static void SetH(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info);
+
+	// 	SDL_Rect* wrapped;
+	// };
 
 	class ColorWrapper : public node::ObjectWrap {
 	public:
 		static v8::Persistent<v8::FunctionTemplate> wrap_template_;
 
-		ColorWrapper();
 		~ColorWrapper();
 
 		static void Init(v8::Handle<v8::Object> exports);

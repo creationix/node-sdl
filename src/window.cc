@@ -526,7 +526,7 @@ Handle<Value> sdl::WindowWrapper::UpdateWindowSurfaceRects(const Arguments& args
 	SDL_Rect* rects = new SDL_Rect[len];
 	for(int i = 0; i < len; i++) {
 		RectWrapper* wrap = ObjectWrap::Unwrap<RectWrapper>(Handle<Object>::Cast(arr->Get(i)));
-		rects[i] = *wrap->rect_;
+		rects[i] = *wrap->wrapped;
 	}
 
 	int err = SDL_UpdateWindowSurfaceRects(obj->window_, rects, len);

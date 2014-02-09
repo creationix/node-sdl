@@ -6,150 +6,107 @@
 
 using namespace v8;
 
-Persistent<FunctionTemplate> sdl::RectWrapper::wrap_template_;
-
-sdl::RectWrapper::RectWrapper() {
-}
-sdl::RectWrapper::RectWrapper(Handle<Object> toWrap) {
-	Wrap(toWrap);
-}
 sdl::RectWrapper::~RectWrapper() {
-	if(NULL != rect_) {
-		delete rect_;
+	if(NULL != wrapped) {
+		delete wrapped;
 	}
 }
 
-void sdl::RectWrapper::Init(Handle<Object> exports) {
-	Handle<FunctionTemplate> tpl = FunctionTemplate::New(New);
-	wrap_template_ = Persistent<FunctionTemplate>::New(tpl);
+START_INIT(sdl, RectWrapper)
+  GETTER_SETTER(wrap_template_, "x", GetX, SetX)
+  GETTER_SETTER(wrap_template_, "y", GetY, SetY)
+  GETTER_SETTER(wrap_template_, "w", GetW, SetW)
+  GETTER_SETTER(wrap_template_, "h", GetH, SetH)
+END_INIT("Rect")
 
-	wrap_template_->InstanceTemplate()->SetInternalFieldCount(1);
-	wrap_template_->SetClassName(String::New("RectWrapper"));
+START_NEW(sdl, RectWrapper, 4)
+  if(args[0]->IsExternal()) {
+    UNWRAP_EXTERNAL(SDL_Rect, rect, 0);
+    RectWrapper* wrap = new RectWrapper();
+    wrap->wrapped = rect;
+    wrap->Wrap(args.This());
+  }
+  else {
+    EXTRACT_INT32(x, 0);
+    EXTRACT_INT32(y, 1);
+    EXTRACT_INT32(w, 2);
+    EXTRACT_INT32(h, 3);
+    SDL_Rect* rect = new SDL_Rect;
+    rect->x = x;
+    rect->y = y;
+    rect->w = w;
+    rect->h = h;
 
-	Local<ObjectTemplate> templ = wrap_template_->PrototypeTemplate();
-	templ->SetAccessor(String::NewSymbol("x"), GetX, SetX);
-	templ->SetAccessor(String::NewSymbol("y"), GetY, SetY);
-	templ->SetAccessor(String::NewSymbol("w"), GetW, SetW);
-	templ->SetAccessor(String::NewSymbol("h"), GetH, SetH);
+    RectWrapper* wrap = new RectWrapper();
+    wrap->wrapped = rect;
+    wrap->Wrap(args.This());
+  }
+END_NEW
 
-	exports->Set(String::NewSymbol("Rect"), wrap_template_->GetFunction());
-}
-Handle<Value> sdl::RectWrapper::New(const Arguments& args) {
-	if(!args.IsConstructCall()) {
-		return ThrowException(Exception::TypeError(
-			String::New("Cannot construct a Rect without using the new operator.")));
-	}
+GETTER_BEGIN(sdl::RectWrapper, GetX)
+	UNWRAP_THIS(RectWrapper, info, wrap)
+GETTER_END(Number::New(wrap->wrapped->x))
 
-	HandleScope scope;
+GETTER_BEGIN(sdl::RectWrapper, GetY)
+	UNWRAP_THIS(RectWrapper, info, wrap)
+GETTER_END(Number::New(wrap->wrapped->y))
 
-	if(args.Length() < 4) {
-		return ThrowException(Exception::TypeError(
-			String::New("Invalid arguments: Expected new sdl.Rect(Number, Number, Number, Number)")));
-	}
+GETTER_BEGIN(sdl::RectWrapper, GetW)
+	UNWRAP_THIS(RectWrapper, info, wrap)
+GETTER_END(Number::New(wrap->wrapped->w));
 
-	int x = args[0]->Int32Value();
-	int y = args[1]->Int32Value();
-	int w = args[2]->Int32Value();
-	int h = args[3]->Int32Value();
-	SDL_Rect* rect = new SDL_Rect;
-	rect->x = x;
-	rect->y = y;
-	rect->w = w;
-	rect->h = h;
+GETTER_BEGIN(sdl::RectWrapper, GetH)
+	UNWRAP_THIS(RectWrapper, info, wrap)
+GETTER_END(Number::New(wrap->wrapped->h))
 
-	RectWrapper* wrap = new RectWrapper();
-	wrap->rect_ = rect;
-	wrap->Wrap(args.This());
+SETTER_BEGIN(sdl::RectWrapper, SetX)
+	UNWRAP_THIS_SETTER(RectWrapper, info, wrap)
+		VALUE_INT32(x);
+			wrap->wrapped->x = x;
+		END_VALUE
+	UNWRAP_END
+SETTER_END
 
-	return args.This();
-}
+SETTER_BEGIN(sdl::RectWrapper, SetY)
+	UNWRAP_THIS_SETTER(RectWrapper, info, wrap)
+		VALUE_INT32(y);
+			wrap->wrapped->y = y;
+		END_VALUE
+	UNWRAP_END
+SETTER_END
 
-Handle<Value> sdl::RectWrapper::GetX(Local<String> name, const AccessorInfo& info) {
-	HandleScope scope;
+SETTER_BEGIN(sdl::RectWrapper, SetW)
+	UNWRAP_THIS_SETTER(RectWrapper, info, wrap)
+		VALUE_INT32(w);
+			wrap->wrapped->w = w;
+		END_VALUE
+	UNWRAP_END
+SETTER_END
 
-	RectWrapper* wrap = ObjectWrap::Unwrap<RectWrapper>(info.This());
+SETTER_BEGIN(sdl::RectWrapper, SetH)
+	UNWRAP_THIS_SETTER(RectWrapper, info, wrap)
+		VALUE_INT32(h);
+			wrap->wrapped->h = h;
+		END_VALUE
+	UNWRAP_END
+SETTER_END
 
-	return scope.Close(Number::New(wrap->rect_->x));
-}
-Handle<Value> sdl::RectWrapper::GetY(Local<String> name, const AccessorInfo& info) {
-	HandleScope scope;
-
-	RectWrapper* wrap = ObjectWrap::Unwrap<RectWrapper>(info.This());
-
-	return scope.Close(Number::New(wrap->rect_->y));
-}
-Handle<Value> sdl::RectWrapper::GetW(Local<String> name, const AccessorInfo& info) {
-	HandleScope scope;
-
-	RectWrapper* wrap = ObjectWrap::Unwrap<RectWrapper>(info.This());
-
-	return scope.Close(Number::New(wrap->rect_->w));
-}
-Handle<Value> sdl::RectWrapper::GetH(Local<String> name, const AccessorInfo& info) {
-	HandleScope scope;
-
-	RectWrapper* wrap = ObjectWrap::Unwrap<RectWrapper>(info.This());
-
-	return scope.Close(Number::New(wrap->rect_->h));
-}
-
-void sdl::RectWrapper::SetX(Local<String> name, Local<Value> value, const AccessorInfo& info) {
-	HandleScope scope;
-
-	int x = value->Int32Value();
-	RectWrapper* wrap = ObjectWrap::Unwrap<RectWrapper>(Handle<Object>::Cast(info.This()));
-	wrap->rect_->x = x;
-}
-void sdl::RectWrapper::SetY(Local<String> name, Local<Value> value, const AccessorInfo& info) {
-	HandleScope scope;
-
-	int y = value->Int32Value();
-	RectWrapper* wrap = ObjectWrap::Unwrap<RectWrapper>(Handle<Object>::Cast(info.This()));
-	wrap->rect_->y = y;
-}
-void sdl::RectWrapper::SetW(Local<String> name, Local<Value> value, const AccessorInfo& info) {
-	HandleScope scope;
-
-	int w = value->Int32Value();
-	RectWrapper* wrap = ObjectWrap::Unwrap<RectWrapper>(Handle<Object>::Cast(info.This()));
-	wrap->rect_->w = w;
-}
-void sdl::RectWrapper::SetH(Local<String> name, Local<Value> value, const AccessorInfo& info) {
-	HandleScope scope;
-
-	int h = value->Int32Value();
-	RectWrapper* wrap = ObjectWrap::Unwrap<RectWrapper>(Handle<Object>::Cast(info.This()));
-	wrap->rect_->h = h;
-}
-
-Persistent<FunctionTemplate> sdl::ColorWrapper::wrap_template_;
-
-sdl::ColorWrapper::ColorWrapper() {
-}
 sdl::ColorWrapper::~ColorWrapper() {
-	// std::cout << "ColorWrapper destructor running." << std::endl;
 	if(NULL != color_) {
 		delete color_;
 	}
 }
 
-void sdl::ColorWrapper::Init(Handle<Object> exports) {
-	Local<FunctionTemplate> tpl = FunctionTemplate::New(New);
-	wrap_template_ = Persistent<FunctionTemplate>::New(tpl);
+START_INIT(sdl, ColorWrapper)
+	GETTER_SETTER(wrap_template_, "r", GetRed, SetRed);
+	GETTER_SETTER(wrap_template_, "g", GetGreen, SetGreen);
+	GETTER_SETTER(wrap_template_, "b", GetBlue, SetBlue);
+	GETTER_SETTER(wrap_template_, "a", GetAlpha, SetAlpha);
 
-	wrap_template_->InstanceTemplate()->SetInternalFieldCount(1);
-	wrap_template_->SetClassName(String::NewSymbol("ColorWrapper"));
+  PROTO_METHOD(wrap_template_, getColor, GetColor);
+  PROTO_METHOD(wrap_template_, toString, ToString);
+END_INIT("Color")
 
-	Local<ObjectTemplate> templ = wrap_template_->PrototypeTemplate();
-	templ->SetAccessor(String::NewSymbol("r"), GetRed, SetRed);
-	templ->SetAccessor(String::NewSymbol("g"), GetGreen, SetGreen);
-	templ->SetAccessor(String::NewSymbol("b"), GetBlue, SetBlue);
-	templ->SetAccessor(String::NewSymbol("a"), GetAlpha, SetAlpha);
-	NODE_SET_PROTOTYPE_METHOD(tpl, "getColor", GetColor);
-	NODE_SET_PROTOTYPE_METHOD(tpl, "toString", ToString);
-
-	exports->Set(String::NewSymbol("Color"), wrap_template_->GetFunction());
-}
 Handle<Value> sdl::ColorWrapper::New(const Arguments& args) {
 	if(!args.IsConstructCall()) {
 		return ThrowException(Exception::TypeError(

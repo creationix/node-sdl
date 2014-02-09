@@ -12,7 +12,7 @@ using namespace v8;
 namespace sdl {
 	typedef Handle<ObjectTemplate> (*TemplateMaker)();
 
-	static Persistent<ObjectTemplate> rect_template_;
+	static Persistent<ObjectTemplate> wrappedtemplate_;
 	static Persistent<ObjectTemplate> point_template_;
 	static Persistent<ObjectTemplate> color_template_;
 	static Persistent<ObjectTemplate> palette_template_;
