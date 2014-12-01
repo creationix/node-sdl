@@ -850,9 +850,8 @@ Handle<Value> sdl::IMG::Load(const Arguments& args) {
     )));
   }
 
-  Handle<Object> ret = Object::New();
-  SurfaceWrapper* wrap = new SurfaceWrapper(ret);
-  wrap->surface_ = image;
+  NEW_WRAPPED(image, SurfaceWrapper, ret)
+
   return scope.Close(ret);
 }
 
